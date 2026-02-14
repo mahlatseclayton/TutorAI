@@ -7,24 +7,53 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header class="appBar">
-        <h1>Tutor AI</h1>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+     <main>
+    <!-- header section -->
+    <section id="headerSection" >
+        <header class="appBar">
+        <div class="lCon">
+        <img class="cLogo" src="images/tlogo.jpeg"></img>
+        <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
+        </div>
+        
         <nav class="navBar">
             <a class="navItem" href="#">Account</a>
+              <a class="navItem" href="#">Features</a>
             <a  class="navItem" href="#">About us</a>
         </nav>
     </header>
-    <main>
-        <image id="welcomeP" src="images/welc.png"></image>
-        <button id="startButton">Get Started</button>
-        <h3>What We Offer</h3>
-        <div id="offers">
-                <div class="offered"></div>
-                <div class="offered"></div>
-                <div class="offered"></div>
-                <div class="offered"></div>
-         
+    </section>
+    <!-- main section -->
+     <section id="mainSection">
+     <image id="mainLogo" src="images/tlogo.jpeg"></image>
+     <h4>AI-Powered Learning, Made Simple.</h4>
+     <button id="startedBtn">Get Started</button>
+     
+        
+     </section>
+<section id="featuresSection"> 
+    <h3 class="featureS">Features</h3>
+    <div class="scroll-wrapper">
+        <button onclick="scrollContainer('fContainer','left',262)" class="scroll-btn left">&lt;</button>
+        <div id="fContainer">
+            <div class="fBox"></div>
+            <div class="fBox"></div>
+            <div class="fBox"></div>
+            <div class="fBox"></div>
+            <div class="fBox"></div>
+            <div class="fBox"></div>
         </div>
+        <button  onclick="scrollContainer('fContainer','right',262)" class="scroll-btn right">&gt;</button>
+    </div>
+</section>
+
     </main>
 </body>
+<script src="script.js"></script>
 </html>

@@ -3,10 +3,82 @@
 }
 body{
     margin:0;
+     position: relative;
+    overflow: auto;
     padding:0;
+    background: radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
+}
+.circles {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(112, 59, 236, 0.15);
+    pointer-events: none;
+    animation: float 10s infinite ease-in-out alternate;
+}
+
+.circles:nth-child(1) {
+    width: 80px;
+    height: 80px;
+    top: 10%;
+    left: 20%;
+    animation-duration: 12s;
+}
+.circles:nth-child(2) {
+    width: 50px;
+    height: 50px;
+    top: 50%;
+    left: 30%;
+    animation-duration: 8s;
+}
+.circles:nth-child(3) {
+    width: 100px;
+    height: 100px;
+    top: 30%;
+    left: 40%;
+    animation-duration: 14s;
+}
+.circles:nth-child(4) {
+    width: 60px;
+    height: 60px;
+    top: 40%;
+    left: 10%;
+    animation-duration: 10s;
+}
+.circles:nth-child(5) {
+    width: 40px;
+    height: 40px;
+    top: 80%;
+    left: 50%;
+    animation-duration: 9s;
+}
+.circles:nth-child(6) {
+    width: 90px;
+    height: 90px;
+    top: 20%;
+    left: 80%;
+    animation-duration: 11s;
+}
+
+@keyframes float {
+    0% { transform: translate(0,0) scale(1); }
+    25% { transform: translate(20px, -10px) scale(1.05); }
+    50% { transform: translate(-15px, 15px) scale(0.95); }
+    75% { transform: translate(10px, -20px) scale(1.1); }
+    100% { transform: translate(0,0) scale(1); }
+}
+
+
+
+main {
+    position: relative;
+    z-index: 1;
+}
+
+.circles {
+    z-index: 0;
 }
 .appBar{
-    background-color: black;
+     background: linear-gradient(to right, #5C258D 0%, #4389A2 51%, #5C258D 100%);
     text-align: center;
     display: flex;
     justify-content: space-between;
@@ -15,9 +87,47 @@ body{
     margin:0px;
     padding:15px;
 }
+.lCon{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap:15px;
+}
+.cLogo{
+    width: 50px;
+    align-items: center;
+    height:50px;
+    border-radius: 35px;
+}
+#mainLogo{
+    width:280px;
+    height:280px;
+    justify-content: space-around;
+    margin: 10%;
+    margin-bottom: 0;
+    border-radius: 100%;
+}
+#mainSection h4{
+    color:rgb(65, 60, 60);
+}
+#mainSection{
+    display: flex;
+    min-height: 100vh;
+    width: auto;
+    height: auto;
+    flex-direction: column;
+    align-items: center;
+
+}
+.aiHandle{
+    color:red;
+    align-items: center;
+    text-align: center;
+}
 .appBar h1{
     color: white;
     margin: 0;
+    text-align: center;
     flex:1;
     padding: 0px;
 }
@@ -43,13 +153,7 @@ body{
      border-radius: 20px;
     object-fit: contain;
 }
-main{
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
-   
-}
+
 
 #startButton{
     border-radius: 20px;
@@ -76,6 +180,81 @@ main{
     justify-content: space-around;
     gap:15px;
 }
+#startedBtn{
+  background-image: linear-gradient(to right, #24C6DC 0%, #514A9D 51%, #24C6DC 100%);
+}
+
+#startedBtn{
+  margin: 10px;
+  padding: 15px 45px;
+  text-align: center;
+  text-transform: uppercase;
+  transition: 0.5s;
+  background-size: 200% auto;
+  color: white;
+  box-shadow: 0 0 20px #eee;
+  border-radius: 10px;
+  display: block;
+  outline: none;
+  border: none;
+}
+.featureS{
+   margin:14px;
+
+}
+#startedBtn:hover {
+  background-position: right center;
+  color: #fff;
+  text-decoration: none;
+}
+#fContainer{
+    display:flex;
+    justify-content: space-around;
+    padding:12px;
+    gap: 12px;
+    transition: transform 0.5s ease;
+
+}
+.fBox{
+ background-color: #4c24dc;
+    width: 250px;
+    height: 250px;
+    flex-shrink: 0;
+    border-radius: 10px;
+}
+.scroll-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    overflow: hidden;
+}
+
+.scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    background-color: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.scroll-btn.left {
+    left: 5px;
+}
+
+.scroll-btn.right {
+    right: 5px;
+}
+
+.scroll-btn:hover {
+    background-color: rgba(0,0,0,0.7);
+}
+
 @media(max-width:600px){
     #welcomeP{
     height:auto;
