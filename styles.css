@@ -135,7 +135,7 @@ main {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    gap:20px;
+    gap:5px;
 
 }
 .navItem{
@@ -401,5 +401,10 @@ html{
     align-self: center;
 }
 
-
+#account{
+    width:40px;
+    height:40px;
+    border-radius: 100%;
+    align-items: center;
+}
 
