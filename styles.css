@@ -333,3 +333,73 @@ html{
     align-self: center;
 }
 
+#mainSection {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.signupcontainer {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 20px;
+    width: 320px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.signuptitle {
+    margin-bottom: 20px;
+}
+
+.signupform {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;  
+}
+
+.signupform input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.formLinks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.formLinks a {
+    text-decoration: none;
+    color: #555;
+}
+
+.formLinks a:hover {
+    color: #000;
+}
+
+.signupbtn {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background-color:#4a4cb1;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.signupbtn:hover {
+    background-color: #3a56d4;
+}
+
+.signupbtn {
+    width: fit-content;
+    padding: 10px 20px;
+    align-self: center;
+}
+
+
+
