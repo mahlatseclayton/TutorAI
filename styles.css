@@ -253,3 +253,83 @@ html{
     object-fit: contain;
 }
 }
+
+.logincontainer{
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width:300px;
+    text-align: center;
+
+}
+
+
+#mainSection {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.logincontainer {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 20px;
+    width: 320px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.logintitle {
+    margin-bottom: 20px;
+}
+
+.loginform {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;  
+}
+
+.loginform input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.formLinks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.formLinks a {
+    text-decoration: none;
+    color: #555;
+}
+
+.formLinks a:hover {
+    color: #000;
+}
+
+.loginbtn {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background-color:#4a4cb1;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.loginbtn:hover {
+    background-color: #3a56d4;
+}
+
+.loginbtn {
+    width: fit-content;
+    padding: 10px 20px;
+    align-self: center;
+}
+
