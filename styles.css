@@ -218,6 +218,9 @@ main {
     transition: transform 0.5s ease;
 
 }
+html{
+     scroll-behavior: smooth;
+}
 .featureS{
     color: rgb(37, 35, 35);
     text-align: center;

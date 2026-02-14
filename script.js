@@ -12,3 +12,9 @@ function scrollContainer(containerId, direction, amount) {
 
     container.style.transform = `translateX(${currentX}px)`;
 }
+
+function Start(){
+
+    window.location.href="signUp.html";
+
+}
