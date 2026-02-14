@@ -209,16 +209,26 @@ main {
 }
 #fContainer{
     display:flex;
-    justify-content: space-around;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+
     padding:12px;
     gap: 12px;
     transition: transform 0.5s ease;
 
 }
+.featureS{
+    color: rgb(37, 35, 35);
+    text-align: center;
+}
+.fBox:hover{
+    transform: scale(1.05);
+}
 .fBox{
  background-color: #4c24dc;
-    width: 250px;
-    height: 250px;
+    width: 180px;
+    height: 180px;
     flex-shrink: 0;
     border-radius: 10px;
 }
@@ -230,30 +240,6 @@ main {
     overflow: hidden;
 }
 
-.scroll-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    background-color: rgba(0,0,0,0.5);
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 50%;
-}
-
-.scroll-btn.left {
-    left: 5px;
-}
-
-.scroll-btn.right {
-    right: 5px;
-}
-
-.scroll-btn:hover {
-    background-color: rgba(0,0,0,0.7);
-}
 
 @media(max-width:600px){
     #welcomeP{
