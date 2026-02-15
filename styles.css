@@ -408,3 +408,47 @@ html{
     align-items: center;
 }
 
+#tutorSection{
+    display:flex;
+    justify-content: center;
+    width:fit-content;
+    height:fit-content;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    gap:5px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 20px;
+}
+#tutorSection button{
+    width: fit-content;
+}
+#tutorSection h4{
+    font-weight: normal;
+}
+#questionContainer{
+    width:250px;
+    height:250px;
+    background-color: blue;
+}
+#previewContainer{
+    width:250px;
+    height:250px;
+    background-color: blue;
+}
+#tSection{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+     height: 100vh;
+    justify-content: center;
+}
+#qrContainer{
+    display: flex;
+    justify-content: space-around;
+    flex: 1;
+    gap:15px;
+    flex-direction: row;
+
+}
