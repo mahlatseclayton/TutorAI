@@ -18,3 +18,6 @@ function Start(){
     window.location.href="signUp.html";
 
 }
+function Login(){
+     window.location.href="mainPage.html";
+}

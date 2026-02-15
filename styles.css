@@ -108,7 +108,7 @@ main {
     border-radius: 100%;
 }
 #mainSection h4{
-    color:rgb(65, 60, 60);
+    color:#413c3c;
 }
 #mainSection{
     display: flex;
@@ -402,8 +402,8 @@ html{
 }
 
 #account{
-    width:40px;
-    height:40px;
+    width:30px;
+    height:30px;
     border-radius: 100%;
     align-items: center;
 }

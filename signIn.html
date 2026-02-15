@@ -7,7 +7,7 @@
         <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-       <div class="circles"></div>
+    <div class="circles"></div>
     <div class="circles"></div>
     <div class="circles"></div>
     <div class="circles"></div>
@@ -22,10 +22,12 @@
         <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
         </div>
         
-        <nav class="navBar">
-            <a class="navItem" href="#">Account</a>
-           
-        </nav>
+         <nav class="navBar">
+         
+            <image id="account" src="images/home.png"></image>
+             <a class="navItem" href="index.html">Home</a>
+             
+        </nav> 
     </header>
    <section id="mainSection">
     <div class="logincontainer">
@@ -40,11 +42,12 @@
                 <a href="signUp.html" class="NoAccount"><b>Don't have an account?</b></a>
             </div>
 
-            <button class="loginbtn" type="submit">Sign In</button>
+            <button onclick="Login()" class="loginbtn" type="submit">Sign In</button>
         </form>
     </div>
 </section>
 
     </main>
 </body>
+<script src="script.js"></script>
 </html>
