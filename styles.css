@@ -715,5 +715,22 @@ select:focus {
     align-self: flex-end;
 }
 
+.cExplanation{
+    text-align: center;
+}
+.cTry{
+    text-align: center;
+}
+.cVideos{
+    text-align: center;
+}
+.cExamples{
+    text-align: center;
+}
+
+.cOverview{
+    text-align: center;
+}
+
 
 
