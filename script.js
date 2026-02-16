@@ -21,3 +21,6 @@ function Start(){
 function Login(){
      window.location.href="mainPage.html";
 }
+function solution(){
+    window.location.href="solutionPage.html";
+}

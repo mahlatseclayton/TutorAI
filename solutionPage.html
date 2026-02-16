@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutor page</title>
+        <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+  <main id="tutorMain">
+      <header class="appBar">
+        <div class="lCon">
+        <img class="cLogo" src="images/tlogo.jpeg"></img>
+        <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
+        </div>
+        
+           <nav class="navBar">
+                <image id="account" src="images/account.png"></image>
+            <a class="navItem" href="Account.html">Account</a>
+                <image id="account" src="images/home.png"></image>
+            <a  class="navItem" href="index.html">Home</a>
+        </nav>
+    </header>
+<!-- main solution page -->
+
+  <section id="solutionHeader">
+
+    <button id="backBtn">← Back</button>
+
+    <div class="topicInfo">
+      <h1 id="topicTitle">Topic Name Here</h1>
+      <p id="metaInfo">
+        Grade <span id="gradeMeta"></span> •
+        <span id="subjectMeta"></span> •
+        <span id="levelMeta"></span>
+      </p>
+    </div>
+
+    <button id="aiToggleBtn">🤖 Ask AI Friend</button>
+
+  </section>
+
+
+  
+  <section id="learningContent">
+
+    <!-- ===== Overview ===== -->
+    <section class="contentCard" id="overviewSection">
+      <h2>Overview</h2>
+      <div id="overviewContent">
+        <!-- AI overview content inserted here -->
+      </div>
+    </section>
+
+
+    <!-- ===== Explanation ===== -->
+    <section class="contentCard" id="explanationSection">
+      <h2>Detailed Explanation</h2>
+      <div id="explanationContent">
+        <!-- AI explanation inserted here -->
+      </div>
+    </section>
+<!-- examples -->
+    <section class="contentCard" id="examplesSection">
+      <h2>Worked Examples</h2>
+
+      <div id="examplesContent">
+
+      
+      </div>
+    </section>
+
+
+    <!-- ===== Recommended Videos ===== -->
+    <section class="contentCard" id="videosSection">
+      <h2>Recommended Videos</h2>
+
+      <div id="videosContent">
+    
+      </div>
+    </section>
+
+
+    <!-- ===== Practice questions ===== -->
+    <section class="contentCard" id="practiceSection">
+      <h2>Try It Yourself</h2>
+
+      <div id="practiceContent">
+
+
+        <div class="practiceLevel">
+          <h3>Easy</h3>
+          <div class="questionsContainer" id="easyQuestions"></div>
+        </div>
+
+      
+        <div class="practiceLevel">
+          <h3>Medium</h3>
+          <div class="questionsContainer" id="mediumQuestions"></div>
+        </div>
+
+    
+        <div class="practiceLevel">
+          <h3>Hard</h3>
+          <div class="questionsContainer" id="hardQuestions"></div>
+        </div>
+
+      </div>
+    </section>
+
+  </section>
+
+
+  <aside id="aiFriendPanel">
+
+    <div id="aiHeader">
+      <h3>🤖 AI Friend</h3>
+      <button id="closeAiBtn">✖</button>
+    </div>
+
+    <div id="chatContainer">
+      <!-- Chat messages  -->
+    </div>
+
+    <div id="chatInputArea">
+      <input type="text" id="chatInput" placeholder="Ask a follow-up question...">
+      <button id="sendBtn">Send</button>
+    </div>
+
+  </aside>
+
+
+ 
+  <div id="aiOverlay"></div>
+
+</main>
+</body>
+</html>
