@@ -25,10 +25,10 @@ function signUp(){
     let cpassword=document.getElementById("cpassword").value;
     if(password!=cpassword){
         alert("Passwords do not match");
-        console.log("hey");
+    //   validation
     }
     else{
-        alert("lets start working!");
-        console.log("hiiy");
+    //   signup here
+
     }
 }
