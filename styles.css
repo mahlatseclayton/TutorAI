@@ -537,20 +537,30 @@ select:focus {
 }
 
 #aiToggleBtn {
-    padding: 10px 18px;
-    border-radius: 20px;
+    padding: 12px 22px;
+    border-radius: 999px; 
     border: none;
     background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: white;
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
     cursor: pointer;
-    transition: 0.3s ease;
+    transition: all 0.25s ease;
 }
 
+
 #aiToggleBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(37,99,235,0.25);
+    transform: translateY(-3px);
+    box-shadow: 
+        0 10px 25px rgba(37,99,235,0.35),
+        0 0 12px rgba(37,99,235,0.4);
 }
+#aiToggleBtn:active {
+    transform: translateY(0px);
+    box-shadow: 0 4px 10px rgba(37,99,235,0.25);
+}
+
 
 
 #learningContent {
