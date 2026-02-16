@@ -13,38 +13,70 @@
     <div class="circles"></div>
     <div class="circles"></div>
     <div class="circles"></div>
-    <main id="tutorMain">
-          <!-- header section -->
-    <section id="headerSection" >
-        <header class="appBar">
+  <main id="tutorMain">
+      <header class="appBar">
         <div class="lCon">
         <img class="cLogo" src="images/tlogo.jpeg"></img>
         <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
         </div>
         
-         <nav class="navBar">
-          <image id="account" src="images/account.png"></image>
-          <a class="navItem" href="AccountPage.html">Account</a>
-           <image id="account" src="images/home.png"></image>
-             <a class="navItem" href="index.html">Home</a>
-             
-        </nav> 
+           <nav class="navBar">
+                <image id="account" src="images/account.png"></image>
+            <a class="navItem" href="Account.html">Account</a>
+                <image id="account" src="images/home.png"></image>
+            <a  class="navItem" href="index.html">Home</a>
+        </nav>
     </header>
-    </section>
-    <div id="tSection">
-    <section id="tutorSection">
-      <h2>TutorAI </h3>
-      <h3> Build Your Personalized Learning Session </h3>
-      <h4> Learn smarter with structured explanations tailored to your level. </h4>
-      <div id="qrContainer">
-          <div id="questionContainer"></div>
-           <div id="previewContainer"></div></div>
+<div id="tSection">
+  <section id="tutorSection">
+    <div class="heroText">
+      <h2>Build Your Personalized Learning Session</h2>
+      <p>Learn smarter with structured explanations tailored to your level.</p>
+    </div>
 
-    <button id="startedBtn" >Enter</button>
-    </section>
-   
-</div>
+    <form id="tutorForm">
 
-    </main>
+      <div class="inputGroup">
+        <label for="gradeId">Grade</label>
+        <input type="number" id="gradeId" placeholder="e.g. 10" min="1" max="12" required>
+      </div>
+
+      <div class="inputGroup">
+        <label for="subjectId">Subject</label>
+        <select id="subjectId" required>
+          <option value="">Select Subject</option>
+          <option>Mathematics</option>
+          <option>Economics</option>
+          <option>Accounting</option>
+          <option>Life Science</option>
+          <option>Geography</option>
+          <option>Life Orientation</option>
+          <option>History</option>
+          <option>Mathematical Literacy</option>
+        </select>
+      </div>
+
+      <div class="inputGroup">
+        <label for="topicId">Topic</label>
+        <input type="text" id="topicId" placeholder="Enter topic (e.g. Trigonometry)" required>
+      </div>
+
+      <div class="inputGroup">
+        <label for="levelId">Difficulty Level</label>
+        <select id="levelId" required>
+          <option value="">Select Level</option>
+          <option>Beginner</option>
+          <option>Intermediate</option>
+          <option>Advanced</option>
+        </select>
+      </div>
+
+      <button type="submit" id="startedBtn" class="btn">Start Learning</button>
+
+    </form>
+  </section>
+  </div>
+
+</main>
 </body>
 </html>

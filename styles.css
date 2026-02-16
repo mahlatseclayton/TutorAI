@@ -407,48 +407,81 @@ html{
     border-radius: 100%;
     align-items: center;
 }
-
-#tutorSection{
-    display:flex;
+#tSection {
+    display: flex;
+    align-items: center;
     justify-content: center;
-    width:fit-content;
-    height:fit-content;
+    min-height: calc(100vh - 80px);
+    padding: 40px 20px;
+}
+
+
+#tutorSection {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
     flex-direction: column;
+    align-items: stretch;
     text-align: center;
-    align-items: center;
-    gap:5px;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 30px;
-    border-radius: 20px;
+    gap: 20px;
+
+    background: rgba(255, 255, 255, 0.95);
+    padding: 45px;
+    border-radius: 24px;
+
+    box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.08),
+        0 4px 10px rgba(0, 0, 0, 0.04);
+
+    backdrop-filter: blur(8px);
 }
-#tutorSection button{
-    width: fit-content;
+
+.heroText h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
 }
-#tutorSection h4{
-    font-weight: normal;
+
+.heroText p {
+    font-size: 14px;
+    color: #6b7280;
 }
-#questionContainer{
-    width:250px;
-    height:250px;
-    background-color: blue;
-}
-#previewContainer{
-    width:250px;
-    height:250px;
-    background-color: blue;
-}
-#tSection{
+
+
+#tutorForm {
     display: flex;
     flex-direction: column;
-    align-items: center;
-     height: 100vh;
-    justify-content: center;
+    gap: 18px;
 }
-#qrContainer{
-    display: flex;
-    justify-content: space-around;
-    flex: 1;
-    gap:15px;
-    flex-direction: row;
 
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
 }
+
+.inputGroup label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #374151;
+}
+
+input,
+select {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #2563eb;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
