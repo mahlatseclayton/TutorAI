@@ -743,4 +743,100 @@ select:focus {
 }
 
 
+.animation-container {
+    position: relative;
+    width: 500px;
+    height: 350px;
+    margin: 0 auto 20px;
+}
+
+.logo-wrapper {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+}
+
+
+.falling-item {
+    position: absolute;
+    font-size: 60px;
+    opacity: 0;
+    z-index: 1;
+}
+
+.book {
+    animation: fallAndPlace 1.5s ease-out forwards;
+    animation-delay: 0.2s;
+}
+
+.pen {
+    animation: fallAndPlace 1.5s ease-out forwards;
+    animation-delay: 0.6s;
+}
+
+.notebook {
+    animation: fallAndPlace 1.5s ease-out forwards;
+    animation-delay: 1s;
+}
+
+.grad-cap {
+    animation: fallAndPlace 1.5s ease-out forwards;
+    animation-delay: 1.4s;
+}
+
+.brain {
+    animation: fallAndPlace 1.5s ease-out forwards;
+    animation-delay: 1.8s;
+}
+
+@keyframes fallAndPlace {
+    0% {
+        top: -100px;
+        opacity: 0;
+        transform: translateX(-50%) rotate(-180deg) scale(0.5);
+    }
+    60% {
+        opacity: 1;
+    }
+    80% {
+        top: 320px;
+        transform: translateX(-50%) rotate(10deg) scale(1.1);
+    }
+    100% {
+        top: 310px;
+        opacity: 1;
+        transform: translateX(-50%) rotate(0deg) scale(1);
+    }
+}
+
+
+.book { left: 20%; }
+.pen { left: 32%; }
+.notebook { left: 50%; }
+.grad-cap { left: 68%; }
+.brain { left: 80%; }
+
+
+.animation-container {
+    position: relative;
+    width: 500px;
+    height: 400px; 
+    margin: 0 auto 40px; 
+}
+
+#mainSection h4 {
+    margin-top: 20px;  
+    margin-bottom: 30px;  
+}
+
+
+#mainLogo{
+    display:block;
+    padding:10px;
+    margin:10px;
+    margin-top:-70px;
+}
+
 
