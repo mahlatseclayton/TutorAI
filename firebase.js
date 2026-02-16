@@ -1,6 +1,4 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -20,5 +18,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 function signUp(){
-    
+    let name=document.getElementById("name").value;
+    let grade=document.getElementById("grade").value;
+    let email=document.getElementById("email").value;
+    let password=document.getElementById("password").value;
+    let cpassword=document.getElementById("cpassword").value;
+    if(password!=cpassword){
+        alert("Passwords do not match");
+        console.log("hey");
+    }
+    else{
+        alert("lets start working!");
+        console.log("hiiy");
+    }
 }

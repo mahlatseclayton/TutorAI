@@ -34,24 +34,35 @@
         <h2 class="signuptitle">Create Account</h2>
 
         <form class="signupform">
-            <input class="username" type="text" placeholder="Name(s)" required>
-            <input class="useremail" type="email" placeholder="Email" required>
-            <input class="grade" type="number" placeholder="Grade" required>
+            <input id="name" class="username" type="text" placeholder="Name(s)" required>
+            <input id="email" class="useremail" type="email" placeholder="Email" required>
+            <input id="grade" class="grade" type="number" placeholder="Grade" required>
             
-            <input class="userpassword" type="password" placeholder="Password" required>
-            <input class="userpassword" type="password" placeholder="Confirm Password" required>
+            <input id="password" class="userpassword" type="password" placeholder="Password" required>
+            <input id="cpassword" class="userpassword" type="password" placeholder="Confirm Password" required>
 
             <div class="formLinks">
                 <a href="signIn.html" class="forgotPassword"><b>Already have an account?</b></a>
 
             </div>
 
-            <button class="signupbtn" type="submit">Create</button>
+            <button onclick="signUp()" class="signupbtn" type="submit">Create</button>
         </form>
     </div>
 
      </section>
     </main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js"></script>
+
+<!-- Firebase Auth -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+
+
+
+    <script type="module" src="firebase.js"></script>
 </body>
-<script type="module" src="firebase.js"></script>
 </html>
