@@ -15,7 +15,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
 
 
-    <script src="firebase.js"></script>
+    <script type="module" src="firebase.js"></script>
 </head>
 <body>
        <div class="circles"></div>
@@ -57,7 +57,7 @@
 
             </div>
 
-            <button onclick="signUp()" class="signupbtn" type="submit">Create</button>
+            <button id="signUpBtn" type="button" class="signupbtn" >Create</button>
         </form>
     </div>
 
