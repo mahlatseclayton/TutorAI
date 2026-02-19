@@ -17,6 +17,7 @@ import { getAuth,
          sendEmailVerification, 
          signOut 
        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyDjNyRSkepOLHcYuK4ALI2xWibC-P849f0",
   authDomain: "tutorai-5f97d.firebaseapp.com",
@@ -46,18 +47,18 @@ async function signUp(){
     //   validation
     }
     else if(password.length<8){
-        alert("Password must be at least 8 characters.");
-    }
+        alert("Password must be at least 8 characters.");}
+    // }
 
-    else if(!/[z-Z]/.test(password)){
-        alert("Password must contain atleast one upper case");
-    }
-    else if(!/[0-9]/.test(password)){
-        alert("Password must contain atleast one number");
-    }
-    else if(!/[!@#$%^&*]/.test(password)){
-        alert("Password must contain atleast one upper case");
-    }
+    // else if(!/[z-Z]/.test(password)){
+    //     alert("Password must contain atleast one upper case");
+    // }
+    // else if(!/[0-9]/.test(password)){
+    //     alert("Password must contain atleast one number");
+    // }
+    // else if(!/[!@#$%^&*]/.test(password)){
+    //     alert("Password must contain atleast one upper case");
+    // }
     // add other validations here for security purposes
     else{
     //   signup here
