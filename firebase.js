@@ -44,21 +44,22 @@ async function signUp(){
    
     if(password!=cpassword){
         alert("Passwords do not match");
+        return;
     //   validation
     }
     else if(password.length<8){
-        alert("Password must be at least 8 characters.");}
-    // }
+        alert("Password must be at least 8 characters.");
+         return;
+    }
+    else if(!/[A-Z]/.test(password)){
+        alert("Password must contain atleast one upper case");
+         return;
+    }
+    else if(!/[0-9]/.test(password)){
+        alert("Password must contain atleast one number");
+         return;
+    }
 
-    // else if(!/[z-Z]/.test(password)){
-    //     alert("Password must contain atleast one upper case");
-    // }
-    // else if(!/[0-9]/.test(password)){
-    //     alert("Password must contain atleast one number");
-    // }
-    // else if(!/[!@#$%^&*]/.test(password)){
-    //     alert("Password must contain atleast one upper case");
-    // }
     // add other validations here for security purposes
     else{
     //   signup here
@@ -81,7 +82,8 @@ async function signUp(){
        
     }
     catch(error){
-        alert("Error creating account :",error.message);
+        alert("Error creating account ");
+        console.log(error.message);
         
     } 
     
@@ -121,10 +123,21 @@ if(signInBtn){
 // forgot password funtionality
 const forgotBtn=document.getElementById("forgotBtn");
 if(forgotBtn){
+    
 
     forgotBtn.addEventListener("click",async()=>{
          const email=document.getElementById("email").value;
-        await sendPasswordResetEmail(auth,email);
+         if(email==null || email==""){
+            alert("Email required.");
+            return;
+         }
+         try{
+await sendPasswordResetEmail(auth,email);
         alert("Reset password link sent.");
+         }catch(error){
+            alert("Error sending reset link");
+            console.log(error.message);
+         }
+        
     })
 }
