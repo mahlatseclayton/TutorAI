@@ -45,8 +45,18 @@ async function signUp(){
         alert("Passwords do not match");
     //   validation
     }
-    else if(password.length<6){
-        alert("Password must be at least 6 characters.");
+    else if(password.length<8){
+        alert("Password must be at least 8 characters.");
+    }
+
+    else if(!/[z-Z]/.test(password)){
+        alert("Password must contain atleast one upper case");
+    }
+    else if(!/[0-9]/.test(password)){
+        alert("Password must contain atleast one number");
+    }
+    else if(!/[!@#$%^&*]/.test(password)){
+        alert("Password must contain atleast one upper case");
     }
     // add other validations here for security purposes
     else{
