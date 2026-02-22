@@ -31,6 +31,19 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+function validate(){
+     const name=document.getElementById("name").value;
+    const grade=document.getElementById("grade").value;
+    const email=document.getElementById("email").value;
+    const password=document.getElementById("password").value;
+    const cpassword=document.getElementById("cpassword").value;
+    if(name==""|| grade=="" || email=="" || password=="" || cpassword==""){
+        alert("All fields are required.");
+        return false;
+    }
+    return true;
+
+}
 
 // Initialize Firebase
 
@@ -41,7 +54,7 @@ async function signUp(){
     const email=document.getElementById("email").value;
     const password=document.getElementById("password").value;
     const cpassword=document.getElementById("cpassword").value;
-   
+   if(validate()){
     if(password!=cpassword){
         alert("Passwords do not match");
         return;
@@ -88,19 +101,28 @@ async function signUp(){
     } 
     
     }
+}
 
 }
     //  make an oncliick lister for the signup button
     const signUpbtn=document.getElementById("signUpBtn");
+
 if (signUpbtn) {
-    signUpbtn.addEventListener("click", signUp);
+
+     signUpbtn.addEventListener("click", signUp);
+    
 }
 const signInBtn=document.getElementById("signInBtn");
 if(signInBtn){
     
     signInBtn.addEventListener("click",async () =>{
-         const email=document.getElementById("email").value;
+    const email=document.getElementById("email").value;
     const password=document.getElementById("password").value;
+        if(email=="" || password==""){
+        alert("All fields are required.");
+        return;
+    }
+
         try{
                const userCredential= await signInWithEmailAndPassword(auth,email,password);
                 const user=userCredential.user;
