@@ -13,6 +13,56 @@ function scrollContainer(containerId, direction, amount) {
     container.style.transform = `translateX(${currentX}px)`;
 }
 
+const tutorForm = document.getElementById("tutorForm");
+if (tutorForm) {
+    tutorForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        if (!this.checkValidity()) {
+            this.reportValidity();
+            return;
+        }
+
+        const grade = document.getElementById("gradeId").value;
+        const subject = document.getElementById("subjectId").value;
+        const topic = document.getElementById("topicId").value;
+        const level = document.getElementById("levelId").value;
+
+        localStorage.setItem("grade", grade);
+        localStorage.setItem("subject", subject);
+        localStorage.setItem("topic", topic);
+        localStorage.setItem("level", level);
+
+        window.location.href = "solutionPage.html";
+    });
+}
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const subjectEl = document.getElementById("subject");
+    const topicEl = document.getElementById("topicTitle");
+    const levelEl = document.getElementById("airesponselevel");
+    const gradeMetaEl = document.getElementById("gradeMeta");
+    const subjectMetaEl = document.getElementById("subjectMeta");
+    const levelMetaEl = document.getElementById("levelMeta");
+
+    const grade = localStorage.getItem("grade");
+    const subject = localStorage.getItem("subject");
+    const topic = localStorage.getItem("topic");
+    const level = localStorage.getItem("level");
+
+    if (subjectEl && subject) subjectEl.textContent = subject;
+    if (topicEl && topic) topicEl.textContent = topic;
+    if (levelEl && level) levelEl.textContent = level + " Level";
+
+    if (gradeMetaEl && grade) gradeMetaEl.textContent = grade;
+    if (subjectMetaEl && subject) subjectMetaEl.textContent = subject;
+    if (levelMetaEl && level) levelMetaEl.textContent = level;
+});
+
+
+
+
+
 function Start(){
 
     window.location.href="signUp.html";
