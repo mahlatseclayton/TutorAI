@@ -142,6 +142,7 @@ if(signInBtn){
 
     })
 }
+
 // forgot password funtionality
 const forgotBtn=document.getElementById("forgotBtn");
 if(forgotBtn){
@@ -162,4 +163,96 @@ await sendPasswordResetEmail(auth,email);
          }
         
     })
+}
+// getting topic from ai
+async function getTopic(){
+    console.log("hi");
+    const grade=document.querySelector("#gradeId").value;
+    const topic=document.querySelector("#topicId").value;
+     const subject=document.querySelector("#gradeId").value;
+    const level=document.querySelector("#levelId").value;
+    const prompt = `
+YOU ARE AN ADVANCED EDUCATIONAL TUTOR AI.
+
+TASK:
+GENERATE STRUCTURED LEARNING CONTENT.
+
+STRICT RULES:
+- RETURN ONLY VALID JSON.
+- DO NOT RETURN PLAIN TEXT.
+- DO NOT ADD EXPLANATIONS OUTSIDE JSON.
+- ALL TEXT INSIDE THE JSON MUST BE IN FULL UPPERCASE.
+- EVEN SENTENCES, HEADINGS, QUESTIONS MUST BE IN CAPS.
+
+STRUCTURE:
+
+{
+  "SUBJECT": "${subject.toUpperCase()}",
+  "TOPIC": "${topic.toUpperCase()}",
+  "GRADE": "${grade.toUpperCase()}",
+  "LEVEL": "${level.toUpperCase()}",
+
+  "OVERVIEW": "SHORT INTRODUCTION IN CAPS.",
+
+  "EXPLANATION": "DETAILED STEP BY STEP EXPLANATION IN CAPS.",
+
+  "EXAMPLES": [
+    {
+      "TITLE": "EXAMPLE 1",
+      "SOLUTION": "WORKED SOLUTION IN CAPS WITH STEPS"
+    }
+  ],
+
+  "VIDEOS": [
+    {
+      "TITLE": "VIDEO TITLE IN CAPS",
+      "URL": "YOUTUBE LINK"
+    }
+  ],
+
+  "PRACTICE": {
+    "EASY": ["QUESTION IN CAPS"],
+    "MEDIUM": ["QUESTION IN CAPS"],
+    "HARD": ["QUESTION IN CAPS"]
+  }
+}
+
+LEVEL GUIDELINES:
+- BEGINNER → SIMPLE DEFINITIONS + SIMPLE EXAMPLES
+- INTERMEDIATE → INCLUDE FORMULAS + EXPLANATION
+- ADVANCED → INCLUDE DEEP REASONING + PROBLEM SOLVING
+
+TOPIC:
+${topic}
+
+SUBJECT:
+${subject}
+
+GRADE:
+${grade}
+
+LEVEL:
+${level}
+`;
+// this method calls the cloud function 
+ const response = await fetch(
+    "https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: prompt
+      })
+    }
+  );
+
+  const data = await response.json();
+  console.log(data);
+
+}
+const startedBtn=document.querySelector("#startedBtn");
+if(startedBtn){
+startedBtn.addEventListener("click",getTopic);
 }

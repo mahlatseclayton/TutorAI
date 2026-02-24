@@ -32,7 +32,7 @@ if (tutorForm) {
         localStorage.setItem("topic", topic);
         localStorage.setItem("level", level);
 
-        window.location.href = "solutionPage.html";
+      
     });
 }
 
@@ -60,17 +60,9 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
-
-
-
 function Start(){
 
     window.location.href="signUp.html";
 
 }
-function Login(){
-     window.location.href="mainPage.html";
-}
-function solution(){
-    window.location.href="solutionPage.html";
-}
+
