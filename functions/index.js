@@ -1,23 +1,19 @@
 const { setGlobalOptions } = require("firebase-functions");
 const functions = require("firebase-functions");
 const axios = require("axios");
+const express = require('express');
+const cors = require('cors');
 
+const app = express();
 
-exports.topicTutor = functions.https.onRequest(async (req, res) => {
-  res.set('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type');
-  
-  if (req.method === 'OPTIONS') {
-    res.status(204).send('');
-    return;
-  }
-  
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
-  }
-  
+// Enable CORS for all routes
+app.use(cors({ origin: true }));
+
+// Parse JSON bodies
+app.use(express.json());
+
+// Your endpoint
+app.post('/', async (req, res) => {
   try {
     const userPrompt = req.body.message;
 
@@ -57,3 +53,6 @@ exports.topicTutor = functions.https.onRequest(async (req, res) => {
     });
   }
 });
+
+// Export the Express app as a Firebase Function
+exports.topicTutor = functions.https.onRequest(app);
