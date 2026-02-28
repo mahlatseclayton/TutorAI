@@ -169,7 +169,7 @@ async function getTopic(){
     console.log("hi");
     const grade=document.querySelector("#gradeId").value;
     const topic=document.querySelector("#topicId").value;
-     const subject=document.querySelector("#gradeId").value;
+     const subject=document.querySelector("#subjectId").value;
     const level=document.querySelector("#levelId").value;
     const prompt = `
 YOU ARE AN ADVANCED EDUCATIONAL TUTOR AI.
@@ -235,18 +235,32 @@ LEVEL:
 ${level}
 `;
 // this method calls the cloud function 
- const response = await fetch(
-    "https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: prompt
-      })
-    }
-  );
+const response = await fetch(
+  "https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: prompt
+    })
+  }
+);
+
+console.log("Status:", response.status);
+
+const text = await response.text(); 
+console.log("Raw response:", text);
+
+let data1;
+
+try {
+  data1= JSON.parse(text);
+  console.log("Parsed:", data1);
+} catch (err) {
+  console.error("Not JSON:", text);
+}
 
   const data = await response.json();
   console.log(data);
