@@ -1,79 +1,54 @@
-const { setGlobalOptions } = require("firebase-functions");
 const functions = require("firebase-functions");
-const axios = require("axios");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-exports.topicTutor = functions.https.onRequest(async (req, res) => {
+const { onRequest } = require("firebase-functions/v2/https");
 
-  console.log("🔥 Function triggered");
-  console.log("➡ Method:", req.method);
-  console.log("➡ Headers:", req.headers);
+exports.topicTutor = onRequest(
+  { secrets: ["GEMINI_API_KEY"] },
+  async (req, res) => {
 
-  // Set CORS headers
+//  used to fix cores issus and allow the function to be called from the frontend ....also in cloud functions turn on permissions for all users to call the function
+// make sure the node js versions corresponds to the one in package.json and the one supported by firebase functions and thats how i fixed cores issueafter trying many things
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.set("Access-Control-Max-Age", "3600");
 
-
-// Handle preflight
-if (req.method === "OPTIONS") {
-  console.log("✅ OPTIONS preflight received");
-  return res.status(204).send("");
-}
+  if (req.method === "OPTIONS") {
+    return res.status(204).send("");
+  }
 
   try {
-
-    console.log("📦 Request Body:", req.body);
 
     const userPrompt = req.body?.message;
 
     if (!userPrompt) {
-      console.log("❌ No prompt provided");
-      return res.status(400).json({ error: "NO_PROMPT_PROVIDED" });
+      return res.status(400).json({
+        success: false,
+        error: "NO_PROMPT_PROVIDED"
+      });
     }
 
-    console.log("💬 User Prompt Received:", userPrompt);
+    
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    console.log("API KEY EXISTS:", !!process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash"
+    });
 
-    const apiKey = process.env.OPENAI_KEY;
-
-    if (!apiKey) {
-      console.log("❌ Missing OpenAI API Key");
-    }
-
-    console.log("🚀 Sending request to OpenAI...");
-
-    const response = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: userPrompt }],
-        temperature: 0.7
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
-    console.log("✅ OpenAI Response Received");
+    const result = await model.generateContent(userPrompt);
+    const responseText = result.response.text();
 
     return res.status(200).json({
       success: true,
-      aiResponse: response.data.choices?.[0]?.message?.content
+      aiResponse: responseText
     });
 
   } catch (error) {
 
-    console.error("🔥 ERROR OCCURRED:");
-    console.error("Message:", error.message);
-    console.error("Response Data:", error.response?.data);
-    console.error("Status:", error.response?.status);
-
     return res.status(500).json({
       success: false,
-      error: error.message
+      error: "AI_GENERATION_FAILED"
     });
   }
 });
