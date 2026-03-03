@@ -1,26 +1,23 @@
 const { setGlobalOptions } = require("firebase-functions");
 const functions = require("firebase-functions");
 const axios = require("axios");
-const express = require('express');
-const cors = require('cors');
 
-const app = express();
+exports.topicTutor = functions.https.onRequest(async (req, res) => {
 
-// Enable CORS for all routes
-app.use(cors({ origin: true }));
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-// Parse JSON bodies
-app.use(express.json());
+// v2
+  if (req.method === 'OPTIONS') {
+    return res.status(204).send('');
+  }
 
-// Your endpoint
-app.post('/', async (req, res) => {
   try {
-    const userPrompt = req.body.message;
+    const userPrompt = req.body?.message;
 
     if (!userPrompt) {
-      return res.status(400).json({
-        error: "NO_PROMPT_PROVIDED"
-      });
+      return res.status(400).json({ error: "NO_PROMPT_PROVIDED" });
     }
 
     const apiKey = process.env.OPENAI_KEY;
@@ -53,6 +50,3 @@ app.post('/', async (req, res) => {
     });
   }
 });
-
-// Export the Express app as a Firebase Function
-exports.topicTutor = functions.https.onRequest(app);
