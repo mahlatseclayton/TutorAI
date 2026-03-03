@@ -166,7 +166,7 @@ await sendPasswordResetEmail(auth,email);
 }
 // getting topic from ai
 async function getTopic(){
-    console.log("hi");
+    
     const grade=document.querySelector("#gradeId").value;
     const topic=document.querySelector("#topicId").value;
      const subject=document.querySelector("#subjectId").value;
