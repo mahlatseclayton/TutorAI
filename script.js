@@ -32,6 +32,8 @@ if (tutorForm) {
         localStorage.setItem("topic", topic);
         localStorage.setItem("level", level);
 
+         window.location.href = "solutionPage.html";
+
       
     });
 }
