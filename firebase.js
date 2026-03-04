@@ -176,7 +176,7 @@ async function getTopic(){
     const topic=document.querySelector("#topicId").value;
      const subject=document.querySelector("#subjectId").value;
     const level=document.querySelector("#levelId").value;
-     localStorage.setItem("aiResponse", responseToStore);    
+     
         localStorage.setItem("grade", grade);
         localStorage.setItem("subject", subject);
         localStorage.setItem("topic", topic);
@@ -260,7 +260,7 @@ const response = await fetch(
                 ? data.aiResponse 
                 : JSON.stringify(data.aiResponse);
                 
-           
+           localStorage.setItem("aiResponse", responseToStore);    
             window.location.href = "solutionPage.html";
         } else {
             console.error("Invalid response format:", data);
@@ -275,7 +275,12 @@ const response = await fetch(
 }
 const startedBtn=document.querySelector("#startedBtn");
 if(startedBtn){
-startedBtn.addEventListener("click",getTopic);
+startedBtn.addEventListener("click",async(event)=>{
+      event.preventDefault();
+      startedBtn.disabled = true;
+await getTopic();
+startedBtn.disabled = false;
+});
 }
 async function handleResponse() {
     const stored = localStorage.getItem("aiResponse");
