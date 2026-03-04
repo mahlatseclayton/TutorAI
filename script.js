@@ -32,7 +32,7 @@ if (tutorForm) {
         localStorage.setItem("topic", topic);
         localStorage.setItem("level", level);
 
-         window.location.href = "solutionPage.html";
+        //  window.location.href = "solutionPage.html";
 
       
     });
@@ -104,5 +104,5 @@ async function loadVideos(){
 
 }
 
-window.addEventListener("DOMContentLoaded", loadVideos);
+// window.addEventListener("DOMContentLoaded", loadVideos);
 

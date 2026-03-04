@@ -87,17 +87,3 @@ exports.YT_VIDEOS = functions.https.onRequest(
 );
 
 
-// just checking whether i hid the right key
-// const functions = require("firebase-functions");
-
-// your function
-// exports.testSecret = functions.https.onRequest(
-//   {
-//     secrets: ["YOUTUBE_API_KEY"],  // attach your secret here
-//   },
-//   (req, res) => {
-//     const apiKey = process.env.YOUTUBE_API_KEY; // must match the secret name
-//     console.log("YOUTUBE_API_KEY:", apiKey);
-//     res.send("Check backend logs!");
-//   }
-// );
