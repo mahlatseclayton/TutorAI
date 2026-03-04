@@ -889,3 +889,23 @@ select:focus {
     font-size: 14px;
   }
 
+
+  /* styling videos frames */
+#videosContent {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* responsive columns */
+  justify-content: center;   /* centers the whole grid within the container */
+  gap: 20px;
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 800px;
+  width: 100%;
+}
+
+.yt-videos {
+  width: 300px;       /* fixed video width */
+  aspect-ratio: 16/9;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}

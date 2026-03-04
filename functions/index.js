@@ -52,3 +52,52 @@ exports.topicTutor = onRequest(
     });
   }
 });
+
+
+//fetches API from cloud
+
+const cors = require("cors")({ origin: true });
+exports.YT_VIDEOS = functions.https.onRequest(
+  {
+    secrets: ["YOUTUBE_API_KEY"],
+  },
+  (req, res) => {
+    cors(req, res, async () => {  // wrap your code inside cors
+      try {
+        const apiKey = process.env.YOUTUBE_API_KEY;
+        const heading = req.query.heading || "Default Topic";
+
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=4&q=${encodeURIComponent(heading)}&key=${apiKey}`
+        );
+
+        const data = await response.json();
+        const videos = data.items.map(item => ({
+          id: item.id.videoId,
+          title: item.snippet.title
+        }));
+
+        res.json(videos);
+      } catch (error) {
+        console.error("Error fetching from YouTube API:", error);
+        res.status(500).send("Failed to fetch videos");
+      }
+    });
+  }
+);
+
+
+// just checking whether i hid the right key
+// const functions = require("firebase-functions");
+
+// your function
+// exports.testSecret = functions.https.onRequest(
+//   {
+//     secrets: ["YOUTUBE_API_KEY"],  // attach your secret here
+//   },
+//   (req, res) => {
+//     const apiKey = process.env.YOUTUBE_API_KEY; // must match the secret name
+//     console.log("YOUTUBE_API_KEY:", apiKey);
+//     res.send("Check backend logs!");
+//   }
+// );

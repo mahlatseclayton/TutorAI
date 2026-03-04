@@ -66,3 +66,41 @@ function Start(){
 
 }
 
+
+
+async function loadVideos(){
+
+
+    const sHeading=document.getElementById("topicTitle").innerText;
+    const vidContainer=document.getElementById("videosSection");
+    vidContainer.innerHTML="";
+    const response=await fetch(`https://us-central1-tutorai-5f97d.cloudfunctions.net/YT_VIDEOS?heading=${encodeURIComponent(sHeading)}`);
+    const videos=await response.json();
+    const heading=document.createElement("h2");
+    vidContainer.appendChild(heading);
+    heading.style.textAlign="center";
+
+    videos.forEach(video=>{
+        const iframe=document.createElement("iframe");
+      
+        heading.innerText="Recommended Videos"
+        iframe.classList.add("yt-videos");
+        iframe.src = `https://www.youtube.com/embed/${video.id}`;
+        iframe.title = video.title;
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        iframe.allowFullscreen = true;
+   
+        iframe.frameBorder=1;
+   
+        vidContainer.appendChild(iframe);
+      
+
+    }
+     
+
+    )
+
+}
+
+window.addEventListener("DOMContentLoaded", loadVideos);
+
