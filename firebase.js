@@ -176,6 +176,12 @@ async function getTopic(){
     const topic=document.querySelector("#topicId").value;
      const subject=document.querySelector("#subjectId").value;
     const level=document.querySelector("#levelId").value;
+     localStorage.setItem("aiResponse", responseToStore);    
+        localStorage.setItem("grade", grade);
+        localStorage.setItem("subject", subject);
+        localStorage.setItem("topic", topic);
+        localStorage.setItem("level", level);
+        console.log("stored details");
     const prompt = `
 YOU ARE AN ADVANCED EDUCATIONAL TUTOR AI.
 
@@ -254,22 +260,7 @@ const response = await fetch(
                 ? data.aiResponse 
                 : JSON.stringify(data.aiResponse);
                 
-            localStorage.setItem("aiResponse", responseToStore);    
-        e.preventDefault();
-        if (!this.checkValidity()) {
-            this.reportValidity();
-            return;
-        }
-
-        const grade = document.getElementById("gradeId").value;
-        const subject = document.getElementById("subjectId").value;
-        const topic = document.getElementById("topicId").value;
-        const level = document.getElementById("levelId").value;
-
-        localStorage.setItem("grade", grade);
-        localStorage.setItem("subject", subject);
-        localStorage.setItem("topic", topic);
-        localStorage.setItem("level", level);
+           
             window.location.href = "solutionPage.html";
         } else {
             console.error("Invalid response format:", data);
@@ -280,9 +271,6 @@ const response = await fetch(
         alert("Error fetching topic. Please try again.");
     }
   
- 
-
-
 
 }
 const startedBtn=document.querySelector("#startedBtn");
@@ -291,16 +279,18 @@ startedBtn.addEventListener("click",getTopic);
 }
 async function handleResponse() {
     const stored = localStorage.getItem("aiResponse");
-    console.log("Stored AI Response:", stored);
     
     if (stored) {
         const cleaned = stored.replace(/```json|```/g, '').trim();
         const aiResponse = JSON.parse(cleaned);
         const explanationContent = aiResponse.EXPLANATION;
         const overviewContent = aiResponse.OVERVIEW;
-        
-        overView.innerText = overviewContent;
+        if(overView &&  aiResponse.OVERVIEW){
+                   overView.innerText = overviewContent;
+        }
+        if(explanation && aiResponse.EXPLANATION){
         explanation.innerText = explanationContent;
+        }
         
 
       const examplesContainer=document.getElementById("examplesContent");
@@ -373,11 +363,7 @@ const practiceContainer=document.getElementById("practiceContent");
 }
 
 
-
-
 window.addEventListener("DOMContentLoaded",handleResponse);
-
-
 
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -403,38 +389,33 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
-async function loadVideos(){
 
-
-    const sHeading=document.getElementById("topicTitle").innerText;
-    const vidContainer=document.getElementById("videosSection");
-    vidContainer.innerHTML="";
-    const response=await fetch(`https://us-central1-tutorai-5f97d.cloudfunctions.net/YT_VIDEOS?heading=${encodeURIComponent(sHeading)}`);
-    const videos=await response.json();
-    const heading=document.createElement("h2");
+async function loadVideos() {
+    const topicTitle = document.getElementById("topicTitle");
+    if (!topicTitle) return;
+    
+    const sHeading = topicTitle.innerText;
+    const vidContainer = document.getElementById("videosSection");
+    if (!vidContainer) return;
+    
+    vidContainer.innerHTML = "";
+    const response = await fetch(`https://us-central1-tutorai-5f97d.cloudfunctions.net/YT_VIDEOS?heading=${encodeURIComponent(sHeading)}`);
+    const videos = await response.json();
+    const heading = document.createElement("h2");
+    heading.style.textAlign = "center";
+    heading.innerText = "Recommended Videos";
     vidContainer.appendChild(heading);
-    heading.style.textAlign="center";
 
-    videos.forEach(video=>{
-        const iframe=document.createElement("iframe");
-      
-        heading.innerText="Recommended Videos"
+    videos.forEach(video => {
+        const iframe = document.createElement("iframe");
         iframe.classList.add("yt-videos");
         iframe.src = `https://www.youtube.com/embed/${video.id}`;
         iframe.title = video.title;
         iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
         iframe.allowFullscreen = true;
-   
-        iframe.frameBorder=1;
-   
+        iframe.frameBorder = 1;
         vidContainer.appendChild(iframe);
-      
-
-    }
-     
-
-    )
-
+    });
 }
 
 window.addEventListener("DOMContentLoaded", loadVideos);
