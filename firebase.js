@@ -44,6 +44,11 @@ function validate(){
     return true;
 
 }
+// define id's for the input fields and buttons and add event listeners to them
+const overView=document.getElementById("overviewContent");
+const explanation=document.getElementById("explanationContent");
+
+
 
 // Initialize Firebase
 
@@ -171,6 +176,12 @@ async function getTopic(){
     const topic=document.querySelector("#topicId").value;
      const subject=document.querySelector("#subjectId").value;
     const level=document.querySelector("#levelId").value;
+     
+        localStorage.setItem("grade", grade);
+        localStorage.setItem("subject", subject);
+        localStorage.setItem("topic", topic);
+        localStorage.setItem("level", level);
+        console.log("stored details");
     const prompt = `
 YOU ARE AN ADVANCED EDUCATIONAL TUTOR AI.
 
@@ -203,12 +214,6 @@ STRUCTURE:
     }
   ],
 
-  "VIDEOS": [
-    {
-      "TITLE": "VIDEO TITLE IN CAPS",
-      "URL": "YOUTUBE LINK"
-    }
-  ],
 
   "PRACTICE": {
     "EASY": ["QUESTION IN CAPS"],
@@ -248,25 +253,175 @@ const response = await fetch(
   }
 );
 
-console.log("Status:", response.status);
-
-const text = await response.text(); 
-console.log("Raw response:", text);
-
-let data1;
-
-try {
-  data1= JSON.parse(text);
-  console.log("Parsed:", data1);
-} catch (err) {
-  console.error("Not JSON:", text);
-}
-
-  const data = await response.json();
-  console.log(data);
+   const data = await response.json();
+        try{
+        if (data && data.aiResponse) {
+            const responseToStore = typeof data.aiResponse === 'string' 
+                ? data.aiResponse 
+                : JSON.stringify(data.aiResponse);
+                
+           localStorage.setItem("aiResponse", responseToStore);    
+            window.location.href = "solutionPage.html";
+        } else {
+            console.error("Invalid response format:", data);
+            alert("Error: Invalid response from server");
+        }
+    } catch (error) {
+        console.error("Error in getTopic:", error);
+        alert("Error fetching topic. Please try again.");
+    }
+  
 
 }
 const startedBtn=document.querySelector("#startedBtn");
 if(startedBtn){
-startedBtn.addEventListener("click",getTopic);
+startedBtn.addEventListener("click",async(event)=>{
+      event.preventDefault();
+      startedBtn.disabled = true;
+await getTopic();
+startedBtn.disabled = false;
+});
 }
+async function handleResponse() {
+    const stored = localStorage.getItem("aiResponse");
+    
+    if (stored) {
+        const cleaned = stored.replace(/```json|```/g, '').trim();
+        const aiResponse = JSON.parse(cleaned);
+        const explanationContent = aiResponse.EXPLANATION;
+        const overviewContent = aiResponse.OVERVIEW;
+        if(overView &&  aiResponse.OVERVIEW){
+                   overView.innerText = overviewContent;
+        }
+        if(explanation && aiResponse.EXPLANATION){
+        explanation.innerText = explanationContent;
+        }
+        
+
+      const examplesContainer=document.getElementById("examplesContent");
+const practiceContainer=document.getElementById("practiceContent");
+        if (examplesContainer && aiResponse.EXAMPLES) {
+            let examplesHtml = '';
+            aiResponse.EXAMPLES.forEach(example => {
+                examplesHtml += `
+                    <div style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px;">
+                        <h3 style="color: #2c3e50; margin-top: 0;">${example.TITLE}</h3>
+                        <p style="white-space: pre-line; line-height: 1.6;">${example.SOLUTION}</p>
+                    </div>
+                `;
+            });
+            examplesContainer.innerHTML = examplesHtml;
+        }
+        
+    
+        if (practiceContainer && aiResponse.PRACTICE) {
+            let practiceHtml = '';
+            
+            if (aiResponse.PRACTICE.EASY) {
+                practiceHtml += `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #27ae60;">EASY</h3>
+                        <ul style="list-style-type: none; padding: 0;">
+                            ${aiResponse.PRACTICE.EASY.map(q => `
+                                <li style="margin-bottom: 10px; padding: 10px; background-color: #e8f5e9; border-radius: 5px;">
+                                    ${q}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (aiResponse.PRACTICE.MEDIUM) {
+                practiceHtml += `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #e67e22;">MEDIUM</h3>
+                        <ul style="list-style-type: none; padding: 0;">
+                            ${aiResponse.PRACTICE.MEDIUM.map(q => `
+                                <li style="margin-bottom: 10px; padding: 10px; background-color: #ffeed9; border-radius: 5px;">
+                                    ${q}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (aiResponse.PRACTICE.HARD) {
+                practiceHtml += `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #c0392b;">HARD</h3>
+                        <ul style="list-style-type: none; padding: 0;">
+                            ${aiResponse.PRACTICE.HARD.map(q => `
+                                <li style="margin-bottom: 10px; padding: 10px; background-color: #f9e1e1; border-radius: 5px;">
+                                    ${q}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            practiceContainer.innerHTML = practiceHtml;
+        }
+    }
+}
+
+
+window.addEventListener("DOMContentLoaded",handleResponse);
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const subjectEl = document.getElementById("subject");
+    const topicEl = document.getElementById("topicTitle");
+    const levelEl = document.getElementById("airesponselevel");
+    const gradeMetaEl = document.getElementById("gradeMeta");
+    const subjectMetaEl = document.getElementById("subjectMeta");
+    const levelMetaEl = document.getElementById("levelMeta");
+
+    const grade = localStorage.getItem("grade");
+    const subject = localStorage.getItem("subject");
+    const topic = localStorage.getItem("topic");
+    const level = localStorage.getItem("level");
+
+    if (subjectEl && subject) subjectEl.textContent = subject;
+    if (topicEl && topic) topicEl.textContent = topic;
+    if (levelEl && level) levelEl.textContent = level + " Level";
+
+    if (gradeMetaEl && grade) gradeMetaEl.textContent = grade;
+    if (subjectMetaEl && subject) subjectMetaEl.textContent = subject;
+    if (levelMetaEl && level) levelMetaEl.textContent = level;
+});
+
+
+
+async function loadVideos() {
+    const topicTitle = document.getElementById("topicTitle");
+    if (!topicTitle) return;
+    
+    const sHeading = topicTitle.innerText;
+    const vidContainer = document.getElementById("videosSection");
+    if (!vidContainer) return;
+    
+    vidContainer.innerHTML = "";
+    const response = await fetch(`https://us-central1-tutorai-5f97d.cloudfunctions.net/YT_VIDEOS?heading=${encodeURIComponent(sHeading)}`);
+    const videos = await response.json();
+    const heading = document.createElement("h2");
+    heading.style.textAlign = "center";
+    heading.innerText = "Recommended Videos";
+    vidContainer.appendChild(heading);
+
+    videos.forEach(video => {
+        const iframe = document.createElement("iframe");
+        iframe.classList.add("yt-videos");
+        iframe.src = `https://www.youtube.com/embed/${video.id}`;
+        iframe.title = video.title;
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        iframe.allowFullscreen = true;
+        iframe.frameBorder = 1;
+        vidContainer.appendChild(iframe);
+    });
+}
+
+window.addEventListener("DOMContentLoaded", loadVideos);
+
