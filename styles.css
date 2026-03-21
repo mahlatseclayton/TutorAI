@@ -797,85 +797,6 @@ select:focus {
 }
 
 
-/* .falling-item {
-    position: absolute;
-    font-size: 60px;
-    opacity: 0;
-    z-index: 1;
-}
-
-.book {
-    animation: fallAndPlace 1.5s ease-out forwards;
-    animation-delay: 0.2s;
-}
-
-.pen {
-    animation: fallAndPlace 1.5s ease-out forwards;
-    animation-delay: 0.6s;
-}
-
-.notebook {
-    animation: fallAndPlace 1.5s ease-out forwards;
-    animation-delay: 1s;
-}
-
-.grad-cap {
-    animation: fallAndPlace 1.5s ease-out forwards;
-    animation-delay: 1.4s;
-}
-
-.brain {
-    animation: fallAndPlace 1.5s ease-out forwards;
-    animation-delay: 1.8s;
-}
-
-@keyframes fallAndPlace {
-    0% {
-        top: -100px;
-        opacity: 0;
-        transform: translateX(-50%) rotate(-180deg) scale(0.5);
-    }
-    60% {
-        opacity: 1;
-    }
-    80% {
-        top: 320px;
-        transform: translateX(-50%) rotate(10deg) scale(1.1);
-    }
-    100% {
-        top: 310px;
-        opacity: 1;
-        transform: translateX(-50%) rotate(0deg) scale(1);
-    }
-}
-
-
-.book { left: 20%; }
-.pen { left: 32%; }
-.notebook { left: 50%; }
-.grad-cap { left: 68%; }
-.brain { left: 80%; }
-
-
-.animation-container {
-    position: relative;
-    width: 500px;
-    height: 400px; 
-    margin: 0 auto 40px; 
-}
-
-#mainSection h4 {
-    margin-top: 20px;  
-    margin-bottom: 30px;  
-}
-
-
-#mainLogo{
-    display:block;
-    padding:10px;
-    margin:10px;
-    margin-top:-70px;
-} */
 
 /* Subjects cards */
 
@@ -930,53 +851,23 @@ select:focus {
 
 
   /* styling videos frames */
+/* Container for all videos */
 #videosContent {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 30px;
-  padding: 10px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* responsive columns */
+  justify-content: center;   /* centers the whole grid within the container */
+  gap: 20px;
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 800px;
   width: 100%;
 }
 
+/* Individual video cards */
 .yt-videos {
-  width: 100%;
-  max-width: 650px;
+  width: 300px;       /* fixed video width */
   aspect-ratio: 16/9;
-  border: none;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.yt-videos:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-}
-
-/* Loader Overlay Styles */
-#loaderOverlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    z-index: 9999;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.spinner {
-    width: 60px;
-    height: 60px;
-    border: 6px solid rgba(79, 70, 229, 0.2);
-    border-top-color: #4f46e5;
-    border-radius: 50%;
-    animation: spin 1s infinite linear;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
