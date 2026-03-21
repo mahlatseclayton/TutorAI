@@ -192,40 +192,42 @@ STRICT RULES:
 - RETURN ONLY VALID JSON.
 - DO NOT RETURN PLAIN TEXT.
 - DO NOT ADD EXPLANATIONS OUTSIDE JSON.
-- ALL TEXT INSIDE THE JSON MUST BE IN FULL UPPERCASE.
-- EVEN SENTENCES, HEADINGS, QUESTIONS MUST BE IN CAPS.
+- ALL LONG TEXT FIELDS MUST USE FORMATTED MARKDOWN.
+- FOR MATH & EQUATIONS, YOU MUST USE LATEX COMPATIBLE WITH MATHJAX.
+- INLINE MATH MUST BE WRAPPED IN \\\\( and \\\\). Example: "\\\\( x^2 \\\\)".
+- BLOCK/DISPLAY MATH MUST BE WRAPPED IN \\\\[ and \\\\] or $$ and $$. Example: "\\\\[ E=mc^2 \\\\]".
+- REMEMBER YOU ARE WRITING INSIDE A JSON STRING: ALWAYS DOUBLE-ESCAPE BACKSLASHES! Single backslashes will break JSON.parse!
+- ENSURE YOUR JSON STRINGS ESCAPE NEWLINES AND QUOTES CORRECTLY.
 
-STRUCTURE:
-
+STRUCTURE AS VALID JSON:
 {
-  "SUBJECT": "${subject.toUpperCase()}",
-  "TOPIC": "${topic.toUpperCase()}",
-  "GRADE": "${grade.toUpperCase()}",
-  "LEVEL": "${level.toUpperCase()}",
+  "SUBJECT": "${subject}",
+  "TOPIC": "${topic}",
+  "GRADE": "${grade}",
+  "LEVEL": "${level}",
 
-  "OVERVIEW": "SHORT INTRODUCTION IN CAPS.",
+  "OVERVIEW": "Detailed introductory Markdown text.",
 
-  "EXPLANATION": "DETAILED STEP BY STEP EXPLANATION IN CAPS.",
+  "EXPLANATION": "Extensive Markdown containing step-by-step explanations, lists, and LaTeX math equations (\\\\( e=mc^2 \\\\)).",
 
   "EXAMPLES": [
     {
-      "TITLE": "EXAMPLE 1",
-      "SOLUTION": "WORKED SOLUTION IN CAPS WITH STEPS"
+      "TITLE": "Example 1",
+      "SOLUTION": "Step-by-step Markdown solution with LaTeX formulas."
     }
   ],
 
-
   "PRACTICE": {
-    "EASY": ["QUESTION IN CAPS"],
-    "MEDIUM": ["QUESTION IN CAPS"],
-    "HARD": ["QUESTION IN CAPS"]
+    "EASY": ["Markdown Question 1 with \\\\( math \\\\)"],
+    "MEDIUM": ["Markdown Question 1"],
+    "HARD": ["Markdown Question 1"]
   }
 }
 
 LEVEL GUIDELINES:
-- BEGINNER → SIMPLE DEFINITIONS + SIMPLE EXAMPLES
-- INTERMEDIATE → INCLUDE FORMULAS + EXPLANATION
-- ADVANCED → INCLUDE DEEP REASONING + PROBLEM SOLVING
+- BEGINNER → Simple definitions + simple examples.
+- INTERMEDIATE → Include formulas + deep explanation.
+- ADVANCED → Include deep reasoning + detailed proofs.
 
 TOPIC:
 ${topic}
@@ -310,81 +312,62 @@ async function handleResponse() {
     if (stored) {
         const cleaned = stored.replace(/```json|```/g, '').trim();
         const aiResponse = JSON.parse(cleaned);
-        const explanationContent = aiResponse.EXPLANATION;
-        const overviewContent = aiResponse.OVERVIEW;
-        if(overView &&  aiResponse.OVERVIEW){
-                   overView.innerText = overviewContent;
+        
+        // We use marked.parse() to safely output Markdown rich text natively as HTML
+        if(overView && aiResponse.OVERVIEW){
+            overView.innerHTML = marked.parse(aiResponse.OVERVIEW);
         }
         if(explanation && aiResponse.EXPLANATION){
-        explanation.innerText = explanationContent;
+            explanation.innerHTML = marked.parse(aiResponse.EXPLANATION);
         }
-        
 
-      const examplesContainer=document.getElementById("examplesContent");
-const practiceContainer=document.getElementById("practiceContent");
+        const examplesContainer=document.getElementById("examplesContent");
+        const practiceContainer=document.getElementById("practiceContent");
+        
         if (examplesContainer && aiResponse.EXAMPLES) {
             let examplesHtml = '';
             aiResponse.EXAMPLES.forEach(example => {
                 examplesHtml += `
-                    <div style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px;">
-                        <h3 style="color: #2c3e50; margin-top: 0;">${example.TITLE}</h3>
-                        <p style="white-space: pre-line; line-height: 1.6;">${example.SOLUTION}</p>
+                    <div style="margin-bottom: 20px; padding: 25px; background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
+                        <h3 style="color: #1f2937; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px;">${example.TITLE}</h3>
+                        <div class="md-content" style="line-height: 1.7; font-size: 15px; color: #374151;">${marked.parse(example.SOLUTION)}</div>
                     </div>
                 `;
             });
             examplesContainer.innerHTML = examplesHtml;
         }
-        
     
         if (practiceContainer && aiResponse.PRACTICE) {
             let practiceHtml = '';
             
-            if (aiResponse.PRACTICE.EASY) {
-                practiceHtml += `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #27ae60;">EASY</h3>
-                        <ul style="list-style-type: none; padding: 0;">
-                            ${aiResponse.PRACTICE.EASY.map(q => `
-                                <li style="margin-bottom: 10px; padding: 10px; background-color: #e8f5e9; border-radius: 5px;">
-                                    ${q}
+            const renderPracticeLevel = (title, items, color, bg) => {
+                if (!items || items.length === 0) return '';
+                return `
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: ${color}; margin-bottom: 15px;">${title}</h3>
+                        <ul style="list-style-type: none; padding: 0; display: flex; flex-direction: column; gap: 12px;">
+                            ${items.map(q => `
+                                <li style="padding: 16px 20px; background: ${bg}; border-radius: 12px; font-weight: 500; font-size: 15px; color: ${color}; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                    ${marked.parseInline(q)}
                                 </li>
                             `).join('')}
                         </ul>
                     </div>
                 `;
-            }
-            
-            if (aiResponse.PRACTICE.MEDIUM) {
-                practiceHtml += `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #e67e22;">MEDIUM</h3>
-                        <ul style="list-style-type: none; padding: 0;">
-                            ${aiResponse.PRACTICE.MEDIUM.map(q => `
-                                <li style="margin-bottom: 10px; padding: 10px; background-color: #ffeed9; border-radius: 5px;">
-                                    ${q}
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
-            
-            if (aiResponse.PRACTICE.HARD) {
-                practiceHtml += `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #c0392b;">HARD</h3>
-                        <ul style="list-style-type: none; padding: 0;">
-                            ${aiResponse.PRACTICE.HARD.map(q => `
-                                <li style="margin-bottom: 10px; padding: 10px; background-color: #f9e1e1; border-radius: 5px;">
-                                    ${q}
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                `;
-            }
+            };
+
+            practiceHtml += renderPracticeLevel('EASY', aiResponse.PRACTICE.EASY, '#059669', '#d1fae5');
+            practiceHtml += renderPracticeLevel('MEDIUM', aiResponse.PRACTICE.MEDIUM, '#d97706', '#fef3c7');
+            practiceHtml += renderPracticeLevel('HARD', aiResponse.PRACTICE.HARD, '#dc2626', '#fee2e2');
             
             practiceContainer.innerHTML = practiceHtml;
+        }
+
+        // Inform MathJax to process the new dynamically loaded math LaTeX 
+        if (window.MathJax) {
+            setTimeout(() => {
+                MathJax.typesetPromise().catch((err) => console.error("MathJax error:", err));
+            }, 100);
         }
     }
 }
