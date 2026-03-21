@@ -1,0 +1,269 @@
+/* tutorPage-structure.css - ONLY for page layout, preserves your existing design */
+
+/* ===== PAGE LAYOUT STRUCTURE ONLY ===== */
+/* This file does NOT change backgrounds, colors, or global styles */
+
+#tutorMain {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 3rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* ===== SOLUTION HEADER LAYOUT ===== */
+#solutionHeader {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+}
+
+.topicInfo {
+    flex: 1;
+}
+
+#subject {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+
+#topicTitle {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0.3rem 0 0.4rem;
+}
+
+#airesponselevel {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* ===== LEARNING CONTENT LAYOUT ===== */
+#learningContent {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.contentCard {
+    padding: 1.5rem;
+    border-radius: 16px;
+}
+
+.contentCard h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+/* ===== EXAMPLES SECTION ===== */
+#examplesContent > div {
+    margin-bottom: 1.2rem;
+    padding: 1rem;
+    border-radius: 12px;
+}
+
+#examplesContent h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+/* ===== PRACTICE QUESTIONS LAYOUT ===== */
+.practiceLevel {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+}
+
+.practiceLevel:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.practiceLevel h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+}
+
+.questionsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.questionsContainer li, 
+.questionsContainer > div {
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    list-style: none;
+}
+
+/* ===== VIDEOS GRID LAYOUT ===== */
+#videosContent {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    justify-items: center;
+    margin-top: 0.5rem;
+}
+
+.yt-videos {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+}
+
+/* ===== AI CHAT PANEL (keeps functionality but respects your design) ===== */
+#aiFriendPanel {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 380px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s ease;
+    z-index: 1000;
+}
+
+#aiFriendPanel.open {
+    right: 0;
+}
+
+#aiHeader {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid;
+}
+
+#closeAiBtn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.3rem;
+}
+
+#chatContainer {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.message {
+    max-width: 85%;
+    padding: 0.6rem 1rem;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.message.ai {
+    align-self: flex-start;
+}
+
+.message.user {
+    align-self: flex-end;
+}
+
+#chatInputArea {
+    padding: 0.8rem;
+    display: flex;
+    gap: 0.5rem;
+    border-top: 1px solid;
+}
+
+#chatInput {
+    flex: 1;
+    padding: 0.6rem 0.9rem;
+    border-radius: 20px;
+    border: 1px solid;
+    font-family: inherit;
+}
+
+#sendBtn {
+    padding: 0.6rem 1rem;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+#aiOverlay {
+    position: fixed;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 999;
+}
+
+#aiOverlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+    #tutorMain {
+        padding: 1rem;
+    }
+    
+    #solutionHeader {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .topicInfo {
+        order: 2;
+    }
+    
+    #backBtn {
+        align-self: flex-start;
+    }
+    
+    .contentCard {
+        padding: 1rem;
+    }
+    
+    #topicTitle {
+        font-size: 1.4rem;
+    }
+    
+    #aiFriendPanel {
+        width: 100%;
+        right: -100%;
+    }
+}
+
+@media (max-width: 480px) {
+    #videosContent {
+        grid-template-columns: 1fr;
+    }
+    
+    .yt-videos {
+        max-width: 100%;
+    }
+}
+
+/* ===== HELPER CLASSES ===== */
+button {
+    cursor: pointer;
+}

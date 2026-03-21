@@ -273,14 +273,36 @@ const response = await fetch(
   
 
 }
-const startedBtn=document.querySelector("#startedBtn");
-if(startedBtn){
-startedBtn.addEventListener("click",async(event)=>{
-      event.preventDefault();
-      startedBtn.disabled = true;
-await getTopic();
-startedBtn.disabled = false;
-});
+const startedBtn = document.querySelector("#startedBtn");
+if (startedBtn) {
+    startedBtn.addEventListener("click", async (event) => {
+        event.preventDefault();
+
+        // Basic validation before showing loader
+        const grade = document.querySelector("#gradeId")?.value;
+        const topic = document.querySelector("#topicId")?.value;
+        const subject = document.querySelector("#subjectId")?.value;
+        const level = document.querySelector("#levelId")?.value;
+
+        if (!grade || !topic || !subject || !level) {
+            alert("Please fill out all fields before starting.");
+            return;
+        }
+
+        startedBtn.disabled = true;
+        const originalText = startedBtn.innerText;
+        startedBtn.innerText = "Generating...";
+        
+        const loader = document.getElementById("loaderOverlay");
+        if (loader) loader.style.display = "flex";
+
+        await getTopic();
+
+        // This runs if getTopic fails or after redirect happens
+        startedBtn.disabled = false;
+        startedBtn.innerText = originalText;
+        if (loader) loader.style.display = "none";
+    });
 }
 async function handleResponse() {
     const stored = localStorage.getItem("aiResponse");
