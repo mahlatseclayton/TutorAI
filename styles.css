@@ -13,24 +13,44 @@
     to { transform: rotate(360deg); }
 }
 
-*{
-    font-family: Arial, Helvetica, sans-serif;
-    /* to keep the width of the page intact */
-     box-sizing: border-box;
+:root {
+    --bg-primary: radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
+    --bg-gradient: radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
+    --text-main: #1e1b4b;
+    --text-muted: #4b5563;
+    --circle-bg: rgba(112, 59, 236, 0.15);
 }
-body{
-    margin:0;
-    position: relative;
-    overflow: auto;
-    padding:0;
-    background: radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
 
-    
+body.dark-mode {
+    --bg-primary: #020617;
+    --bg-gradient: radial-gradient(circle at top right, #1e1b4b 0%, #020617 100%);
+    --text-main: #ffffff;
+    --text-muted: #cbd5e1;
+    --card-bg: rgba(15, 23, 42, 0.9);
+    --card-border: rgba(99, 102, 241, 0.3);
+    --accent: #818cf8;
+    --circle-bg: rgba(99, 102, 241, 0.03);
 }
+
+* {
+    font-family: Arial, Helvetica, sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    position: relative;
+    overflow-x: hidden;
+    padding: 0;
+    background: var(--bg-primary);
+    background-image: var(--bg-gradient);
+    color: var(--text-main);
+}
+
 .circles {
     position: absolute;
     border-radius: 50%;
-    background: rgba(112, 59, 236, 0.15);
+    background: var(--circle-bg);
     pointer-events: none;
     animation: float 10s infinite ease-in-out alternate;
 }
@@ -170,64 +190,171 @@ main {
 
 .aiHandle {
     color: #ef4444; /* Restored red AI handle */
-    align-items: center;
-    text-align: center;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0) scale(1.05); }
+    50% { transform: translateY(-30px) scale(0.95); }
 }
 
 #mainSection {
     display: flex;
     min-height: 100vh;
-    width: auto;
+    width: 100%;
     height: auto;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
 }
 
 #mainSection h4 {
-    color: #4b5563;
+    color: var(--text-muted);
     margin-top: 20px;
 }
 
-/* Dark Mode Global */
-body.dark-mode {
-    background: radial-gradient(circle, #0f172a 0%, #020617 100%) !important;
-    color: #f8fafc;
+/* Key Concepts Wrapping */
+#formulaContent {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    width: 100%;
 }
 
-body.dark-mode .appBar {
-    background: rgba(15, 23, 42, 0.95);
-    border-color: rgba(255, 255, 255, 0.1);
+.concept-item {
+    flex: 1 1 300px;
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
 }
 
-body.dark-mode .appBar h1 {
-    color: #f8fafc !important;
+.concept-value {
+    word-wrap: break-word;
+    white-space: normal !important;
 }
 
-body.dark-mode .navItem {
-    color: #94a3b8 !important;
+/* Key Concepts Wrapping */
+#formulaContent {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    width: 100%;
 }
 
-body.dark-mode .navItem:hover, body.dark-mode .navItem.active {
+.concept-item {
+    flex: 1 1 300px; /* Allow items to grow/shrink, wrap at 300px */
+    min-width: 0; /* Essential for flex-wrap text overflow */
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.concept-value {
+    word-wrap: break-word;
+    white-space: normal !important;
+}
+
+/* Removed redundant dark mode block to prevent specificity issues */
+
+/* Auth Pages Shared Styles */
+.authContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+}
+
+.authCard {
+    background: var(--card-bg);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--card-border);
+    border-radius: 30px;
+    padding: 40px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.8s ease-out;
+}
+
+.authTitle {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--text-main);
+    letter-spacing: -1px;
+}
+
+.authForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.authInput {
     background: rgba(255, 255, 255, 0.05);
-    color: #f8fafc !important;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    padding: 16px 20px;
+    border-radius: 15px;
+    font-size: 1rem;
+    color: var(--text-main);
+    transition: all 0.3s ease;
+    width: 100%;
+    outline: none;
 }
 
-body.dark-mode .contentCard, 
-body.dark-mode .appCard, 
-body.dark-mode #tutorSection {
-    background: rgba(30, 41, 59, 0.7) !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
-    color: #f8fafc !important;
+body.dark-mode .authInput {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.05);
 }
 
-body.dark-mode h2, 
-body.dark-mode h3, 
-body.dark-mode label {
-    color: #f1f5f9 !important;
+.authInput:focus {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
 }
 
-body.dark-mode p {
-    color: #94a3b8 !important;
+.authBtn {
+    margin-top: 10px;
+    padding: 16px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px rgba(67, 56, 202, 0.3);
+}
+
+.authBtn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(67, 56, 202, 0.5);
+}
+
+.authLinks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.authLinks a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.authLinks a:hover {
+    opacity: 0.8;
 }
 
 /* Theme Toggle Button Styles */
@@ -1781,4 +1908,150 @@ body.dark-mode #scanResultContent {
 body.dark-mode #scanResultSection {
     background: rgba(17, 24, 39, 0.8);
     border-color: rgba(129, 140, 248, 0.3);
+}
+
+/* ============================================================ */
+/* UNIVERSAL RESPONSIVENESS OVERHAUL */
+/* ============================================================ */
+
+/* --- Mobile / Small Screens (up to 768px) --- */
+@media screen and (max-width: 768px) {
+    .appBar {
+        padding: 10px 15px;
+        flex-direction: column;
+        gap: 15px;
+        height: auto;
+    }
+    
+    .navBar {
+        width: 100%;
+        justify-content: space-around;
+        gap: 5px;
+    }
+    
+    .navItem {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+    }
+    
+    /* Welcome Page Mobile */
+    .hero-container {
+        padding: 20px;
+        gap: 40px;
+        text-align: center;
+    }
+    
+    .hero-content {
+        min-width: 100%;
+        text-align: center;
+    }
+    
+    .welcome-text h1 {
+        font-size: 3.5rem;
+    }
+    
+    .welcome-text h4 {
+        font-size: 1.3rem;
+    }
+    
+    #mainLogo {
+        width: 280px;
+        height: 280px;
+    }
+    
+    #indexGetStarted {
+        padding: 18px 50px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Auth & Dashboard Mobile */
+    .authCard {
+        padding: 25px 20px;
+        margin: 10px;
+    }
+    
+    .authTitle {
+        font-size: 1.8rem;
+    }
+
+    /* Solution Page Mobile */
+    .mainFlex {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        position: static;
+        order: -1; /* Sidebar content first on mobile */
+    }
+    
+    .contentArea {
+        width: 100%;
+    }
+    
+    .contentCard {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .floating-fab-container {
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+/* --- Tablets (769px to 1024px) --- */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    .hero-container {
+        gap: 40px;
+        padding: 40px;
+    }
+    
+    .welcome-text h1 {
+        font-size: 4.5rem;
+    }
+    
+    #mainLogo {
+        width: 320px;
+        height: 320px;
+    }
+}
+
+/* --- Large / Ultra-Wide Screens (above 1600px) --- */
+@media screen and (min-width: 1600px) {
+    .dashboard-container, 
+    .hero-container, 
+    .mainFlex {
+        max-width: 1600px !important;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .welcome-text h1 {
+        font-size: 8rem;
+    }
+    
+    .welcome-text p {
+        font-size: 1.5rem;
+        max-width: 800px;
+    }
+    
+    .authCard {
+        max-width: 600px;
+        padding: 60px;
+    }
+}
+
+/* Fix for overlapping elements on short screens */
+@media screen and (max-height: 700px) {
+    .hero-container {
+        min-height: auto;
+        padding-top: 100px;
+    }
+    
+    #mainLogo {
+        width: 250px;
+        height: 250px;
+    }
 }

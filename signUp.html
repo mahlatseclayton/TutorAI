@@ -3,67 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account</title>
-        <link rel="stylesheet" href="styles.css">
-        <!-- Firebase App -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-
-<!-- Firebase Auth -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-
-<!-- Firebase Analytics (optional) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
-
-
-    <script type="module" src="firebase.js"></script>
+    <title>Create Account - TutorAI</title>
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
-<body>
-       <div class="circles"></div>
+<body style="font-family: 'Outfit', sans-serif !important;">
     <div class="circles"></div>
     <div class="circles"></div>
     <div class="circles"></div>
-    <div class="circles"></div>
-    <div class="circles"></div>
+    
     <main>
-          <!-- header section -->
-    <section id="headerSection" >
         <header class="appBar">
-        <div class="lCon">
-        <img class="cLogo" src="images/tlogo.jpeg"></img>
-        <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
-        </div>
-        
-        <nav class="navBar">
-         
-                 <image id="account" src="images/home.png"></image>
-             <a class="navItem" href="index.html">Home</a>
-             
-        </nav>
-    </header>
-    <section id="mainSection">
-        <div class="signupcontainer">
-        <h2 class="signuptitle">Create Account</h2>
-
-        <form class="signupform">
-            <input id="name" class="username" type="text" placeholder="Name(s)" required>
-            <input id="email" class="useremail" type="email" placeholder="Email" required>
-            <input id="grade" class="grade" type="number" placeholder="Grade" required>
-            
-            <input id="password" class="userpassword" type="password" placeholder="Password" required>
-            <input id="cpassword" class="userpassword" type="password" placeholder="Confirm Password" required>
-
-            <div class="formLinks">
-                <a href="signIn.html" class="forgotPassword"><b>Already have an account?</b></a>
-
+            <div class="lCon">
+                <img class="cLogo" src="images/tlogo.jpeg" alt="Logo">
+                <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
             </div>
+            
+            <nav class="navBar">
+                <a class="navItem" href="index.html"><i class="fas fa-home"></i> Home</a>
+            </nav>
 
-            <button id="signUpBtn" type="button" class="signupbtn" >Create</button>
-        </form>
-    </div>
+            <div class="headerActions">
+                <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
 
-     </section>
+        <section id="mainSection" style="padding-top: 5vh;">
+            <div class="authCard">
+                <h2 class="authTitle">Get Started</h2>
+                
+                <form class="authForm">
+                    <input id="name" class="authInput" type="text" placeholder="Full Name(s)" required>
+                    <input id="email" class="authInput" type="email" placeholder="Email Address" required>
+                    <input id="grade" class="authInput" type="number" placeholder="Your Grade" required>
+                    <input id="password" class="authInput" type="password" placeholder="Create Password" required>
+                    <input id="cpassword" class="authInput" type="password" placeholder="Confirm Password" required>
+
+                    <div class="authLinks">
+                        <a href="signIn.html">Already have an account? Sign In</a>
+                    </div>
+                    
+                    <button id="signUpBtn" class="authBtn" type="button">Create Account <i class="fas fa-user-plus" style="margin-left: 10px;"></i></button>
+                </form>
+            </div>
+        </section>
     </main>
 
-
+    <script type="module" src="firebase.js"></script>
 </body>
 </html>

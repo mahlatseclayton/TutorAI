@@ -31,47 +31,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// --- Theme Handling ---
-function initTheme() {
-    const themeToggle = document.getElementById("themeToggle");
-    const body = document.body;
-    const currentTheme = localStorage.getItem("theme");
-
-    // Helper to sync icon
-    const syncIcon = (isDark) => {
-        if (!themeToggle) return;
-        const icon = themeToggle.querySelector("i");
-        if (icon) {
-            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        }
-    };
-
-    // Apply saved theme
-    if (currentTheme === "dark") {
-        body.classList.add("dark-mode");
-        syncIcon(true);
-    }
-
-    if (themeToggle && !themeToggle.dataset.init) {
-        themeToggle.dataset.init = "true";
-        themeToggle.addEventListener("click", () => {
-            body.classList.toggle("dark-mode");
-            const isDark = body.classList.contains("dark-mode");
-            localStorage.setItem("theme", isDark ? "dark" : "light");
-            syncIcon(isDark);
-        });
-    }
-}
-
-// Polling initialization for dynamic content or slow loads
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initTheme);
-} else {
-    initTheme();
-}
-// Second pass after a delay to ensure late elements are caught
-setTimeout(initTheme, 500);
-
 // Helper to trigger MathJax multiple times to ensure everything is rendered
 function triggerMathJax() {
     if (window.MathJax && window.MathJax.typesetPromise) {
@@ -1200,6 +1159,7 @@ if (solveBtn && scanResultSection && scanResultContent) {
                 - RETURN ONLY THE SOLUTION CONTENT.
                 - USE $...$ FOR ALL MATH.
                 - USE LATEX FOR SYMBOLS.
+                - IF A SKETCH OR DIAGRAM IS NEEDED: Use clear SVG code or highly structured labels.
                 - USE MARKDOWN FOR FORMATTING.
                 - ENSURE THE RESPONSE IS PROFESSIONAL AND EASY FOR A STUDENT TO FOLLOW.
             `;

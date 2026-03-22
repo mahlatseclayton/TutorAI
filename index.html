@@ -3,114 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome Page</title>
+    <title>Welcome to TutorAI</title>
+    <script src="theme.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-glow: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+        }
+        body {
+            font-family: 'Outfit', sans-serif !important;
+            overflow-x: hidden;
+            width: 100%;
+            margin: 0;
+            background: var(--bg-primary);
+            color: var(--text-main);
+        }
+        * { font-family: 'Outfit', sans-serif !important; box-sizing: border-box; }
+        
+        .hero-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 80px;
+            max-width: 1400px;
+            width: 100%;
+            padding: 60px;
+            flex-wrap: wrap-reverse; /* Logo stays top on mobile */
+            min-height: 100vh;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-content {
+            flex: 1.2;
+            min-width: 0; 
+            text-align: left;
+            animation: slideInLeft 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .hero-logo-side {
+            flex: 0.8;
+            min-width: 0;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            animation: slideInRight 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .logo-glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(67, 56, 202, 0.2) 0%, rgba(67, 56, 202, 0) 70%);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(40px);
+            animation: pulse 4s infinite ease-in-out;
+        }
+
+        #mainLogo {
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            border: 15px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            animation: bounce 6s infinite ease-in-out;
+            object-fit: cover;
+        }
+
+        .welcome-text h1 {
+            font-size: clamp(3rem, 12vw, 6rem);
+            font-weight: 800;
+            margin: 0;
+            line-height: 0.9;
+            letter-spacing: -3px;
+            background: linear-gradient(to bottom, var(--text-main), rgba(255,255,255,0.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            word-break: keep-all;
+        }
+
+        .welcome-text h4 {
+            font-size: 1.8rem;
+            font-weight: 400;
+            margin-top: 25px;
+            color: var(--accent);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .welcome-text p {
+            font-size: 1.3rem;
+            margin-top: 30px;
+            opacity: 0.7;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        #indexGetStarted {
+            margin-top: 50px;
+            padding: 22px 100px;
+            font-size: 1.5rem;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 15px 40px rgba(67, 56, 202, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #indexGetStarted:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(67, 56, 202, 0.6);
+            letter-spacing: 1px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @media (max-width: 900px) {
+            .hero-content { text-align: center; min-width: 100%; }
+            .welcome-text h1 { font-size: 4rem; }
+            .hero-logo-side { min-width: 100%; order: -1; }
+            #mainLogo { width: 300px; height: 300px; }
+        }
+    </style>
 </head>
 <body>
-    <div class="circles"></div>
-    <div class="circles"></div>
-    <div class="circles"></div>
-    <div class="circles"></div>
-    <div class="circles"></div>
-    <div class="circles"></div>
-     <main>
-    <!-- header section -->
-    <section id="headerSection" >
-        <header class="appBar">
-            <div class="lCon">
-                <img class="cLogo" src="images/tlogo.jpeg" alt="Logo">
-                <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
-            </div>
-            
-            <nav class="navBar">
-                <a class="navItem" href="#featuresSection"><i class="fas fa-star"></i> Features</a>
-                <a class="navItem" href="#aboutUsSection"><i class="fas fa-info-circle"></i> About Us</a>
-            </nav>
-
-            <div class="headerActions">
-                <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme">
-                    <i class="fas fa-moon"></i>
-                </button>
-            </div>
-        </header>
-    </section>
-    <!-- main section -->
-     <section id="mainSection">
-     <div class="animation-container">
-        
-        <!-- Falling items
-        <div class="falling-item book">📚</div>
-        <div class="falling-item pen">✏️</div>
-        <div class="falling-item notebook">📖</div>
-        <div class="falling-item grad-cap">🎓</div>
-        <div class="falling-item brain">🧠</div> -->
-
-        
-
-        
-        <div class="logo-wrapper">
-            <image id="mainLogo" src="images/tlogo.jpeg"></image>
-        </div>
-     </div>
-
-     <div class="subjectcontainer">
-            <div class="cards">
-                <div class="card">
-                    <img src="images/trig.png">
-                    <span>Mathematics</span>
-                </div>
-                <div class="card">
-                    <img src="images/verbs.png">
-                    <span>English</span>
-                </div>
-                <div class="card">
-                    <img src="images/lifesciences.png">
-                    <span>Life Sciences</span>
-                </div>
-                <div class="card">
-                    <img src="images/physics.png">
-                    <span>Physical Sciences</span>
-                </div>
-                <div class="card">
-                    <img src="images/economics.png">
-                    <span>Economics</span>
-                </div>
-                <div class="card">
-                    <img src="images/geography.jpg">
-                    <span>Geography</span>
-                </div>
-                <div class="card">
-                    <img src="images/accounting.png">
-                    <span>Accounting</span>
-                </div>
-            </div>
-        </div>
-     <h4>AI-Powered Learning, Made Simple.</h4>
-     <button id="startedBtn" onclick="Start()">Get Started</button>
-     
-        
-     </section>
-<section id="featuresSection"> 
-    <h3 class="featureS">Features</h3>
-
-        <div id="fContainer">
-            <div class="fBox"></div>
-            <div class="fBox"></div>
-            <div class="fBox"></div>
-            <div class="fBox"></div>
-            <div class="fBox"></div>
-            <div class="fBox"></div>
+    <div class="circles" style="width: 600px; height: 600px; opacity: 0.1; top: -100px; left: -100px;"></div>
+    <div class="circles" style="width: 400px; height: 400px; opacity: 0.05; bottom: -50px; right: -50px;"></div>
+    
+    <main>
+        <div class="headerActions" style="position: absolute; top: 40px; right: 40px; z-index: 1000;">
+            <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme" style="transform: scale(1.2);">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
 
-   
-</section>
-<!-- about us  -->
-<section id="aboutUsSection">
-      <h3 class="featureS">About Us</h3>
-</section>
+        <section id="mainSection" style="padding: 0;">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <div class="welcome-text">
+                        <h4>Introducing TutorAI</h4>
+                        <h1>Tutor<span class="aiHandle" style="color: #ef4444; -webkit-text-fill-color: #ef4444;">AI</span></h1>
+                        <p>
+                            Revolutionizing how South African students master Math and Science. Scan any challenge and receive instant, world-class tutoring curated for your success.
+                        </p>
+                    </div>
+                    
+                    <button id="indexGetStarted" onclick="Start()">
+                        Get Started <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
 
+                <div class="hero-logo-side">
+                    <div class="logo-glow"></div>
+                    <img id="mainLogo" src="images/tlogo.jpeg" alt="TutorAI Logo">
+                </div>
+            </div>
+        </section>
     </main>
+
+    <script type="module" src="firebase.js"></script>
+    <script src="script.js"></script>
 </body>
-<script type="module" src="firebase.js"></script>
-<script src="script.js"></script>
 </html>
