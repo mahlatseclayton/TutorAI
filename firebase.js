@@ -275,9 +275,10 @@ LEVEL: ${level}
 
 STRICT JSON RULES:
 - RETURN ONLY VALID JSON.
-- USE DOUBLE NEWLINES (\\n\\n) FOR PARAGRAPHS.
-- ESCAPE ALL BACKSLASHES FOR LATEX (e.g. \\\\frac).
-- ENSURE ALL QUOTES ARE ESCAPED IN MARKDOWN STRINGS.
+- USE $...$ FOR INLINE MATH AND $$...$$ FOR BLOCK MATH.
+- USE LATEX FOR ALL MATHEMATICAL EXPRESSIONS.
+- USE DOUBLE NEWLINES (\\\\n\\\\n) FOR PARAGRAPHS.
+- ENSURE ALL JSON STRINGS ARE PROPERLY ESCAPED.
 
 STRUCTURE:
 {
@@ -316,7 +317,7 @@ STRUCTURE:
             
             localStorage.setItem("aiResponse", cleaned);
             
-            // 3. Save to Cache (Async, don't block if it fails)
+            // 3. Save to Cache (Async)
             setDoc(cacheRef, { response: parsedResponse, timestamp: new Date() }, { merge: true })
               .catch(err => console.error("Cache save failed:", err));
         }
@@ -458,8 +459,10 @@ async function handleResponse() {
             // Inform MathJax to process the new dynamically loaded math LaTeX 
             if (window.MathJax) {
                 setTimeout(() => {
-                    MathJax.typesetPromise().catch((err) => console.error("MathJax error:", err));
-                }, 100);
+                    MathJax.typesetPromise()
+                        .then(() => console.log("MathJax success"))
+                        .catch((err) => console.error("MathJax error:", err));
+                }, 500); // Increased timeout to ensure DOM is fully ready
             }
         } catch (e) {
             console.error("Failed to parse AI response:", e);
@@ -497,19 +500,27 @@ document.addEventListener("DOMContentLoaded", function() {
 
 async function loadVideos() {
     const topicTitle = document.getElementById("topicTitle");
-    if (!topicTitle) return;
+    const vidContainer = document.getElementById("videosSection");
+    if (!vidContainer || !topicTitle) return;
     
     const sHeading = topicTitle.innerText;
-    const vidContainer = document.getElementById("videosSection");
-    if (!vidContainer) return;
+    console.log("Fetching fresh videos from YouTube API...");
     
-    vidContainer.innerHTML = "";
-    const response = await fetch(`https://us-central1-tutorai-5f97d.cloudfunctions.net/YT_VIDEOS?heading=${encodeURIComponent(sHeading)}`);
-    const videos = await response.json();
+    try {
+        const response = await fetch(`https://us-central1-tutorai-5f97d.cloudfunctions.net/YT_VIDEOS?heading=${encodeURIComponent(sHeading)}`);
+        const videos = await response.json();
+        renderVideos(videos, vidContainer);
+    } catch (err) {
+        console.error("Video fetch error:", err);
+    }
+}
+
+function renderVideos(videos, container) {
+    container.innerHTML = "";
     const heading = document.createElement("h2");
     heading.style.textAlign = "center";
     heading.innerText = "Recommended Videos";
-    vidContainer.appendChild(heading);
+    container.appendChild(heading);
 
     videos.forEach(video => {
         const iframe = document.createElement("iframe");
@@ -519,7 +530,7 @@ async function loadVideos() {
         iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
         iframe.allowFullscreen = true;
         iframe.frameBorder = 1;
-        vidContainer.appendChild(iframe);
+        container.appendChild(iframe);
     });
 }
 
@@ -581,6 +592,19 @@ window.checkAnswer = async function(level, index, correctAns, solutionExpl) {
             feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${aiResult.explanation || "Correct! Great job."}`;
             feedback.className = 'feedbackMsg correct';
             input.style.borderColor = '#10b981';
+            
+            // award points
+            const user = auth.currentUser;
+            if (user) {
+                const userRef = doc(db, "users", user.uid);
+                window.userPoints = (window.userPoints || 0) + 10;
+                setDoc(userRef, { points: window.userPoints }, { merge: true })
+                    .then(() => {
+                        const scoreEl = document.getElementById("userPoints");
+                        if (scoreEl) scoreEl.innerText = window.userPoints;
+                    })
+                    .catch(e => console.error("Points update failed:", e));
+            }
         } else {
             feedback.innerHTML = `
                 <div style="margin-top: 10px; padding: 15px; background: rgba(239, 68, 68, 0.05); border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.1);">
@@ -765,7 +789,7 @@ onAuthStateChanged(auth, async (user) => {
         if (userDoc.exists()) {
             const data = userDoc.data();
             window.userPoints = data.points || 0;
-            const ptsText = document.getElementById("userPointsText");
+            const ptsText = document.getElementById("userPoints");
             if (ptsText) ptsText.innerText = window.userPoints;
         }
     }

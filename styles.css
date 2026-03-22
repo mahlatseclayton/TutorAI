@@ -589,7 +589,8 @@ select:focus {
 
 
 #learningContent {
-    max-width: 900px;
+    max-width: 1200px; /* Increased from 900px for more breathing room */
+    width: 100%;
     margin: 40px auto;
     padding: 0 20px 60px 20px;
     display: flex;
@@ -992,9 +993,10 @@ select:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap; /* Added to prevent overflow */
     padding: 15px 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    gap: 20px;
+    gap: 10px; /* Reduced gap slightly for wrapped state */
 }
 
 .concept-item:last-child {
@@ -1005,14 +1007,16 @@ select:focus {
     font-weight: 700;
     color: #4338ca;
     font-size: 1.1rem;
-    white-space: nowrap;
+    flex: 1; /* Allow to take space */
+    min-width: 150px; /* Ensure it doesn't get squashed too much */
 }
 
 .concept-value {
     font-size: 1.1rem;
     color: #1f2937;
     text-align: right;
-    word-break: break-all;
+    flex: 2; /* Allow more space for the value/formula */
+    word-break: break-word; /* Changed from break-all for better readability */
     overflow-wrap: anywhere;
 }
 
