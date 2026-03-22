@@ -273,9 +273,10 @@ SUBJECT: ${subject}
 GRADE: ${grade}
 LEVEL: ${level}
 
+GENERATE 3 DIVERSE WORKED EXAMPLES (Varying Difficulty).
 STRICT JSON RULES:
 - RETURN ONLY VALID JSON.
-- USE $...$ FOR INLINE MATH AND $$...$$ FOR BLOCK MATH.
+- USE $...$ FOR ALL MATH (INLINE AND BLOCK).
 - USE LATEX FOR ALL MATHEMATICAL EXPRESSIONS.
 - USE DOUBLE NEWLINES (\\\\n\\\\n) FOR PARAGRAPHS.
 - ENSURE ALL JSON STRINGS ARE PROPERLY ESCAPED.
@@ -289,7 +290,9 @@ STRUCTURE:
   "OVERVIEW": "...",
   "EXPLANATION": "...",
   "EXAMPLES": [
-    { "TITLE": "Example 1", "PROBLEM": "...", "SOLUTION_STEPS": "..." }
+    { "TITLE": "Example 1", "PROBLEM": "...", "SOLUTION_STEPS": "..." },
+    { "TITLE": "Example 2", "PROBLEM": "...", "SOLUTION_STEPS": "..." },
+    { "TITLE": "Example 3", "PROBLEM": "...", "SOLUTION_STEPS": "..." }
   ],
   "FORMULAS": [
     { "NAME": "Key Concept", "CONTENT": "..." }
@@ -300,6 +303,9 @@ STRUCTURE:
     "HARD": [{ "QUESTION": "q", "ANSWER": "a", "SOLUTION_EXPLANATION": "expl" }]
   }
 }
+- PRACTICE: Each level should have questions with "QUESTION", "ANSWER", and "SOLUTION_EXPLANATION".
+- IN "SOLUTION_EXPLANATION": USE $...$ FOR ALL MATH. USE DOUBLE-BACKSLASHES FOR LATEX (e.g. \\\\frac).
+- ENSURE ALL JSON STRINGS ARE PROPERLY ESCAPED.
 `;
             const res = await fetch("https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor", {
                 method: "POST",
@@ -394,23 +400,29 @@ async function handleResponse() {
             
             if (examplesContainer && aiResponse.EXAMPLES) {
                 let examplesHtml = '';
-                aiResponse.EXAMPLES.forEach((example, idx) => {
+                // Limit to 3 if AI returns more, or show all if specifically 3
+                const samples = aiResponse.EXAMPLES.slice(0, 3);
+                
+                samples.forEach((example, idx) => {
+                    const cleanProblem = (example.PROBLEM || "").replace(/\\n/g, '\n');
+                    const cleanSolution = (example.SOLUTION_STEPS || example.SOLUTION || "").replace(/\\n/g, '\n');
+                    
                     examplesHtml += `
                         <div class="exampleCard">
                             <div class="exampleHeader">
                                 <h3 style="margin: 0;">${example.TITLE}</h3>
-                                <button class="explainSecBtn" onclick="explainSection('${example.TITLE}', '${(example.PROBLEM + ' ' + (example.SOLUTION_STEPS || example.SOLUTION || '')).replace(/'/g, "\\'").replace(/\n/g, " ")}')">
+                                <button class="explainSecBtn" onclick="explainSection('${example.TITLE}', '${(cleanProblem + ' ' + cleanSolution).replace(/'/g, "\\'").replace(/\n/g, " ")}')">
                                     <i class="fas fa-magic"></i> Explain
                                 </button>
                             </div>
                             <div class="exampleBody">
                                 <div class="exampleProblem">
                                     <strong>Problem:</strong>
-                                    <div>${marked.parse(example.PROBLEM || "See above.")}</div>
+                                    <div>${marked.parse(cleanProblem || "See above.")}</div>
                                 </div>
                                 <div class="exampleSolution">
                                     <strong>Solution:</strong>
-                                    <div>${marked.parse(example.SOLUTION_STEPS || example.SOLUTION || "No solution provided.")}</div>
+                                    <div>${marked.parse(cleanSolution || "No solution provided.")}</div>
                                 </div>
                             </div>
                         </div>
@@ -421,6 +433,7 @@ async function handleResponse() {
         
             if (practiceContainer && aiResponse.PRACTICE) {
                 let practiceHtml = '';
+                window.currentPractice = aiResponse.PRACTICE; // Global store to avoid string mangling
                 
                 const renderPracticeLevel = (levelName, items, color, bg) => {
                     if (!items || items.length === 0) return '';
@@ -436,7 +449,7 @@ async function handleResponse() {
                                         <div class="quizInputGroup">
                                             <div class="quizInputRow" id="inputRow-${levelName}-${idx}">
                                                 <input type="text" placeholder="Your answer..." id="ans-${levelName}-${idx}">
-                                                <button class="checkBtn" onclick="checkAnswer('${levelName}', ${idx}, '${q.ANSWER}', '${(q.SOLUTION_EXPLANATION || "").replace(/'/g, "\\'").replace(/\n/g, " ")}')">Check</button>
+                                                <button class="checkBtn" onclick="checkAnswer('${levelName}', ${idx})">Check</button>
                                             </div>
                                             <div id="feedback-${levelName}-${idx}" class="feedbackMsg"></div>
                                         </div>
@@ -457,12 +470,15 @@ async function handleResponse() {
             // Render Key Concepts (Simplified Vertical List)
             const formulaContainer = document.getElementById("formulaContent");
             if (formulaContainer && aiResponse.FORMULAS) {
-                formulaContainer.innerHTML = aiResponse.FORMULAS.map(f => `
-                    <div class="concept-item">
-                        <span class="concept-name">${f.NAME}</span>
-                        <span class="concept-value">${f.CONTENT}</span>
-                    </div>
-                `).join('');
+                formulaContainer.innerHTML = aiResponse.FORMULAS.map(f => {
+                    const cleanContent = (f.CONTENT || "").replace(/\\n/g, "\n");
+                    return `
+                        <div class="concept-item">
+                            <div class="concept-name">${f.NAME}</div>
+                            <div class="concept-value">${marked.parse(cleanContent)}</div>
+                        </div>
+                    `;
+                }).join('');
             }
 
             // Robust MathJax trigger
@@ -558,7 +574,11 @@ window.addEventListener("DOMContentLoaded", loadVideos);
 // --- New Features Logic ---
 
 // 1. Interactive Quiz Logic
-window.checkAnswer = async function(level, index, correctAns, solutionExpl) {
+window.checkAnswer = async function(level, index) {
+    const practiceData = window.currentPractice[level][index];
+    const correctAns = practiceData.ANSWER;
+    const solutionExpl = (practiceData.SOLUTION_EXPLANATION || "").replace(/\\n/g, "\n");
+    
     const input = document.getElementById(`ans-${level}-${index}`);
     const feedback = document.getElementById(`feedback-${level}-${index}`);
     const inputRow = document.getElementById(`inputRow-${level}-${index}`);
@@ -611,6 +631,7 @@ window.checkAnswer = async function(level, index, correctAns, solutionExpl) {
             feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${aiResult.explanation || "Correct! Great job."}`;
             feedback.className = 'feedbackMsg correct';
             input.style.borderColor = '#10b981';
+            triggerMathJax();
             
             // award points
             const user = auth.currentUser;
@@ -634,6 +655,7 @@ window.checkAnswer = async function(level, index, correctAns, solutionExpl) {
             `;
             feedback.className = 'feedbackMsg';
             inputRow.style.display = 'none';
+            triggerMathJax();
         }
     } catch (error) {
         console.error("AI Verification error:", error);

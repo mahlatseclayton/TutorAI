@@ -991,12 +991,11 @@ select:focus {
 
 .concept-item {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap; /* Added to prevent overflow */
-    padding: 15px 0;
+    flex-direction: column; /* Changed to column for better vertical flow as requested */
+    align-items: flex-start;
+    padding: 20px 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    gap: 10px; /* Reduced gap slightly for wrapped state */
+    gap: 12px;
 }
 
 .concept-item:last-child {
@@ -1006,18 +1005,24 @@ select:focus {
 .concept-name {
     font-weight: 700;
     color: #4338ca;
-    font-size: 1.1rem;
-    flex: 1; /* Allow to take space */
-    min-width: 150px; /* Ensure it doesn't get squashed too much */
+    font-size: 1.2rem;
+    width: 100%;
 }
 
 .concept-value {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: #1f2937;
-    text-align: right;
-    flex: 2; /* Allow more space for the value/formula */
-    word-break: break-word; /* Changed from break-all for better readability */
-    overflow-wrap: anywhere;
+    width: 100%;
+    line-height: 1.6;
+}
+
+.concept-value p {
+    margin-bottom: 8px;
+}
+
+.concept-value ul, .concept-value ol {
+    padding-left: 20px;
+    margin-bottom: 8px;
 }
 
 body.dark-mode .concept-item {
