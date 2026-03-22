@@ -31,6 +31,22 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Helper to trigger MathJax multiple times to ensure everything is rendered
+function triggerMathJax() {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        console.log("Triggering MathJax...");
+        // Call immediately and again after a short delay
+        MathJax.typesetPromise().catch(err => console.error("MathJax error:", err));
+        setTimeout(() => {
+            MathJax.typesetPromise().catch(err => console.warn("MathJax retry failed:", err));
+        }, 1000);
+    } else {
+        // If MathJax isn't loaded yet, try again in a bit
+        console.log("MathJax not ready, waiting...");
+        setTimeout(triggerMathJax, 500);
+    }
+}
+
 function validate(){
      const name=document.getElementById("name").value;
     const grade=document.getElementById("grade").value;
@@ -264,6 +280,30 @@ async function getTopic() {
             localStorage.setItem("aiResponse", JSON.stringify(cachedData));
         } else {
             console.log("No cache found. Calling AI...");
+            // --- NEW: Topic Validation Step ---
+            const validatePrompt = `Verify if the topic "${topic}" is relevant to the subject "${subject}" for Grade ${grade}. 
+            Respond ONLY in JSON: {"valid": true, "reason": "..."} or {"valid": false, "reason": "...", "suggested_subject": "..."}`;
+            
+            try {
+                const vRes = await fetch("https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: validatePrompt })
+                });
+                const vData = await vRes.json();
+                const vClean = vData.aiResponse.replace(/```json|```/g, "").trim();
+                const vResult = JSON.parse(vClean);
+                
+                if (!vResult.valid) {
+                    const proceed = confirm(`TutorAI Suggestion: ${vResult.reason}. This topic might better belong in "${vResult.suggested_subject}". Do you want to continue anyway?`);
+                    if (!proceed) {
+                        return; // Stop the generation
+                    }
+                }
+            } catch (vErr) {
+                console.warn("Topic validation failed, skipping...", vErr);
+            }
+
             const fullPrompt = `
 YOU ARE AN ADVANCED EDUCATIONAL TUTOR AI.
 
@@ -275,6 +315,8 @@ LEVEL: ${level}
 
 GENERATE 3 DIVERSE WORKED EXAMPLES (Varying Difficulty).
 STRICT JSON RULES:
+- COVER ALL CORE CONCEPTS, COMMON EDGE CASES, AND PITFALLS.
+- FOR "BEGINNER": Keep the entire scope of the topic but use extremely simple language/analogies.
 - RETURN ONLY VALID JSON.
 - USE $...$ FOR ALL MATH (INLINE AND BLOCK).
 - USE LATEX FOR ALL MATHEMATICAL EXPRESSIONS.
@@ -289,13 +331,23 @@ STRUCTURE:
   "LEVEL": "${level}",
   "OVERVIEW": "...",
   "EXPLANATION": "...",
+  "SUMMARY": "Concise bullet points recap.",
+  "VOCABULARY": [
+    { "TERM": "Word", "DEFINITION": "Definition" }
+  ],
   "EXAMPLES": [
     { "TITLE": "Example 1", "PROBLEM": "...", "SOLUTION_STEPS": "..." },
     { "TITLE": "Example 2", "PROBLEM": "...", "SOLUTION_STEPS": "..." },
     { "TITLE": "Example 3", "PROBLEM": "...", "SOLUTION_STEPS": "..." }
   ],
+  "APPLICATIONS": [
+    { "TITLE": "Field/Use", "DESCRIPTION": "..." }
+  ],
   "FORMULAS": [
     { "NAME": "Key Concept", "CONTENT": "..." }
+  ],
+  "PITFALLS": [
+    { "TITLE": "Expert Insight or Common Pitfall", "DESCRIPTION": "..." }
   ],
   "PRACTICE": {
     "EASY": [{ "QUESTION": "q", "ANSWER": "a", "SOLUTION_EXPLANATION": "expl" }],
@@ -304,7 +356,9 @@ STRUCTURE:
   }
 }
 - PRACTICE: Each level should have questions with "QUESTION", "ANSWER", and "SOLUTION_EXPLANATION".
-- IN "SOLUTION_EXPLANATION": USE $...$ FOR ALL MATH. USE DOUBLE-BACKSLASHES FOR LATEX (e.g. \\\\frac).
+- ALL BACKSLASHES MUST BE ESCAPED (e.g. \\\\frac, \\\\theta).
+- NEVER RETURN A SINGLE BACKSLASH. ALWAYS DOUBLE THEM: \\\\.
+- USE \\\\n FOR ALL NEWLINES WITHIN STRINGS. DO NOT USE RAW NEWLINES.
 - ENSURE ALL JSON STRINGS ARE PROPERLY ESCAPED.
 `;
             const res = await fetch("https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor", {
@@ -318,8 +372,79 @@ STRUCTURE:
             
             if (!data || !data.aiResponse) throw new Error("The AI didn't provide a lesson. Try a different topic.");
 
-            let cleaned = data.aiResponse.replace(/```json|```/g, "").trim();
-            const parsedResponse = JSON.parse(cleaned);
+            // --- Robust JSON Extraction & Repair ---
+            let rawResponse = data.aiResponse;
+            let cleaned = rawResponse;
+            
+            // 1. Extract JSON block (find first { and last })
+            const startIdx = rawResponse.indexOf('{');
+            const endIdx = rawResponse.lastIndexOf('}');
+            if (startIdx !== -1 && endIdx !== -1) {
+                cleaned = rawResponse.substring(startIdx, endIdx + 1);
+            }
+
+            let parsedResponse;
+            try {
+                parsedResponse = JSON.parse(cleaned);
+            } catch (pErr) {
+                console.warn("Standard JSON parse failed, attempting high-resilience repair...", pErr);
+                
+                // 1. High-Resilience Repair (Backslashes & Newlines)
+                const repaired = cleaned
+                    .replace(/\n/g, " ") // Remove literal newlines that break strings
+                    .replace(/\\/g, "\\\\") 
+                    .replace(/\\\\(["\\\/bfnrtu])/g, "\\$1");
+                
+                try {
+                    parsedResponse = JSON.parse(repaired);
+                    cleaned = repaired; 
+                    console.log("JSON Deep Repair successful!");
+                } catch (retryErr) {
+                    console.warn("Deep Repair failed, attempting Last Resort Regex Recovery...");
+                    
+                    // 2. Last Resort Regex Recovery (Scavenge fields from raw text)
+                    try {
+                        const scavenge = (field) => {
+                            const regex = new RegExp(`"${field}"\\s*:\\s*"(.*?)"(?=\\s*,|\\s*})`, 's');
+                            const match = cleaned.match(regex);
+                            return match ? match[1] : "";
+                        };
+
+                        const scavengeArray = (field) => {
+                           const regex = new RegExp(`"${field}"\\s*:\\s*\\[(.*?)\\](?=\\s*,|\\s*})`, 's');
+                           const match = cleaned.match(regex);
+                           if (!match) return [];
+                           try { return JSON.parse(`[${match[1]}]`); } catch(e) { return []; }
+                        };
+
+                        parsedResponse = {
+                            SUBJECT: scavenge("SUBJECT"),
+                            TOPIC: scavenge("TOPIC"),
+                            OVERVIEW: scavenge("OVERVIEW"),
+                            SUMMARY: scavenge("SUMMARY"),
+                            VOCABULARY: scavengeArray("VOCABULARY"),
+                            APPLICATIONS: scavengeArray("APPLICATIONS"),
+                            EXPLANATION: scavenge("EXPLANATION"),
+                            EXAMPLES: scavengeArray("EXAMPLES"),
+                            FORMULAS: scavengeArray("FORMULAS"),
+                            PITFALLS: scavengeArray("PITFALLS"),
+                            PRACTICE: {
+                                EASY: scavengeArray("EASY"),
+                                MEDIUM: scavengeArray("MEDIUM"),
+                                HARD: scavengeArray("HARD")
+                            }
+                        };
+                        
+                        if (!parsedResponse.OVERVIEW && !parsedResponse.EXPLANATION) {
+                            throw new Error("Regex recovery failed to find core content.");
+                        }
+                        console.log("Last Resort Regex Recovery successful!");
+                    } catch (finalErr) {
+                        console.error("All recovery attempts failed:", finalErr);
+                        throw new Error("TutorAI received a complex response it couldn't decode. Please try a slightly different topic or level.");
+                    }
+                }
+            }
             
             localStorage.setItem("aiResponse", cleaned);
             
@@ -376,7 +501,7 @@ async function handleResponse() {
             const aiResponse = JSON.parse(cleaned);
             
             // marked.parse will convert the Markdown into HTML
-            if(overView && aiResponse.OVERVIEW){
+            if(typeof marked !== 'undefined' && overView && aiResponse.OVERVIEW){
                 const cleanOverview = aiResponse.OVERVIEW.replace(/\\n/g, '\n');
                 overView.innerHTML = `
                   <div style="display: flex; justify-content: space-between; align-items: start;">
@@ -385,7 +510,31 @@ async function handleResponse() {
                   </div>
                 `;
             }
-            if(explanation && aiResponse.EXPLANATION){
+
+            // Render New Sections
+            const summarySec = document.getElementById("summarySection");
+            const summaryCon = document.getElementById("summaryContent");
+            if (typeof marked !== 'undefined' && summarySec && summaryCon && aiResponse.SUMMARY) {
+                summaryCon.innerHTML = marked.parse(aiResponse.SUMMARY.replace(/\\n/g, "\n"));
+                summarySec.style.display = "block";
+            }
+
+            const vocabSec = document.getElementById("vocabSection");
+            const vocabCon = document.getElementById("vocabContent");
+            if (vocabSec && vocabCon && aiResponse.VOCABULARY) {
+                vocabCon.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 15px;">
+                        ${aiResponse.VOCABULARY.map(v => `
+                            <div style="padding: 15px; background: rgba(67, 56, 202, 0.03); border-left: 4px solid #4338ca; border-radius: 8px;">
+                                <strong style="color: #4338ca; display: block; margin-bottom: 5px;">${v.TERM}</strong>
+                                <span style="font-size: 0.95rem; color: #4b5563;">${v.DEFINITION}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                vocabSec.style.display = "block";
+            }
+            if(typeof marked !== 'undefined' && explanation && aiResponse.EXPLANATION){
                 const cleanExpl = aiResponse.EXPLANATION.replace(/\\n/g, '\n');
                 explanation.innerHTML = `
                   <div style="display: flex; justify-content: space-between; align-items: start;">
@@ -418,17 +567,33 @@ async function handleResponse() {
                             <div class="exampleBody">
                                 <div class="exampleProblem">
                                     <strong>Problem:</strong>
-                                    <div>${marked.parse(cleanProblem || "See above.")}</div>
+                                    <div>${typeof marked !== 'undefined' ? marked.parse(cleanProblem || "See above.") : cleanProblem}</div>
                                 </div>
                                 <div class="exampleSolution">
                                     <strong>Solution:</strong>
-                                    <div>${marked.parse(cleanSolution || "No solution provided.")}</div>
+                                    <div>${typeof marked !== 'undefined' ? marked.parse(cleanSolution || "No solution provided.") : cleanSolution}</div>
                                 </div>
                             </div>
                         </div>
                     `;
                 });
                 examplesContainer.innerHTML = examplesHtml;
+            }
+
+            const appsSec = document.getElementById("applicationsSection");
+            const appsCon = document.getElementById("applicationsContent");
+            if (appsSec && appsCon && aiResponse.APPLICATIONS) {
+                appsCon.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin-top: 20px;">
+                        ${aiResponse.APPLICATIONS.map(a => `
+                            <div class="appCard" style="padding: 20px; background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);">
+                                <h4 style="color: #4338ca; margin-bottom: 10px;"><i class="fas fa-rocket"></i> ${a.TITLE}</h4>
+                                <div style="font-size: 0.95rem; color: #4b5563; line-height: 1.5;">${marked.parse(a.DESCRIPTION.replace(/\\n/g, "\n"))}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                appsSec.style.display = "block";
             }
         
             if (practiceContainer && aiResponse.PRACTICE) {
@@ -444,7 +609,7 @@ async function handleResponse() {
                                 ${items.map((q, idx) => `
                                     <div class="practiceCard" style="padding: 20px; background: ${bg}; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.02);">
                                         <div style="font-weight: 500; font-size: 16px; color: ${color}; margin-bottom: 12px;">
-                                            ${marked.parseInline(q.QUESTION || q)}
+                                            ${typeof marked !== 'undefined' ? marked.parseInline(q.QUESTION || q) : (q.QUESTION || q)}
                                         </div>
                                         <div class="quizInputGroup">
                                             <div class="quizInputRow" id="inputRow-${levelName}-${idx}">
@@ -475,10 +640,29 @@ async function handleResponse() {
                     return `
                         <div class="concept-item">
                             <div class="concept-name">${f.NAME}</div>
-                            <div class="concept-value">${marked.parse(cleanContent)}</div>
+                            <div class="concept-value">${typeof marked !== 'undefined' ? marked.parse(cleanContent) : cleanContent}</div>
                         </div>
                     `;
                 }).join('');
+            }
+
+            // Render Pitfalls Section (New)
+            const explanationSection = document.getElementById("explanationContent");
+            if (explanationSection && aiResponse.PITFALLS && aiResponse.PITFALLS.length > 0) {
+                const pitfallsHtml = `
+                    <div class="pitfalls-container" style="margin-top: 30px; padding: 25px; background: rgba(239, 68, 68, 0.05); border-radius: 20px; border: 1px solid rgba(239, 68, 68, 0.1);">
+                        <h3 style="color: #dc2626; margin-bottom: 20px;"><i class="fas fa-exclamation-triangle"></i> Expert Insights & Common Pitfalls</h3>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            ${aiResponse.PITFALLS.map(p => `
+                                <div>
+                                    <strong style="color: #dc2626; display: block; margin-bottom: 5px;">${p.TITLE}</strong>
+                                    <div class="lesson-body" style="font-size: 0.95rem;">${typeof marked !== 'undefined' ? marked.parse(p.DESCRIPTION.replace(/\\n/g, "\n")) : p.DESCRIPTION}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                explanationSection.insertAdjacentHTML('beforeend', pitfallsHtml);
             }
 
             // Robust MathJax trigger
@@ -489,21 +673,7 @@ async function handleResponse() {
     }
 }
 
-// Helper to trigger MathJax multiple times to ensure everything is rendered
-function triggerMathJax() {
-    if (window.MathJax && window.MathJax.typesetPromise) {
-        console.log("Triggering MathJax...");
-        // Call immediately and again after a short delay
-        MathJax.typesetPromise().catch(err => console.error("MathJax error:", err));
-        setTimeout(() => {
-            MathJax.typesetPromise().catch(err => console.warn("MathJax retry failed:", err));
-        }, 1000);
-    } else {
-        // If MathJax isn't loaded yet, try again in a bit
-        console.log("MathJax not ready, waiting...");
-        setTimeout(triggerMathJax, 500);
-    }
-}
+
 
 
 window.addEventListener("DOMContentLoaded",handleResponse);
@@ -649,7 +819,7 @@ window.checkAnswer = async function(level, index) {
             feedback.innerHTML = `
                 <div style="margin-top: 10px; padding: 15px; background: rgba(239, 68, 68, 0.05); border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.1);">
                     <p style="color: #ef4444; font-weight: 700; margin: 0 0 8px 0;"><i class="fas fa-times-circle"></i> ${aiResult.explanation || "Not quite."}</p>
-                    <div style="color: #374151; font-weight: 400; margin: 0 0 12px 0; line-height: 1.5;">${marked.parse(solutionExpl || "")}</div>
+                    <div style="color: #374151; font-weight: 400; margin: 0 0 12px 0; line-height: 1.5;">${typeof marked !== 'undefined' ? marked.parse(solutionExpl || "") : solutionExpl}</div>
                     <button class="checkBtn" style="background: #374151;" onclick="tryAgain('${level}', ${index})">Try Again</button>
                 </div>
             `;
@@ -718,7 +888,7 @@ if (themeBtn) {
 }
 
 // 3. Mark as Mastered Logic
-const markBtn = document.getElementById("markMastered");
+const markBtn = document.getElementById("masteredBtn");
 if (markBtn) {
     markBtn.addEventListener("click", async () => {
         const user = auth.currentUser;
@@ -744,18 +914,48 @@ if (markBtn) {
             markBtn.style.background = "#10b981";
             markBtn.style.color = "white";
             
-            // Add points (gamification)
+            // Add points (gamification) and reflect on UI
+            const newPoints = (window.userPoints || 0) + 50;
             const userRef = doc(db, "users", user.uid);
-            await setDoc(userRef, {
-                points: (window.userPoints || 0) + 50
-            }, { merge: true });
+            await setDoc(userRef, { points: newPoints }, { merge: true });
             
-            alert("Congratulations! You earned 50 points.");
+            window.userPoints = newPoints;
+            const ptsText = document.getElementById("userPoints");
+            if (ptsText) ptsText.innerText = newPoints;
+            
+            // Mark button as completed
+            markBtn.innerHTML = '<i class="fas fa-check-circle"></i> +50 Points Earned!';
+            markBtn.style.background = "#059669";
+            markBtn.style.color = "white";
         } catch (error) {
             console.error("Error marking as mastered:", error);
             markBtn.disabled = false;
             markBtn.innerText = "Mark as Mastered";
         }
+    });
+}
+
+// 4. PDF Export Logic
+const pdfBtn = document.getElementById("pdfBtn");
+if (pdfBtn) {
+    pdfBtn.addEventListener("click", () => {
+        const element = document.getElementById("learningContent");
+        const opt = {
+            margin:       [10, 10],
+            filename:     `${localStorage.getItem("topic") || "Lesson"}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        // Hide elements that shouldn't be in PDF (like "Explain" buttons)
+        const buttons = document.querySelectorAll('.explainSecBtn');
+        buttons.forEach(b => b.style.setProperty('display', 'none', 'important'));
+        
+        html2pdf().set(opt).from(element).save().then(() => {
+            // Restore buttons
+            buttons.forEach(b => b.style.display = '');
+        });
     });
 }
 

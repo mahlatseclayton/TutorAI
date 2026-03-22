@@ -1451,3 +1451,44 @@ body.dark-mode .quizInputRow input {
         position: static;
     }
 }
+/* --- Learning Hub New Sections --- */
+
+.cSummary i, .cVocab i, .cApps i {
+    color: #4338ca;
+    margin-right: 10px;
+}
+
+#summarySection {
+    border-left: 5px solid #4338ca;
+    background: rgba(67, 56, 202, 0.02);
+}
+
+.appCard {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.appCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(67, 56, 202, 0.1) !important;
+}
+
+/* Dark Mode Overrides for New Sections */
+body.dark-mode .appCard {
+    background: #1f2937 !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+
+body.dark-mode #summarySection {
+    background: rgba(129, 140, 248, 0.05);
+}
+
+body.dark-mode .appCard h4 {
+    color: #818cf8 !important;
+}
+
+body.dark-mode .vocab-item {
+    background: rgba(129, 140, 248, 0.1) !important;
+}

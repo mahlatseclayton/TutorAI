@@ -49,6 +49,9 @@
         <div id="pointsDisplay" class="pointsBadge">
           <i class="fas fa-star"></i> <span id="userPoints">0</span> pts
         </div>
+        <button id="pdfBtn" class="actionBtn" title="Export as PDF">
+          <i class="fas fa-file-pdf"></i>
+        </button>
         <button id="themeToggle" class="actionBtn" title="Toggle Theme">
           <i class="fas fa-moon"></i>
         </button>
@@ -87,6 +90,14 @@
       </div>
     </section>
 
+    <!-- ===== Quick Summary (New) ===== -->
+    <section class="contentCard" id="summarySection" style="display:none;">
+      <h2 class="cSummary"><i class="fas fa-list-check"></i> Quick Summary</h2>
+      <div id="summaryContent" class="lesson-body">
+        <!-- AI summary inserted here -->
+      </div>
+    </section>
+
     <!-- Key Concepts / Formulas -->
     <section class="contentCard" id="formulaSection">
       <h2 class="sidebarTitle">Key Concepts</h2>
@@ -103,13 +114,28 @@
         <!-- AI explanation inserted here -->
       </div>
     </section>
-<!-- examples -->
+
+    <!-- ===== Vocabulary (New) ===== -->
+    <section class="contentCard" id="vocabSection" style="display:none;">
+      <h2 class="cVocab"><i class="fas fa-book"></i> Key Terminology</h2>
+      <div id="vocabContent">
+        <!-- AI vocabulary inserted here -->
+      </div>
+    </section>
+
+    <!-- examples -->
     <section class="contentCard" id="examplesSection">
       <h2 class="cExamples">Worked Examples</h2>
-
       <div id="examplesContent">
+        <!-- AI examples inserted here -->
+      </div>
+    </section>
 
-      
+    <!-- ===== Real-World Applications (New) ===== -->
+    <section class="contentCard" id="applicationsSection" style="display:none;">
+      <h2 class="cApps"><i class="fas fa-globe"></i> Real-World Applications</h2>
+      <div id="applicationsContent">
+        <!-- AI applications inserted here -->
       </div>
     </section>
 
