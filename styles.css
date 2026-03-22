@@ -2055,3 +2055,39 @@ body.dark-mode #scanResultSection {
         height: 250px;
     }
 }
+
+
+/*password eye icon */
+/* Container for input + toggle */
+.password-container {
+  position: relative;       /* allows the eye icon to sit inside the input */
+  width: 100%;
+  margin-bottom: 15px;      /* spacing below the field */
+}
+
+/* Password input field */
+.password-container .authInput {
+  width: 100%;
+  padding: 12px 40px 12px 12px; /* space for the eye icon */
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #eef0fb;
+  font-size: 16px;
+  color: #333;
+}
+
+/* Toggle icon */
+.password-container .toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  user-select: none;        /* prevents accidental text selection */
+}
+
+/* FontAwesome icon inside toggle */
+.password-container .toggle-password i {
+  font-size: 18px;
+  color: #555;
+}

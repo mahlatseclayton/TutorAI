@@ -17,6 +17,34 @@ function Start(){
     window.location.href="signUp.html";
 
 }
+// Select the password container and elements
+const passwordContainer = document.querySelector('.password-container');
+const passwordInput = passwordContainer.querySelector('#password');
+const toggle = passwordContainer.querySelector('.toggle-password i'); // select the <i> inside the span
+
+// Function to toggle password visibility
+function togglePassword() {
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';            // show password
+    toggle.classList.remove('fa-eye');
+    toggle.classList.add('fa-eye-slash');   // change to eye-slash
+  } else {
+    passwordInput.type = 'password';        // hide password
+    toggle.classList.remove('fa-eye-slash');
+    toggle.classList.add('fa-eye');         // change back to eye
+  }
+}
+
+// Click to toggle
+passwordContainer.querySelector('.toggle-password').addEventListener('click', togglePassword);
+
+// Keyboard accessibility (Enter or Space)
+passwordContainer.querySelector('.toggle-password').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    togglePassword();
+  }
+});
 
 
 
