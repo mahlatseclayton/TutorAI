@@ -81,6 +81,7 @@
             line-height: 0.9;
             letter-spacing: -3px;
             background: linear-gradient(to bottom, var(--text-main), rgba(255,255,255,0.7));
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             word-break: keep-all;
@@ -142,10 +143,32 @@
         }
 
         @media (max-width: 900px) {
-            .hero-content { text-align: center; min-width: 100%; }
-            .welcome-text h1 { font-size: 4rem; }
-            .hero-logo-side { min-width: 100%; order: -1; }
-            #mainLogo { width: 300px; height: 300px; }
+            .hero-content { 
+                text-align: center; 
+                min-width: 100%; 
+                padding: 0 10px;
+                order: 2;
+            }
+            .welcome-text h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
+            .hero-logo-side { 
+                min-width: 100%; 
+                order: 1; 
+                margin-top: 60px;
+            }
+            #mainLogo { 
+                width: 180px; 
+                height: 180px; 
+                border-width: 8px;
+            }
+            .hero-container {
+                min-height: auto;
+                padding: 40px 20px;
+                gap: 20px;
+            }
+            .logo-glow {
+                width: 250px;
+                height: 250px;
+            }
         }
     </style>
 </head>

@@ -32,18 +32,22 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Helper to trigger MathJax multiple times to ensure everything is rendered
-function triggerMathJax() {
+// Helper to trigger MathJax and return a promise that resolves when done
+async function triggerMathJax() {
     if (window.MathJax && window.MathJax.typesetPromise) {
         console.log("Triggering MathJax...");
-        // Call immediately and again after a short delay
-        MathJax.typesetPromise().catch(err => console.error("MathJax error:", err));
-        setTimeout(() => {
-            MathJax.typesetPromise().catch(err => console.warn("MathJax retry failed:", err));
-        }, 1000);
+        try {
+            await MathJax.typesetPromise();
+            // Optional: Second pass for safety after layout shifts
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await MathJax.typesetPromise();
+        } catch (err) {
+            console.error("MathJax error:", err);
+        }
     } else {
-        // If MathJax isn't loaded yet, try again in a bit
         console.log("MathJax not ready, waiting...");
-        setTimeout(triggerMathJax, 500);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return triggerMathJax();
     }
 }
 
@@ -674,10 +678,32 @@ async function handleResponse() {
             }
 
             // Robust MathJax trigger
-            triggerMathJax();
+            await triggerMathJax();
+            
+            // Load Videos only after topic title is set
+            try {
+                await loadVideos();
+            } catch (vErr) {
+                console.warn("Could not load videos:", vErr);
+            }
+
+            // Finally hide the loader after everything is rendered
+            const loader = document.getElementById("loaderOverlay");
+            if (loader) {
+                loader.style.opacity = "0";
+                setTimeout(() => {
+                    loader.style.display = "none";
+                }, 500);
+            }
         } catch (e) {
             console.error("Failed to parse AI response:", e);
+            const loader = document.getElementById("loaderOverlay");
+            if (loader) loader.style.display = "none";
         }
+    } else {
+         // No stored response - hide loader anyway
+         const loader = document.getElementById("loaderOverlay");
+         if (loader) loader.style.display = "none";
     }
 }
 
@@ -747,7 +773,7 @@ function renderVideos(videos, container) {
     });
 }
 
-window.addEventListener("DOMContentLoaded", loadVideos);
+// Video fetching removed from standalone DOMContentLoaded to handle sync in handleResponse
 
 // --- New Features Logic ---
 
