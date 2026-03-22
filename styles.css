@@ -966,30 +966,33 @@ select:focus {
     padding: 0 20px;
 }
 
-.sidebar {
-    flex: 0 0 280px;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 25px;
-    height: fit-content;
-    position: sticky;
-    top: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+.sidebarTitle {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 2px solid rgba(229, 231, 235, 0.5);
+    padding-bottom: 16px;
 }
 
-.sidebarTitle {
-    font-size: 1.2rem;
-    color: #1f2937;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #6366f1;
+.sidebarTitle::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 24px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b); /* Gold for concepts */
+    border-radius: 4px;
 }
 
 .contentArea {
     flex: 1;
     min-width: 0;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 /* Header Actions */
@@ -1269,6 +1272,41 @@ body.dark-mode .quizInputRow input {
 .explainSecBtn:hover {
     background: #6366f1;
     color: white;
+}
+
+/* Exporting PDF fixes */
+.exporting-pdf .contentCard, 
+.exporting-pdf .sidebar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: white !important;
+    box-shadow: none !important;
+    border: 1px solid #eee !important;
+    color: black !important;
+    page-break-inside: avoid;
+}
+
+.exporting-pdf .mainFlex {
+    display: block !important; /* Stack for PDF */
+}
+
+.exporting-pdf .sidebar {
+    width: 100% !important;
+    position: static !important;
+    margin-bottom: 30px;
+}
+
+.exporting-pdf .actionBtn, 
+.exporting-pdf .chatWrapper,
+.exporting-pdf .checkBtn,
+.exporting-pdf input,
+.exporting-pdf .explainSecBtn,
+.exporting-pdf #videosSection {
+    display: none !important; /* Don't print buttons/inputs/videos */
+}
+
+.exporting-pdf {
+    background: white !important;
 }
 
 /* Responsive adjustments */

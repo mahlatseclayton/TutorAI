@@ -477,26 +477,83 @@ window.addEventListener("DOMContentLoaded", loadVideos);
 // --- New Features Logic ---
 
 // 1. Interactive Quiz Logic
-window.checkAnswer = function(level, index, correctAns, solutionExpl) {
+window.checkAnswer = async function(level, index, correctAns, solutionExpl) {
     const input = document.getElementById(`ans-${level}-${index}`);
     const feedback = document.getElementById(`feedback-${level}-${index}`);
     const inputRow = document.getElementById(`inputRow-${level}-${index}`);
+    const checkBtn = inputRow.querySelector(".checkBtn");
     const userAns = input.value.trim().toLowerCase();
     
-    if (userAns === correctAns.toLowerCase()) {
-        feedback.innerHTML = '<i class="fas fa-check-circle"></i> Correct! Great job.';
-        feedback.className = 'feedbackMsg correct';
-        input.style.borderColor = '#10b981';
-    } else {
-        feedback.innerHTML = `
-            <div style="margin-top: 10px; padding: 15px; background: rgba(239, 68, 68, 0.05); border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.1);">
-                <p style="color: #ef4444; font-weight: 700; margin: 0 0 8px 0;"><i class="fas fa-times-circle"></i> Not quite.</p>
-                <p style="color: #374151; font-weight: 400; margin: 0 0 12px 0; line-height: 1.5;">${solutionExpl || "No explanation available."}</p>
-                <button class="checkBtn" style="background: #374151;" onclick="tryAgain('${level}', ${index})">Try Again</button>
-            </div>
+    if (!userAns) return;
+
+    // Show loading state
+    const originalBtnText = checkBtn.innerText;
+    checkBtn.innerText = "Verifying...";
+    checkBtn.disabled = true;
+
+    try {
+        const topic = localStorage.getItem("topic");
+        const prompt = `
+          QUESTON: ${document.querySelector(`#ans-${level}-${index}`).closest('.practiceCard').querySelector('div').innerText}
+          EXPECTED ANSWER: ${correctAns}
+          USER ANSWER: ${userAns}
+
+          TASK: Determine if the user's answer is CONCEPTUALLY CORRECT even if worded differently.
+          RULES:
+          - RETURN ONLY VALID JSON: {"result": "CORRECT" or "INCORRECT", "explanation": "Short feedback"}
+          - Be lenient on theory questions.
+          - If it's a math question, be strict on the value but lenient on formatting.
         `;
-        feedback.className = 'feedbackMsg';
-        inputRow.style.display = 'none';
+
+        const response = await fetch(
+            "https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: prompt })
+            }
+        );
+        
+        const data = await response.json();
+        let aiResult = { result: "INCORRECT", explanation: solutionExpl };
+        
+        try {
+            // Parse the AI's JSON response from within the text
+            const cleaned = data.aiResponse.replace(/```json|```/g, "").trim();
+            aiResult = JSON.parse(cleaned);
+        } catch (e) {
+            // Fallback if AI doesn't return clean JSON
+            if (data.aiResponse.includes("CORRECT")) aiResult.result = "CORRECT";
+        }
+
+        if (aiResult.result === "CORRECT") {
+            feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${aiResult.explanation || "Correct! Great job."}`;
+            feedback.className = 'feedbackMsg correct';
+            input.style.borderColor = '#10b981';
+        } else {
+            feedback.innerHTML = `
+                <div style="margin-top: 10px; padding: 15px; background: rgba(239, 68, 68, 0.05); border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.1);">
+                    <p style="color: #ef4444; font-weight: 700; margin: 0 0 8px 0;"><i class="fas fa-times-circle"></i> ${aiResult.explanation || "Not quite."}</p>
+                    <div style="color: #374151; font-weight: 400; margin: 0 0 12px 0; line-height: 1.5;">${marked.parse(solutionExpl || "")}</div>
+                    <button class="checkBtn" style="background: #374151;" onclick="tryAgain('${level}', ${index})">Try Again</button>
+                </div>
+            `;
+            feedback.className = 'feedbackMsg';
+            inputRow.style.display = 'none';
+        }
+    } catch (error) {
+        console.error("AI Verification error:", error);
+        // Fallback to strict string match if AI fails
+        if (userAns === correctAns.toLowerCase()) {
+            feedback.innerHTML = '<i class="fas fa-check-circle"></i> Correct!';
+            feedback.className = 'feedbackMsg correct';
+        } else {
+            feedback.innerHTML = '<i class="fas fa-times-circle"></i> Incorrect. Try again.';
+            feedback.className = 'feedbackMsg incorrect';
+        }
+    } finally {
+        checkBtn.innerText = originalBtnText;
+        checkBtn.disabled = false;
     }
 };
 
@@ -590,18 +647,42 @@ if (markBtn) {
 const pdfBtn = document.getElementById("exportPdf");
 if (pdfBtn) { 
     pdfBtn.addEventListener("click", () => {
-        const element = document.getElementById("learningContent");
+        // Use a container that includes Sidebar + Area
+        const element = document.querySelector(".mainContent");
         const topic = localStorage.getItem("topic") || "Lesson";
         
+        // Add a temporary class to body to handle styles during capture
+        document.body.classList.add("exporting-pdf");
+        
         const opt = {
-            margin: 1,
+            margin: [0.5, 0.5],
             filename: `${topic}_Summary.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            html2canvas: { 
+              scale: 2, 
+              useCORS: true,
+              scrollX: 0,
+              scrollY: 0,
+              windowWidth: 1200 // Fix width for consistent capture
+            },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
         
-        html2pdf().set(opt).from(element).save();
+        html2pdf()
+          .set(opt)
+          .from(element)
+          .toPdf()
+          .get('pdf')
+          .then((pdf) => {
+              document.body.classList.remove("exporting-pdf");
+              pdf.save(`${topic}_Summary.pdf`);
+          })
+          .catch(err => {
+              console.error("PDF Export error:", err);
+              document.body.classList.remove("exporting-pdf");
+              alert("Wait a second let's try again.");
+          });
     });
 }
 
