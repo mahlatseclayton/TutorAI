@@ -15,25 +15,37 @@
     <div class="circles"></div>
     <div class="circles"></div>
   <main id="tutorMain">
-      <header class="appBar">
-        <div class="lCon">
-        <img class="cLogo" src="images/tlogo.jpeg"></img>
-        <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
-        </div>
-        
-           <nav class="navBar">
-                <image id="account" src="images/account.png"></image>
-            <a class="navItem" href="Account.html">Account</a>
-                <image id="account" src="images/home.png"></image>
-            <a  class="navItem" href="index.html">Home</a>
-        </nav>
-    </header>
-<div id="tSection">
-  <section id="tutorSection">
-    <div class="heroText">
-      <h2>Build Your Personalized Learning Session</h2>
-      <p>Learn smarter with structured explanations tailored to your level.</p>
-    </div>
+        <header class="appBar">
+            <div class="lCon">
+                <img class="cLogo" src="images/tlogo.jpeg" alt="Logo">
+                <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
+            </div>
+            
+            <nav class="navBar">
+                <a class="navItem active" href="mainPage.html"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a class="navItem" href="scanSolve.html"><i class="fas fa-camera"></i> Scan & Solve</a>
+                <a class="navItem" href="Account.html"><i class="fas fa-user-circle"></i> Account</a>
+            </nav>
+
+            <div class="headerActions">
+                <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div id="tSection">
+          <section id="tutorSection">
+            <div class="heroText">
+              <h2>Build Your Personalized Learning Session</h2>
+              <p>Learn smarter with structured explanations tailored to your level.</p>
+              
+              <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center;">
+                <button onclick="document.getElementById('tutorForm').scrollIntoView({behavior:'smooth'})" class="btn" style="background: white; color: #4338ca; border: 2px solid #4338ca;">
+                  <i class="fas fa-book-open"></i> Explore Topics
+                </button>
+              </div>
+            </div>
 
     <form id="tutorForm">
 

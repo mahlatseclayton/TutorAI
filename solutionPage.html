@@ -35,31 +35,31 @@
   <main id="tutorMain">
       <header class="appBar">
         <div class="lCon">
-        <img class="cLogo" src="images/tlogo.jpeg"></img>
-        <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
+          <img class="cLogo" src="images/tlogo.jpeg" alt="Logo">
+          <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
         </div>
         
-           <nav class="navBar">
-                <image id="account" src="images/account.png"></image>
-            <a class="navItem" href="Account.html">Account</a>
-                <image id="account" src="images/home.png"></image>
-            <a  class="navItem" href="index.html">Home</a>
+        <nav class="navBar">
+          <a class="navItem" href="mainPage.html"><i class="fas fa-th-large"></i> Dashboard</a>
+          <a class="navItem" href="scanSolve.html"><i class="fas fa-camera"></i> Scan & Solve</a>
+          <a class="navItem" href="Account.html"><i class="fas fa-user-circle"></i> Account</a>
         </nav>
+
         <div class="headerActions">
-        <div id="pointsDisplay" class="pointsBadge">
-          <i class="fas fa-star"></i> <span id="userPoints">0</span> pts
+          <div id="pointsDisplay" class="pointsBadge">
+            <i class="fas fa-star"></i> <span id="userPoints">0</span> pts
+          </div>
+          <button id="pdfBtn" class="themeToggleBtn" title="Export as PDF" style="font-size: 1rem;">
+             <i class="fas fa-file-pdf"></i>
+          </button>
+          <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button id="masteredBtn" class="actionBtn masteredBtn" style="margin-left: 10px;">
+            <i class="fas fa-check-double"></i> Mastered
+          </button>
         </div>
-        <button id="pdfBtn" class="actionBtn" title="Export as PDF">
-          <i class="fas fa-file-pdf"></i>
-        </button>
-        <button id="themeToggle" class="actionBtn" title="Toggle Theme">
-          <i class="fas fa-moon"></i>
-        </button>
-        <button id="masteredBtn" class="actionBtn masteredBtn">
-          <i class="fas fa-check-double"></i> Mark as Mastered
-        </button>
-      </div>
-    </header>
+      </header>
 <!-- main solution page -->
 
   <section id="solutionHeader">

@@ -31,6 +31,47 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// --- Theme Handling ---
+function initTheme() {
+    const themeToggle = document.getElementById("themeToggle");
+    const body = document.body;
+    const currentTheme = localStorage.getItem("theme");
+
+    // Helper to sync icon
+    const syncIcon = (isDark) => {
+        if (!themeToggle) return;
+        const icon = themeToggle.querySelector("i");
+        if (icon) {
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+    };
+
+    // Apply saved theme
+    if (currentTheme === "dark") {
+        body.classList.add("dark-mode");
+        syncIcon(true);
+    }
+
+    if (themeToggle && !themeToggle.dataset.init) {
+        themeToggle.dataset.init = "true";
+        themeToggle.addEventListener("click", () => {
+            body.classList.toggle("dark-mode");
+            const isDark = body.classList.contains("dark-mode");
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+            syncIcon(isDark);
+        });
+    }
+}
+
+// Polling initialization for dynamic content or slow loads
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initTheme);
+} else {
+    initTheme();
+}
+// Second pass after a delay to ensure late elements are caught
+setTimeout(initTheme, 500);
+
 // Helper to trigger MathJax multiple times to ensure everything is rendered
 function triggerMathJax() {
     if (window.MathJax && window.MathJax.typesetPromise) {
@@ -195,7 +236,7 @@ async function validateTopic(topic, subject) {
     `;
     
     try {
-        const res = await fetch("https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor", {
+        const res = await fetch("https://topictutor-xaudhnk2aq-uc.a.run.app", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: prompt })
@@ -285,7 +326,7 @@ async function getTopic() {
             Respond ONLY in JSON: {"valid": true, "reason": "..."} or {"valid": false, "reason": "...", "suggested_subject": "..."}`;
             
             try {
-                const vRes = await fetch("https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor", {
+                const vRes = await fetch("https://topictutor-xaudhnk2aq-uc.a.run.app", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ message: validatePrompt })
@@ -357,11 +398,11 @@ STRUCTURE:
 }
 - PRACTICE: Each level should have questions with "QUESTION", "ANSWER", and "SOLUTION_EXPLANATION".
 - ALL BACKSLASHES MUST BE ESCAPED (e.g. \\\\frac, \\\\theta).
-- NEVER RETURN A SINGLE BACKSLASH. ALWAYS DOUBLE THEM: \\\\.
-- USE \\\\n FOR ALL NEWLINES WITHIN STRINGS. DO NOT USE RAW NEWLINES.
+- NEVER RETURN A SINGLE BACKSLASH UNLESS IT IS FOR LATEX ($...$).
+- FOR PLAIN TEXT, DO NOT USE BACKSLASHES (\\) AS LINE BREAKS. USE \\\\n INSTEAD.
 - ENSURE ALL JSON STRINGS ARE PROPERLY ESCAPED.
 `;
-            const res = await fetch("https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor", {
+            const res = await fetch("https://topictutor-xaudhnk2aq-uc.a.run.app", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: fullPrompt })
@@ -500,9 +541,17 @@ async function handleResponse() {
             
             const aiResponse = JSON.parse(cleaned);
             
+            // --- Cleanup stray backslashes often added by AI as line-breaks ---
+            const sanitize = (text) => {
+                if (!text) return "";
+                // Remove backslashes followed by space or end of line, but keep LaTeX-looking ones like \theta or \frac
+                // This targets the stray "\" seen in theory responses.
+                return text.replace(/\\(\s|$)/g, " ").replace(/\\\\n/g, "\n").replace(/\\n/g, "\n");
+            };
+
             // marked.parse will convert the Markdown into HTML
             if(typeof marked !== 'undefined' && overView && aiResponse.OVERVIEW){
-                const cleanOverview = aiResponse.OVERVIEW.replace(/\\n/g, '\n');
+                const cleanOverview = sanitize(aiResponse.OVERVIEW);
                 overView.innerHTML = `
                   <div style="display: flex; justify-content: space-between; align-items: start;">
                     <div class="lesson-body">${marked.parse(cleanOverview)}</div>
@@ -515,7 +564,7 @@ async function handleResponse() {
             const summarySec = document.getElementById("summarySection");
             const summaryCon = document.getElementById("summaryContent");
             if (typeof marked !== 'undefined' && summarySec && summaryCon && aiResponse.SUMMARY) {
-                summaryCon.innerHTML = marked.parse(aiResponse.SUMMARY.replace(/\\n/g, "\n"));
+                summaryCon.innerHTML = marked.parse(sanitize(aiResponse.SUMMARY));
                 summarySec.style.display = "block";
             }
 
@@ -535,7 +584,7 @@ async function handleResponse() {
                 vocabSec.style.display = "block";
             }
             if(typeof marked !== 'undefined' && explanation && aiResponse.EXPLANATION){
-                const cleanExpl = aiResponse.EXPLANATION.replace(/\\n/g, '\n');
+                const cleanExpl = sanitize(aiResponse.EXPLANATION);
                 explanation.innerHTML = `
                   <div style="display: flex; justify-content: space-between; align-items: start;">
                     <div class="lesson-body">${marked.parse(cleanExpl)}</div>
@@ -656,7 +705,7 @@ async function handleResponse() {
                             ${aiResponse.PITFALLS.map(p => `
                                 <div>
                                     <strong style="color: #dc2626; display: block; margin-bottom: 5px;">${p.TITLE}</strong>
-                                    <div class="lesson-body" style="font-size: 0.95rem;">${typeof marked !== 'undefined' ? marked.parse(p.DESCRIPTION.replace(/\\n/g, "\n")) : p.DESCRIPTION}</div>
+                                    <div class="lesson-body" style="font-size: 0.95rem;">${typeof marked !== 'undefined' ? marked.parse(sanitize(p.DESCRIPTION)) : p.DESCRIPTION}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -712,7 +761,7 @@ async function loadVideos() {
     console.log("Fetching fresh videos from YouTube API...");
     
     try {
-        const response = await fetch(`https://us-central1-tutorai-5f97d.cloudfunctions.net/YT_VIDEOS?heading=${encodeURIComponent(sHeading)}`);
+        const response = await fetch(`https://yt-videos-xaudhnk2aq-uc.a.run.app?heading=${encodeURIComponent(sHeading)}`);
         const videos = await response.json();
         renderVideos(videos, vidContainer);
     } catch (err) {
@@ -777,7 +826,7 @@ window.checkAnswer = async function(level, index) {
         `;
 
         const response = await fetch(
-            "https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor",
+            "https://topictutor-xaudhnk2aq-uc.a.run.app",
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -998,14 +1047,16 @@ async function handleChat() {
     chatMessages.appendChild(botDiv);
     
     try {
-        const topic = localStorage.getItem("topic");
+        const topic = localStorage.getItem("topic") || "General Study";
+        const scanContext = window.lastScanResult ? `Based on this scanned question/solution: ${window.lastScanResult.substring(0, 500)}...` : "";
+        
         const response = await fetch(
-            "https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor",
+            "https://topictutor-xaudhnk2aq-uc.a.run.app",
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    message: `Context: You are tutoring on ${topic}. The user asks: ${msg}. Provide a short, helpful explanation.`
+                    message: `${scanContext} Context: You are tutoring on ${topic}. The user asks: ${msg}. Provide a short, helpful explanation.`
                 })
             }
         );
@@ -1036,3 +1087,164 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
+// --- SCAN & SOLVE LOGIC ---
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+const imagePreview = document.getElementById("imagePreview");
+const solveBtn = document.getElementById("solveBtn");
+const scanResultSection = document.getElementById("scanResultSection");
+const scanResultContent = document.getElementById("scanResultContent");
+const modeBtns = document.querySelectorAll(".modeBtn");
+
+let selectedScanMode = "teaching";
+let base64Image = null;
+
+if (dropZone) {
+    dropZone.addEventListener("click", () => fileInput.click());
+    
+    dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+    });
+    
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+    
+    dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+        const file = e.dataTransfer.files[0];
+        if (file) handleScanFile(file);
+    });
+}
+
+if (fileInput) {
+    fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) handleScanFile(file);
+    });
+}
+
+function handleScanFile(file) {
+    if (!file) return;
+    
+    // Show immediate feedback
+    if (solveBtn) {
+        solveBtn.disabled = true;
+        solveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        base64Image = e.target.result;
+        
+        if (imagePreview) {
+            imagePreview.src = base64Image;
+            imagePreview.style.display = "block";
+        }
+
+        if (solveBtn) {
+            solveBtn.disabled = false;
+            solveBtn.innerHTML = '<i class="fas fa-magic"></i> Solve Question';
+        }
+        
+        // Scroll to preview
+        if (imagePreview) {
+            imagePreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+    
+    reader.onerror = () => {
+        if (solveBtn) {
+            solveBtn.disabled = false;
+            solveBtn.innerHTML = '<i class="fas fa-magic"></i> Solve Question';
+            alert("Error reading file. Please try again.");
+        }
+    };
+
+    reader.readAsDataURL(file);
+}
+
+if (modeBtns) {
+    modeBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            modeBtns.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            selectedScanMode = btn.getAttribute("data-mode");
+        });
+    });
+}
+
+if (solveBtn && scanResultSection && scanResultContent) {
+    solveBtn.addEventListener("click", async () => {
+        if (!base64Image) return;
+        
+        try {
+            solveBtn.disabled = true;
+            solveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...';
+            scanResultSection.style.display = "block";
+            scanResultContent.innerHTML = '<div class="spinner" style="margin: 20px auto;"></div><p style="text-align:center;">TutorAI is scanning your question...</p>';
+            
+            // Construct Prompt based on mode
+            let stylePrompt = "";
+            if (selectedScanMode === "memo") {
+                stylePrompt = "Provide the answer in a 'Memo / Marking Guideline' style. Focus on the correct final answers and list the points/marks for each step. Be concise.";
+            } else if (selectedScanMode === "teaching") {
+                stylePrompt = "Provide the answer in a 'Teaching / Tutoring' style. Explain the core concepts first, use analogies, and guide the student through the solution while explaining the reasoning (the 'why') for each step.";
+            } else {
+                stylePrompt = "Provide a clear, detailed 'Step-by-Step Solution'. Number each step and highlight the final answer clearly.";
+            }
+
+            const fullPrompt = `
+                I am uploading a question image. 
+                STYLE: ${stylePrompt}
+                - RETURN ONLY THE SOLUTION CONTENT.
+                - USE $...$ FOR ALL MATH.
+                - USE LATEX FOR SYMBOLS.
+                - USE MARKDOWN FOR FORMATTING.
+                - ENSURE THE RESPONSE IS PROFESSIONAL AND EASY FOR A STUDENT TO FOLLOW.
+            `;
+
+            const res = await fetch("https://topictutor-xaudhnk2aq-uc.a.run.app", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    message: fullPrompt,
+                    image: base64Image // Assuming backend handles image field
+                })
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.error || "AI Vision Error");
+            }
+            const data = await res.json();
+            
+            // Clean and Render
+            const cleaned = (data.aiResponse || "").replace(/\\n/g, "\n");
+            
+            // Store context for chat
+            window.lastScanResult = cleaned;
+            
+            if (typeof marked !== 'undefined') {
+                scanResultContent.innerHTML = marked.parse(cleaned);
+            } else {
+                scanResultContent.innerHTML = cleaned;
+            }
+            
+            // Trigger MathJax
+            triggerMathJax();
+            
+            solveBtn.disabled = false;
+            solveBtn.innerHTML = '<i class="fas fa-magic"></i> Solve Question';
+            
+            // Scroll to result
+            scanResultSection.scrollIntoView({ behavior: 'smooth' });
+
+        } catch (error) {
+            console.error("Scan Solve Error:", error);
+            scanResultContent.innerHTML = `<p style="color: #dc2626;">Error: ${error.message}. Please try again with a clearer image.</p>`;
+            solveBtn.disabled = false;
+            solveBtn.innerHTML = '<i class="fas fa-magic"></i> Solve Question';
+        }
+    });
+}

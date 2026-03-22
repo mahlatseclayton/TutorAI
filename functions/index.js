@@ -21,6 +21,7 @@ exports.topicTutor = onRequest(
   try {
 
     const userPrompt = req.body?.message;
+    const base64Data = req.body?.image; // data:image/jpeg;base64,... or data:application/pdf;base64,...
 
     if (!userPrompt) {
       return res.status(400).json({
@@ -29,15 +30,39 @@ exports.topicTutor = onRequest(
       });
     }
 
-    
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    console.log("API KEY EXISTS:", !!process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash"
+      model: "gemini-2.5-flash",
+      systemInstruction: "You are a highly capable South African science and math tutor. Analyze the provided image or PDF document which contains a question. Provide a clear, accurate, and helpful response based on the requested style (Memo, Teaching, or Step-by-Step). Use LaTeX for all mathematical expressions."
     });
 
-    const result = await model.generateContent(userPrompt);
+    let result;
+    if (base64Data) {
+      console.log("Multimodal request detected (Image/PDF).");
+      // Split the base64 string to get the data and MIME type
+      const matches = base64Data.match(/^data:([^;]+);base64,(.+)$/);
+      if (!matches || matches.length !== 3) {
+        throw new Error("Invalid base64 image data format");
+      }
+      const mimeType = matches[1];
+      const data = matches[2];
+
+      result = await model.generateContent([
+        userPrompt,
+        {
+          inlineData: {
+            data: data,
+            mimeType: mimeType
+          }
+        }
+      ]);
+    } else {
+      console.log("Text-only request detected.");
+      result = await model.generateContent(userPrompt);
+    }
+
     const responseText = result.response.text();
+    console.log("AI Generation successful.");
 
     return res.status(200).json({
       success: true,
@@ -45,10 +70,10 @@ exports.topicTutor = onRequest(
     });
 
   } catch (error) {
-
+    console.error("CRITICAL AI GENERATION ERROR:", error);
     return res.status(500).json({
       success: false,
-      error: "AI_GENERATION_FAILED"
+      error: error.message || "AI_GENERATION_FAILED"
     });
   }
 });
