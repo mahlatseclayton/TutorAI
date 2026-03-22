@@ -736,22 +736,36 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
-
+//functions to load videos
 async function loadVideos() {
-    const topicTitle = document.getElementById("topicTitle");
-    const vidContainer = document.getElementById("videosSection");
-    if (!vidContainer || !topicTitle) return;
-    
-    const sHeading = topicTitle.innerText;
-    console.log("Fetching fresh videos from YouTube API...");
-    
-    try {
-        const response = await fetch(`https://yt-videos-xaudhnk2aq-uc.a.run.app?heading=${encodeURIComponent(sHeading)}`);
-        const videos = await response.json();
-        renderVideos(videos, vidContainer);
-    } catch (err) {
-        console.error("Video fetch error:", err);
+  const topicTitle = document.getElementById("topicTitle");
+  const vidContainer = document.getElementById("videosSection");
+  if (!vidContainer || !topicTitle) return;
+
+  const sHeading = topicTitle.innerText;
+  console.log("🔹 loadVideos called with heading:", sHeading);
+
+  try {
+    const response = await fetch(
+      `https://yt-videos-xaudhnk2aq-uc.a.run.app?heading=${encodeURIComponent(
+        sHeading
+      )}`
+    );
+    const data = await response.json();
+
+    if (data.error) {
+      vidContainer.innerHTML =
+        "<p style='text-align:center'>No videos available. Try again later.</p>";
+      console.warn("Video fetch error:", data.message);
+      return;
     }
+
+    renderVideos(data.videos, vidContainer);
+  } catch (err) {
+    console.error("Video fetch error:", err);
+    vidContainer.innerHTML =
+      "<p style='text-align:center'>Failed to fetch videos.</p>";
+  }
 }
 
 function renderVideos(videos, container) {
