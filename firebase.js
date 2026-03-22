@@ -317,9 +317,18 @@ STRUCTURE:
             
             localStorage.setItem("aiResponse", cleaned);
             
-            // 3. Save to Cache (Async)
-            setDoc(cacheRef, { response: parsedResponse, timestamp: new Date() }, { merge: true })
-              .catch(err => console.error("Cache save failed:", err));
+            // 3. Save to Cache (Awaiting to ensure it's sent before redirect)
+            try {
+                await setDoc(cacheRef, { 
+                    response: parsedResponse, 
+                    timestamp: new Date(),
+                    topic: topic,
+                    subject: subject
+                }, { merge: true });
+                console.log("Successfully cached to Firestore:", cacheID);
+            } catch (err) {
+                console.warn("Firestore cache save failed:", err);
+            }
         }
 
         localStorage.setItem("grade", grade);
@@ -451,22 +460,32 @@ async function handleResponse() {
                 formulaContainer.innerHTML = aiResponse.FORMULAS.map(f => `
                     <div class="concept-item">
                         <span class="concept-name">${f.NAME}</span>
-                        <span class="concept-value">${marked.parseInline(f.CONTENT)}</span>
+                        <span class="concept-value">${f.CONTENT}</span>
                     </div>
                 `).join('');
             }
 
-            // Inform MathJax to process the new dynamically loaded math LaTeX 
-            if (window.MathJax) {
-                setTimeout(() => {
-                    MathJax.typesetPromise()
-                        .then(() => console.log("MathJax success"))
-                        .catch((err) => console.error("MathJax error:", err));
-                }, 500); // Increased timeout to ensure DOM is fully ready
-            }
+            // Robust MathJax trigger
+            triggerMathJax();
         } catch (e) {
             console.error("Failed to parse AI response:", e);
         }
+    }
+}
+
+// Helper to trigger MathJax multiple times to ensure everything is rendered
+function triggerMathJax() {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        console.log("Triggering MathJax...");
+        // Call immediately and again after a short delay
+        MathJax.typesetPromise().catch(err => console.error("MathJax error:", err));
+        setTimeout(() => {
+            MathJax.typesetPromise().catch(err => console.warn("MathJax retry failed:", err));
+        }, 1000);
+    } else {
+        // If MathJax isn't loaded yet, try again in a bit
+        console.log("MathJax not ready, waiting...");
+        setTimeout(triggerMathJax, 500);
     }
 }
 
