@@ -1041,6 +1041,76 @@ body.dark-mode .concept-value {
     overflow-wrap: break-word;
 }
 
+.exampleCard {
+    margin-bottom: 30px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+.exampleHeader {
+    padding: 15px 25px;
+    background: rgba(99, 102, 241, 0.05);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.exampleBody {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: rgba(99, 102, 241, 0.1); /* Divider color */
+}
+
+.exampleProblem, .exampleSolution {
+    padding: 25px;
+    background: white;
+    font-size: 0.95rem;
+    line-height: 1.7;
+}
+
+.exampleProblem {
+    border-right: 1px solid rgba(99, 102, 241, 0.05);
+}
+
+.exampleProblem strong, .exampleSolution strong {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #4338ca;
+}
+
+body.dark-mode .exampleCard {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .exampleHeader {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+body.dark-mode .exampleProblem, body.dark-mode .exampleSolution {
+    background: #1e293b;
+    color: #cbd5e1;
+}
+
+@media (max-width: 800px) {
+    .exampleBody {
+        grid-template-columns: 1fr;
+    }
+    .exampleProblem {
+        border-right: none;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+    }
+}
+
 .lesson-body {
     line-height: 1.8;
     color: #374151;

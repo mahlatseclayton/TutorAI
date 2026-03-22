@@ -170,140 +170,180 @@ await sendPasswordResetEmail(auth,email);
     })
 }
 // getting topic from ai
-async function getTopic(){
-    
-    const grade=document.querySelector("#gradeId").value;
-    const topic=document.querySelector("#topicId").value;
-     const subject=document.querySelector("#subjectId").value;
-    const level=document.querySelector("#levelId").value;
-     
-        localStorage.setItem("grade", grade);
-        localStorage.setItem("subject", subject);
-        localStorage.setItem("topic", topic);
-        localStorage.setItem("level", level);
-        console.log("stored details");
+async function validateTopic(topic, subject) {
     const prompt = `
+        Does the TOPIC: "${topic}" belong to the SUBJECT: "${subject}"?
+        - If YES, return exactly "VALID".
+        - If NO, suggest the most likely correct subject for this topic (e.g., "Life Science" for "Reproduction").
+        - RETURN ONLY ONE WORD (either VALID or the suggested SUBJECT).
+    `;
+    
+    try {
+        const res = await fetch("https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: prompt })
+        });
+        const data = await res.json();
+        return data.aiResponse.trim();
+    } catch (e) {
+        console.error("Validation error:", e);
+        return "VALID";
+    }
+}
+
+async function getTopic() {
+    const gradeElem = document.getElementById("gradeId");
+    const subjectElem = document.getElementById("subjectId");
+    const topicElem = document.getElementById("topicId");
+    const levelElem = document.getElementById("levelId");
+
+    if (!gradeElem || !subjectElem || !topicElem || !levelElem) {
+        return alert("Error: Form elements not found!");
+    }
+
+    const grade = gradeElem.value;
+    const subject = subjectElem.value;
+    const topic = topicElem.value.trim();
+    const level = levelElem.value;
+
+    if (!topic) return alert("Please enter a topic!");
+
+    const startedBtn = document.getElementById("startedBtn");
+    const originalText = startedBtn?.innerText || "Start Learning";
+    if (startedBtn) {
+        startedBtn.disabled = true;
+        startedBtn.innerText = "Validating Topic...";
+    }
+    
+    const loader = document.getElementById("loaderOverlay");
+    if (loader) loader.style.display = "flex";
+
+    try {
+        // 1. Topic Validation
+        let validation = "VALID";
+        try {
+            if (startedBtn) startedBtn.innerText = "Checking Subject...";
+            validation = await validateTopic(topic, subject);
+        } catch (e) {
+            console.warn("Validation skipped due to error:", e);
+        }
+
+        if (validation && validation !== "VALID" && validation.toUpperCase() !== subject.toUpperCase()) {
+            if (loader) loader.style.display = "none";
+            const retry = confirm(`Wait! "${topic}" usually belongs to "${validation}". Do you want to switch to "${validation}" instead?`);
+            if (retry) {
+                document.getElementById("subjectId").value = validation;
+                if (startedBtn) {
+                    startedBtn.disabled = false;
+                    startedBtn.innerText = originalText;
+                }
+                return;
+            }
+        }
+
+        if (loader) loader.style.display = "flex";
+        if (startedBtn) startedBtn.innerText = "Consulting AI...";
+
+        // 2. Check Firestore Cache
+        const cacheID = `${grade}_${subject}_${topic}_${level}`.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
+        const cacheRef = doc(db, "topicsCache", cacheID);
+        
+        let cachedData = null;
+        try {
+            const cacheSnap = await getDoc(cacheRef);
+            if (cacheSnap.exists()) {
+                cachedData = cacheSnap.data().response;
+            }
+        } catch (e) {
+            console.warn("Cache check failed:", e);
+        }
+
+        if (cachedData) {
+            console.log("Loading from cache...");
+            localStorage.setItem("aiResponse", JSON.stringify(cachedData));
+        } else {
+            console.log("No cache found. Calling AI...");
+            const fullPrompt = `
 YOU ARE AN ADVANCED EDUCATIONAL TUTOR AI.
 
-TASK:
-GENERATE STRUCTURED LEARNING CONTENT.
+GENERATE STRUCTURED LEARNING CONTENT FOR:
+TOPIC: ${topic}
+SUBJECT: ${subject}
+GRADE: ${grade}
+LEVEL: ${level}
 
-STRICT RULES:
+STRICT JSON RULES:
 - RETURN ONLY VALID JSON.
-- DO NOT RETURN PLAIN TEXT OR EXPLANATIONS OUTSIDE JSON.
-- ALL LONG TEXT FIELDS MUST USE FORMATTED MARKDOWN.
-- FOR MATH & EQUATIONS, USE LATEX ONLY.
-- WRAP INLINE MATH IN $...$ AND BLOCK MATH IN $$...$$.
-- IMPORTANT: YOU ARE WRITING INSIDE A JSON STRING. YOU MUST DOUBLE ESCAPE BACKSLASHES FOR LATEX (e.g., Use \\\\frac instead of \\frac).
-- ESCAPE NEWLINES IN JSON STRINGS AS \\n.
-- DO NOT USE RAW NEWLINES INSIDE THE JSON VALUES; USE THE LITERAL \\n SEQUENCE.
+- USE DOUBLE NEWLINES (\\n\\n) FOR PARAGRAPHS.
+- ESCAPE ALL BACKSLASHES FOR LATEX (e.g. \\\\frac).
+- ENSURE ALL QUOTES ARE ESCAPED IN MARKDOWN STRINGS.
 
-STRUCTURE AS VALID JSON:
+STRUCTURE:
 {
   "SUBJECT": "${subject}",
   "TOPIC": "${topic}",
   "GRADE": "${grade}",
   "LEVEL": "${level}",
-
-  "OVERVIEW": "Brief Markdown summary.",
-
-  "EXPLANATION": "A comprehensive, beautifully formatted Markdown lesson. USE DOUBLE NEWLINES (\\n\\n) BETWEEN PARAGRAPHS for readability. Use headers (###) for sub-sections. Use bolding sparingly for key terms only. Incorporate LaTeX for all math. Ensure it reads like a premium textbook chapter.",
-
+  "OVERVIEW": "...",
+  "EXPLANATION": "...",
   "EXAMPLES": [
-    {
-      "TITLE": "Step-by-step Example",
-      "SOLUTION": "Detailed worked solution."
-    }
+    { "TITLE": "Example 1", "PROBLEM": "...", "SOLUTION_STEPS": "..." }
   ],
-  
   "FORMULAS": [
-    { "NAME": "Key Concept Name", "CONTENT": "Definition or Formula" }
+    { "NAME": "Key Concept", "CONTENT": "..." }
   ],
-
   "PRACTICE": {
     "EASY": [{ "QUESTION": "q", "ANSWER": "a", "SOLUTION_EXPLANATION": "expl" }],
     "MEDIUM": [{ "QUESTION": "q", "ANSWER": "a", "SOLUTION_EXPLANATION": "expl" }],
     "HARD": [{ "QUESTION": "q", "ANSWER": "a", "SOLUTION_EXPLANATION": "expl" }]
   }
 }
-
-TIPS:
-- PROVIDE AT LEAST 500 WORDS FOR EXPLANATION.
-- ENSURE JSON IS VALID.
-
-LEVEL GUIDELINES:
-- BEGINNER → Simple definitions + simple examples.
-- INTERMEDIATE → Include formulas + deep explanation.
-- ADVANCED → Include deep reasoning + detailed proofs.
-
-TOPIC: ${topic}
-SUBJECT: ${subject}
-GRADE: ${grade}
-LEVEL: ${level}
 `;
-// this method calls the cloud function 
-const response = await fetch(
-  "https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor",
-  {
-    method: "POST",
-    headers: {
-       "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      message: prompt
-    })
-  }
-);
+            const res = await fetch("https://us-central1-tutorai-5f97d.cloudfunctions.net/topicTutor", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: fullPrompt })
+            });
+            
+            if (!res.ok) throw new Error(`AI Gateway Error ${res.status}`);
+            const data = await res.json();
+            
+            if (!data || !data.aiResponse) throw new Error("The AI didn't provide a lesson. Try a different topic.");
 
-   const data = await response.json();
-        try{
-        if (data && data.aiResponse) {
-            const responseToStore = typeof data.aiResponse === 'string' 
-                ? data.aiResponse 
-                : JSON.stringify(data.aiResponse);
-                
-           localStorage.setItem("aiResponse", responseToStore);    
-            window.location.href = "solutionPage.html";
-        } else {
-            console.error("Invalid response format:", data);
-            alert("Error: Invalid response from server");
-        }
-    } catch (error) {
-        console.error("Error in getTopic:", error);
-        alert("Error fetching topic. Please try again.");
-    }
-  
-
-}
-const startedBtn = document.querySelector("#startedBtn");
-if (startedBtn) {
-    startedBtn.addEventListener("click", async (event) => {
-        event.preventDefault();
-
-        // Basic validation before showing loader
-        const grade = document.querySelector("#gradeId")?.value;
-        const topic = document.querySelector("#topicId")?.value;
-        const subject = document.querySelector("#subjectId")?.value;
-        const level = document.querySelector("#levelId")?.value;
-
-        if (!grade || !topic || !subject || !level) {
-            alert("Please fill out all fields before starting.");
-            return;
+            let cleaned = data.aiResponse.replace(/```json|```/g, "").trim();
+            const parsedResponse = JSON.parse(cleaned);
+            
+            localStorage.setItem("aiResponse", cleaned);
+            
+            // 3. Save to Cache (Async, don't block if it fails)
+            setDoc(cacheRef, { response: parsedResponse, timestamp: new Date() }, { merge: true })
+              .catch(err => console.error("Cache save failed:", err));
         }
 
-        startedBtn.disabled = true;
-        const originalText = startedBtn.innerText;
-        startedBtn.innerText = "Generating...";
+        localStorage.setItem("grade", grade);
+        localStorage.setItem("subject", subject);
+        localStorage.setItem("topic", topic);
+        localStorage.setItem("level", level);
+        window.location.href = "solutionPage.html";
         
-        const loader = document.getElementById("loaderOverlay");
-        if (loader) loader.style.display = "flex";
-
-        await getTopic();
-
-        // This runs if getTopic fails or after redirect happens
-        startedBtn.disabled = false;
-        startedBtn.innerText = originalText;
+    } catch (error) {
+        console.error("Critical Failure in getTopic:", error);
+        alert(`TutorAI Error: ${error.message}. Please try again in few seconds.`);
+    } finally {
+        if (startedBtn) {
+            startedBtn.disabled = false;
+            startedBtn.innerText = originalText;
+        }
         if (loader) loader.style.display = "none";
+    }
+}
+
+const startedBtn = document.getElementById("startedBtn");
+if (startedBtn) {
+    startedBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await getTopic();
     });
 }
 async function handleResponse() {
@@ -346,12 +386,23 @@ async function handleResponse() {
                 let examplesHtml = '';
                 aiResponse.EXAMPLES.forEach((example, idx) => {
                     examplesHtml += `
-                        <div style="margin-bottom: 20px; padding: 25px; background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px; margin-bottom: 15px;">
-                              <h3 style="color: #1f2937; margin: 0;">${example.TITLE}</h3>
-                              <button class="explainSecBtn" onclick="explainSection('${example.TITLE}', '${example.SOLUTION.replace(/'/g, "\\'").replace(/\n/g, " ")}')"><i class="fas fa-magic"></i> Explain</button>
+                        <div class="exampleCard">
+                            <div class="exampleHeader">
+                                <h3 style="margin: 0;">${example.TITLE}</h3>
+                                <button class="explainSecBtn" onclick="explainSection('${example.TITLE}', '${(example.PROBLEM + ' ' + (example.SOLUTION_STEPS || example.SOLUTION || '')).replace(/'/g, "\\'").replace(/\n/g, " ")}')">
+                                    <i class="fas fa-magic"></i> Explain
+                                </button>
                             </div>
-                            <div class="md-content" style="line-height: 1.7; font-size: 15px; color: #374151;">${marked.parse(example.SOLUTION)}</div>
+                            <div class="exampleBody">
+                                <div class="exampleProblem">
+                                    <strong>Problem:</strong>
+                                    <div>${marked.parse(example.PROBLEM || "See above.")}</div>
+                                </div>
+                                <div class="exampleSolution">
+                                    <strong>Solution:</strong>
+                                    <div>${marked.parse(example.SOLUTION_STEPS || example.SOLUTION || "No solution provided.")}</div>
+                                </div>
+                            </div>
                         </div>
                     `;
                 });
