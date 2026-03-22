@@ -5,8 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tutor page</title>
         <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+        <script>
+          window.MathJax = {
+            tex: {
+              inlineMath: [['$', '$'], ['\\(', '\\)']],
+              displayMath: [['$$', '$$'], ['\\[', '\\]']],
+              processEscapes: true
+            },
+            options: {
+              ignoreHtmlClass: 'tex2jax_ignore',
+              processHtmlClass: 'tex2jax_process'
+            }
+          };
+        </script>
         <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
         <!-- <link rel="stylesheet" href="home_styles.css"> -->
 </head>
@@ -30,6 +45,12 @@
                 <image id="account" src="images/home.png"></image>
             <a  class="navItem" href="index.html">Home</a>
         </nav>
+        <div class="headerActions">
+          <div id="pointsDisplay" class="pointsBadge" title="Your TutorAI Points"><i class="fas fa-star"></i> <span id="userPointsText">0</span> pts</div>
+          <button id="themeToggle" class="actionBtn" title="Toggle Dark/Light Mode"><i class="fas fa-moon"></i></button>
+          <button id="exportPdf" class="actionBtn" title="Export as PDF"><i class="fas fa-file-pdf"></i></button>
+          <button id="markMastered" class="actionBtn masteredBtn" title="Mark as Mastered">Mark as Mastered</button>
+        </div>
     </header>
 <!-- main solution page -->
 
@@ -48,6 +69,17 @@
 
 
   </section>
+
+  <div class="mainFlex">
+    <!-- Sidebar for Formulas & Key Concepts -->
+    <aside id="formulaSidebar" class="sidebar">
+      <h2 class="sidebarTitle">Key Concepts</h2>
+      <div id="formulaContent">
+        <!-- Formulas inserted here -->
+      </div>
+    </aside>
+
+    <div class="contentArea">
   <section id="learningContent">
 
     <!-- ===== Overview ===== -->
@@ -116,7 +148,25 @@
       </div>
     </section>
 
-  </section>
+  </div>
+
+  <!-- Explain This AI Chat Bubble -->
+  <div id="aiChatWrapper" class="chatWrapper">
+    <div id="aiChatBubble" class="chatBubble">
+      <div class="chatHeader">
+        <span>TutorAI Assistant</span>
+        <button id="closeChat">&times;</button>
+      </div>
+      <div id="chatMessages" class="chatMessages">
+        <p class="botMsg">Hi! I'm your TutorAI assistant. Feel free to ask me anything about the lesson, or click "Explain" on any section for more details.</p>
+      </div>
+      <div class="chatInputCon">
+        <input type="text" id="chatInput" placeholder="Ask a question...">
+        <button id="sendChat"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+    <button id="chatToggle" class="chatToggleBtn"><i class="fas fa-comment-dots"></i></button>
+  </div>
 
 </main>
 </body>
