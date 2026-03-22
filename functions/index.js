@@ -95,7 +95,7 @@ exports.YT_VIDEOS = functions.https.onRequest(
 
         // New key first, old key second
         const apiKeys = [
-          process.env.YOUTUBE_API_KEY_2, // NEW key first
+          process.env.YOUTUBE_API_KEY_2, // NEW key first tested
           process.env.YOUTUBE_API_KEY,   // OLD key second
         ];
 
