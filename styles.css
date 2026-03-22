@@ -958,12 +958,13 @@ select:focus {
 /* --- New Features Styles --- */
 
 /* Parent layout for Sidebar + Content */
-.mainFlex {
+.mainFlex, .mainContent {
     display: flex;
+    flex-direction: column;
     gap: 30px;
     margin: 20px auto;
-    max-width: 1200px;
-    padding: 0 20px;
+    max-width: 1400px; /* Expanded from 1200px */
+    padding: 0 40px; /* Increased padding */
 }
 
 .sidebarTitle {
@@ -983,8 +984,48 @@ select:focus {
     display: inline-block;
     width: 6px;
     height: 24px;
-    background: linear-gradient(135deg, #fbbf24, #f59e0b); /* Gold for concepts */
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
     border-radius: 4px;
+}
+
+.concept-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    gap: 20px;
+}
+
+.concept-item:last-child {
+    border-bottom: none;
+}
+
+.concept-name {
+    font-weight: 700;
+    color: #4338ca;
+    font-size: 1.1rem;
+    white-space: nowrap;
+}
+
+.concept-value {
+    font-size: 1.1rem;
+    color: #1f2937;
+    text-align: right;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+}
+
+body.dark-mode .concept-item {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .concept-name {
+    color: #a5b4fc;
+}
+
+body.dark-mode .concept-value {
+    color: #f1f5f9;
 }
 
 .contentArea {
@@ -993,6 +1034,52 @@ select:focus {
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: break-word;
+}
+
+.contentCard {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.lesson-body {
+    line-height: 1.8;
+    color: #374151;
+    font-size: 1.05rem;
+    flex: 1;
+}
+
+.lesson-body p {
+    margin-bottom: 25px;
+}
+
+.lesson-body h3 {
+    font-size: 1.4rem;
+    color: #111827;
+    margin-top: 35px;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.lesson-body ul, .lesson-body ol {
+    margin-bottom: 25px;
+    padding-left: 20px;
+}
+
+.lesson-body li {
+    margin-bottom: 10px;
+}
+
+.lesson-body strong {
+    color: #111827;
+    font-weight: 700;
+}
+
+.lesson-body code {
+    background: rgba(99, 102, 241, 0.05);
+    color: #4338ca;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
 }
 
 /* Header Actions */
@@ -1272,41 +1359,6 @@ body.dark-mode .quizInputRow input {
 .explainSecBtn:hover {
     background: #6366f1;
     color: white;
-}
-
-/* Exporting PDF fixes */
-.exporting-pdf .contentCard, 
-.exporting-pdf .sidebar {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: white !important;
-    box-shadow: none !important;
-    border: 1px solid #eee !important;
-    color: black !important;
-    page-break-inside: avoid;
-}
-
-.exporting-pdf .mainFlex {
-    display: block !important; /* Stack for PDF */
-}
-
-.exporting-pdf .sidebar {
-    width: 100% !important;
-    position: static !important;
-    margin-bottom: 30px;
-}
-
-.exporting-pdf .actionBtn, 
-.exporting-pdf .chatWrapper,
-.exporting-pdf .checkBtn,
-.exporting-pdf input,
-.exporting-pdf .explainSecBtn,
-.exporting-pdf #videosSection {
-    display: none !important; /* Don't print buttons/inputs/videos */
-}
-
-.exporting-pdf {
-    background: white !important;
 }
 
 /* Responsive adjustments */

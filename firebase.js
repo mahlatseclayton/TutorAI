@@ -205,33 +205,31 @@ STRUCTURE AS VALID JSON:
   "GRADE": "${grade}",
   "LEVEL": "${level}",
 
-  "OVERVIEW": "Markdown intro with math like $E=mc^2$.",
+  "OVERVIEW": "Brief Markdown summary.",
 
-  "EXPLANATION": "Extensive Markdown explaining concepts step-by-step with LaTeX formulas.",
+  "EXPLANATION": "A comprehensive, beautifully formatted Markdown lesson. USE DOUBLE NEWLINES (\\n\\n) BETWEEN PARAGRAPHS for readability. Use headers (###) for sub-sections. Use bolding sparingly for key terms only. Incorporate LaTeX for all math. Ensure it reads like a premium textbook chapter.",
 
   "EXAMPLES": [
     {
-      "TITLE": "Example 1",
-      "SOLUTION": "Markdown worked solution with LaTeX."
+      "TITLE": "Step-by-step Example",
+      "SOLUTION": "Detailed worked solution."
     }
   ],
   
   "FORMULAS": [
-    { "NAME": "Formula Name", "CONTENT": "$ LaTeX $" }
+    { "NAME": "Key Concept Name", "CONTENT": "Definition or Formula" }
   ],
 
   "PRACTICE": {
-    "EASY": [
-      { "QUESTION": "$ 2+2=? $", "ANSWER": "4", "SOLUTION_EXPLANATION": "2 plus 2 equals 4." }
-    ],
-    "MEDIUM": [
-      { "QUESTION": "$ x^2=4, x=? $", "ANSWER": "2", "SOLUTION_EXPLANATION": "The square root of 4 is 2." }
-    ],
-    "HARD": [
-      { "QUESTION": "Complex question", "ANSWER": "result", "SOLUTION_EXPLANATION": "Detailed solution steps here." }
-    ]
+    "EASY": [{ "QUESTION": "q", "ANSWER": "a", "SOLUTION_EXPLANATION": "expl" }],
+    "MEDIUM": [{ "QUESTION": "q", "ANSWER": "a", "SOLUTION_EXPLANATION": "expl" }],
+    "HARD": [{ "QUESTION": "q", "ANSWER": "a", "SOLUTION_EXPLANATION": "expl" }]
   }
 }
+
+TIPS:
+- PROVIDE AT LEAST 500 WORDS FOR EXPLANATION.
+- ENSURE JSON IS VALID.
 
 LEVEL GUIDELINES:
 - BEGINNER → Simple definitions + simple examples.
@@ -323,18 +321,20 @@ async function handleResponse() {
             
             // marked.parse will convert the Markdown into HTML
             if(overView && aiResponse.OVERVIEW){
+                const cleanOverview = aiResponse.OVERVIEW.replace(/\\n/g, '\n');
                 overView.innerHTML = `
                   <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>${marked.parse(aiResponse.OVERVIEW)}</div>
-                    <button class="explainSecBtn" onclick="explainSection('Overview', '${aiResponse.OVERVIEW.replace(/'/g, "\\'").replace(/\n/g, " ")}')"><i class="fas fa-magic"></i> Explain</button>
+                    <div class="lesson-body">${marked.parse(cleanOverview)}</div>
+                    <button class="explainSecBtn" onclick="explainSection('Overview', '${cleanOverview.replace(/'/g, "\\'").replace(/\n/g, " ")}')"><i class="fas fa-magic"></i> Explain</button>
                   </div>
                 `;
             }
             if(explanation && aiResponse.EXPLANATION){
+                const cleanExpl = aiResponse.EXPLANATION.replace(/\\n/g, '\n');
                 explanation.innerHTML = `
                   <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>${marked.parse(aiResponse.EXPLANATION)}</div>
-                    <button class="explainSecBtn" onclick="explainSection('Detailed Explanation', '${aiResponse.EXPLANATION.replace(/'/g, "\\'").replace(/\n/g, " ")}')"><i class="fas fa-magic"></i> Explain</button>
+                    <div class="lesson-body">${marked.parse(cleanExpl)}</div>
+                    <button class="explainSecBtn" onclick="explainSection('Detailed Explanation', '${cleanExpl.replace(/'/g, "\\'").replace(/\n/g, " ")}')"><i class="fas fa-magic"></i> Explain</button>
                   </div>
                 `;
             }
@@ -393,13 +393,13 @@ async function handleResponse() {
                 practiceContainer.innerHTML = practiceHtml;
             }
 
-            // Render Formulas Sidebar
+            // Render Key Concepts (Simplified Vertical List)
             const formulaContainer = document.getElementById("formulaContent");
             if (formulaContainer && aiResponse.FORMULAS) {
                 formulaContainer.innerHTML = aiResponse.FORMULAS.map(f => `
-                    <div style="margin-bottom: 20px; background: rgba(255,255,255,0.4); padding: 15px; border-radius: 12px; border-left: 4px solid #6366f1;">
-                        <h4 style="margin: 0 0 8px 0; font-size: 0.95rem; color: #4338ca;">${f.NAME}</h4>
-                        <div style="font-size: 1.1rem;">${marked.parseInline(f.CONTENT)}</div>
+                    <div class="concept-item">
+                        <span class="concept-name">${f.NAME}</span>
+                        <span class="concept-value">${marked.parseInline(f.CONTENT)}</span>
                     </div>
                 `).join('');
             }
@@ -640,49 +640,6 @@ if (markBtn) {
             markBtn.disabled = false;
             markBtn.innerText = "Mark as Mastered";
         }
-    });
-}
-
-// 4. PDF Export Logic
-const pdfBtn = document.getElementById("exportPdf");
-if (pdfBtn) { 
-    pdfBtn.addEventListener("click", () => {
-        // Use a container that includes Sidebar + Area
-        const element = document.querySelector(".mainContent");
-        const topic = localStorage.getItem("topic") || "Lesson";
-        
-        // Add a temporary class to body to handle styles during capture
-        document.body.classList.add("exporting-pdf");
-        
-        const opt = {
-            margin: [0.5, 0.5],
-            filename: `${topic}_Summary.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
-              scale: 2, 
-              useCORS: true,
-              scrollX: 0,
-              scrollY: 0,
-              windowWidth: 1200 // Fix width for consistent capture
-            },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-        };
-        
-        html2pdf()
-          .set(opt)
-          .from(element)
-          .toPdf()
-          .get('pdf')
-          .then((pdf) => {
-              document.body.classList.remove("exporting-pdf");
-              pdf.save(`${topic}_Summary.pdf`);
-          })
-          .catch(err => {
-              console.error("PDF Export error:", err);
-              document.body.classList.remove("exporting-pdf");
-              alert("Wait a second let's try again.");
-          });
     });
 }
 
