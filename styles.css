@@ -12,14 +12,19 @@
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
-
 :root {
-    --bg-primary: radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
-    --bg-gradient: radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
-    --text-main: #1e1b4b;
-    --text-muted: #4b5563;
-    --circle-bg: rgba(112, 59, 236, 0.15);
+    --bg-primary: radial-gradient(circle, #F0F4F8 0%, #D9E2EC 100%); /* soft, neutral/sky-like background */
+    --bg-gradient: radial-gradient(circle, #F0F4F8 0%, #D9E2EC 100%);
+    --text-main: #1E1B4B;       /* dark text for contrast */
+    --text-muted: #6B7280;      /* muted text for secondary info */
+    --circle-bg: rgba(123, 128, 182, 0.08); /* subtle floating circles, almost like shadows */
+
+     --appBar-gradient: linear-gradient(135deg, #7DA7D9 0%, #C0D6E4 100%);
+    --appBar-text: var(--text-main);
+    --appBar-hover-bg: rgba(125, 167, 217, 0.15);
+    --appBar-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
+
 
 body.dark-mode {
     --bg-primary: #020617;
@@ -123,7 +128,7 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #E6E6FA 0%, #B0C4DE 100%);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -1922,7 +1927,7 @@ body.dark-mode #scanResultSection {
     align-items: center;
     justify-content: space-between; /* Left = logo, Right = actions */
     padding: 0.8rem 2rem;
-    background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+    background: linear-gradient(135deg, #6a5fa6d2 0%, #205678 100%);
     backdrop-filter: blur(15px);
     position: sticky;
     top: 0;
