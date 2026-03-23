@@ -547,11 +547,30 @@ async function handleResponse() {
             const aiResponse = JSON.parse(cleaned);
             
             // --- Cleanup stray backslashes often added by AI as line-breaks ---
+            // safeStr: converts ANY value to a string — prevents TypeError when
+            // the AI / Firestore returns an object or array for a text field.
+            const safeStr = (val) => {
+                if (val == null) return "";
+                if (typeof val === "string") return val;
+                if (typeof val === "object") {
+                    // Flatten arrays to newline-joined text; stringify objects
+                    if (Array.isArray(val)) return val.map(safeStr).join("\n");
+                    // Some AI responses wrap fields in { text: "..." }
+                    if (val.text) return String(val.text);
+                    if (val.content) return String(val.content);
+                    if (val.value) return String(val.value);
+                    return JSON.stringify(val);
+                }
+                return String(val);
+            };
+
             const sanitize = (text) => {
-                if (!text) return "";
-                // Remove backslashes followed by space or end of line, but keep LaTeX-looking ones like \theta or \frac
-                // This targets the stray "\" seen in theory responses.
-                return text.replace(/\\(\s|$)/g, " ").replace(/\\\\n/g, "\n").replace(/\\n/g, "\n");
+                const str = safeStr(text);
+                if (!str) return "";
+                return str
+                    .replace(/\\(\s|$)/g, " ")
+                    .replace(/\\\\n/g, "\n")
+                    .replace(/\\n/g, "\n");
             };
 
             // marked.parse will convert the Markdown into HTML
@@ -989,6 +1008,9 @@ if (markBtn) {
         
         const topic = localStorage.getItem("topic");
         const subject = localStorage.getItem("subject");
+        const grade = localStorage.getItem("grade");
+        const level = localStorage.getItem("level");
+        const cacheId = `${grade}_${subject}_${topic}_${level}`.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
         
         try {
             markBtn.disabled = true;
@@ -996,6 +1018,9 @@ if (markBtn) {
             
             await setDoc(doc(db, "users", user.uid, "progress", topic), {
                 subject: subject,
+                grade: grade,
+                level: level,
+                cacheId: cacheId,
                 masteredAt: new Date(),
                 status: "mastered"
             }, { merge: true });

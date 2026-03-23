@@ -21,6 +21,13 @@
             color: var(--text-main);
         }
         * { font-family: 'Outfit', sans-serif !important; box-sizing: border-box; }
+
+        /* Restore Font Awesome icon font — must come after the wildcard rule */
+        .fas, .far, .fab, .fal, .fad, .fa,
+        [class^="fa-"], [class*=" fa-"] {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+            font-style: normal;
+        }
         
         .hero-container {
             display: flex;
