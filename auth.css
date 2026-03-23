@@ -1,0 +1,58 @@
+.socialLogin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.socialText {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+}
+
+.socialBtnsRow {
+    display: flex;          /* side by side */
+    gap: 10px;
+    width: 100%;            /* full width of container */
+    max-width: 300px;       /* optional: limit width */
+}
+
+.socialBtn {
+    flex: 1;                /* equal width */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;               /* space between icon and text */
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.socialBtn:hover {
+    transform: scale(1.03);
+}
+
+.socialLogo {
+    width: 20px;
+    height: 20px;
+}
+
+/* Google */
+.googleBtn {
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #dadce0;
+}
+
+/* Apple */
+.appleBtn {
+    background-color: #000;
+    color: #fff;
+}
