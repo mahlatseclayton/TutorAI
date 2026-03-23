@@ -4,11 +4,14 @@
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
 import { initializeApp } 
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, 
+     GoogleAuthProvider, 
+     signInWithPopup,
          createUserWithEmailAndPassword, 
          signInWithEmailAndPassword, 
          sendPasswordResetEmail,
@@ -30,6 +33,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+
+
 
 // Helper to trigger MathJax multiple times to ensure everything is rendered
 // Helper to trigger MathJax and return a promise that resolves when done
@@ -67,6 +73,7 @@ function validate(){
 // define id's for the input fields and buttons and add event listeners to them
 const overView=document.getElementById("overviewContent");
 const explanation=document.getElementById("explanationContent");
+
 
 
 
@@ -166,6 +173,41 @@ if(signInBtn){
         }
 
     })
+}
+
+const googleProvider = new GoogleAuthProvider();
+
+const googleSignInBtn = document.getElementById("googleSignInBtn");
+
+if (googleSignInBtn) {
+    googleSignInBtn.addEventListener("click", async () => {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                // New user — create a document
+                await setDoc(userRef, {
+                    name: user.displayName,
+                    email: user.email,
+                    createdAt: new Date()
+                });
+                console.log("New user added:", user.displayName);
+            } else {
+                console.log("Returning user:", user.displayName);
+            }
+
+            alert(`Welcome ${user.displayName}!`);
+            window.location.href = "mainPage.html"; // redirect after login
+
+        } catch (error) {
+            console.error("Google Sign-In Error:", error);
+            alert("Google Sign-In failed. Try again.");
+        }
+    });
 }
 
 // forgot password funtionality
