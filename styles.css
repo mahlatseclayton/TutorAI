@@ -1916,23 +1916,41 @@ body.dark-mode #scanResultSection {
 
 /* --- Mobile / Small Screens (up to 768px) --- */
 @media screen and (max-width: 768px) {
-    .appBar {
-        padding: 10px 15px;
-        flex-direction: column;
-        gap: 15px;
-        height: auto;
-    }
-    
-    .navBar {
-        width: 100%;
-        justify-content: space-around;
-        gap: 5px;
-    }
-    
-    .navItem {
-        font-size: 0.85rem;
-        padding: 8px 10px;
-    }
+   .appBar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Left = logo, Right = actions */
+    padding: 0.8rem 2rem;
+    background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+    backdrop-filter: blur(15px);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.navItem {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.navItem:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
     
     /* Welcome Page Mobile */
     .hero-container {

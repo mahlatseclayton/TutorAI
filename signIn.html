@@ -16,21 +16,23 @@
     
     <main>
         <header class="appBar">
-            <div class="lCon">
-                <img class="cLogo" src="images/tlogo.jpeg" alt="Logo">
-                <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
-            </div>
-            
-            <nav class="navBar">
-                <a class="navItem" href="index.html"><i class="fas fa-home"></i> Home</a>
-            </nav>
+    <!-- Left: Logo + Title -->
+    <div class="lCon">
+        <img class="cLogo" src="images/tlogo.jpeg" alt="Logo">
+        <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
+    </div>
 
-            <div class="headerActions">
-                <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme">
-                    <i class="fas fa-moon"></i>
-                </button>
-            </div>
-        </header>
+    <!-- Right: Home + Theme -->
+    <div class="headerActions">
+        <a class="navItem" href="index.html">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme">
+            <i class="fas fa-moon"></i>
+        </button>
+    </div>
+</header>
 
         <section id="mainSection" style="padding-top: 5vh;">
             <div class="authCard">
