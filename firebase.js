@@ -1634,3 +1634,116 @@ document.addEventListener("click", function(e){
     }
   }
 });
+
+// 6. Past Papers Database Search
+window.searchPastPapers = async function() {
+    const grade = document.getElementById("ppGrade").value;
+    const subject = document.getElementById("ppSubject").value;
+    const year = document.getElementById("ppYear").value;
+    const targetPaperId = document.getElementById("ppTitle") ? document.getElementById("ppTitle").value : "All";
+
+    const btn = document.getElementById("scrapeBtn");
+    const resultsContainer = document.getElementById("scraperResults");
+    const resultsGrid = document.getElementById("resultsGrid");
+    const resultTitle = document.getElementById("resultTitle");
+    const unavState = document.getElementById("unavailableState");
+
+    if(!btn || !resultsContainer) return;
+
+    // UI Reset
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Searching Database...`;
+    btn.disabled = true;
+    resultsContainer.style.display = "none";
+    unavState.style.display = "none";
+    resultsGrid.innerHTML = "";
+
+    try {
+        // Dynamically import searching queries so we don't break existing top-level imports
+        const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        
+        const q = query(
+            collection(db, "past_papers"),
+            where("grade", "==", grade),
+            where("subject", "==", subject),
+            where("year", "==", year)
+        );
+
+        const snapshot = await getDocs(q);
+        let foundAssets = [];
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            
+            // Explicit filter: if user wants 'Paper 1', skip 'Paper 2' etc.
+            if (targetPaperId !== "All" && data.title !== targetPaperId) return;
+
+            // Generate descriptive subtitle for the card
+            const monthText = data.month || "General Term";
+            const provText = data.province || "National";
+            const desc = `${monthText} • ${provText}`;
+            
+            if (data.paperUrl) {
+                foundAssets.push({
+                    title: data.title ? (data.title + "") : "Question Paper",
+                    subtitle: desc,
+                    tag: "Question Paper",
+                    href: data.paperUrl,
+                    icon: '<i class="fas fa-file-pdf" style="color: #ef4444;"></i>'
+                });
+            }
+            if (data.memoUrl) {
+                foundAssets.push({
+                    title: data.title ? (data.title + "") : "Memorandum",
+                    subtitle: desc,
+                    tag: "Memorandum",
+                    href: data.memoUrl,
+                    icon: '<i class="fas fa-file-signature" style="color: #10b981;"></i>'
+                });
+            }
+        });
+
+        if (foundAssets.length > 0) {
+            resultTitle.innerText = `Database Results: Grade ${grade} ${document.getElementById("ppSubject").options[document.getElementById("ppSubject").selectedIndex].text} (${year})`;
+            
+            foundAssets.forEach(asset => {
+                const card = document.createElement("div");
+                card.style.background = "var(--card-bg, #fff)";
+                card.style.border = "1px solid var(--border-color, rgba(0,0,0,0.05))";
+                card.style.borderRadius = "12px";
+                card.style.padding = "20px";
+                card.style.display = "flex";
+                card.style.flexDirection = "column";
+                card.style.justifyContent = "space-between";
+                card.style.gap = "15px";
+
+                card.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <span style="font-size: 1.6rem; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 10px;">${asset.icon}</span>
+                        <div>
+                            <span style="display: inline-block; background: ${asset.tag === 'Memorandum' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${asset.tag === 'Memorandum' ? '#10b981' : '#ef4444'}; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-bottom: 6px;">${asset.tag}</span>
+                            <h4 style="margin: 0; color: var(--text-main); font-size: 1.1rem; font-weight: 700;">${asset.title}</h4>
+                            <div style="font-size: 0.8rem; color: #4338ca; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-calendar-alt"></i> ${asset.subtitle}
+                            </div>
+                        </div>
+                    </div>
+                    <a href="${asset.href}" target="_blank" class="authBtn" style="text-align: center; text-decoration: none; padding: 12px; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="fas fa-download"></i> Download PDF
+                    </a>
+                `;
+                resultsGrid.appendChild(card);
+            });
+
+            resultsContainer.style.display = "block";
+        } else {
+            unavState.style.display = "block";
+        }
+
+    } catch (err) {
+        console.error("Database search failed:", err);
+        unavState.style.display = "block";
+    } finally {
+        btn.innerHTML = `<i class="fas fa-search"></i> Search Database`;
+        btn.disabled = false;
+    }
+};

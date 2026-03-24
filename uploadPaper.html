@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Upload Past Papers</title>
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: var(--bg-color, #f4f7f6);
+        color: var(--text-main, #333);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+    }
+    .upload-container {
+        background: var(--card-bg, #fff);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        padding: 40px;
+        width: 100%;
+        max-width: 600px;
+        border: 1px solid var(--border-color, #eee);
+    }
+    .form-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color, #ccc);
+        background: rgba(0,0,0,0.02);
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        color: var(--text-main);
+    }
+    .file-input-wrapper {
+        border: 2px dashed #4338ca;
+        background: rgba(67, 56, 202, 0.05);
+        padding: 30px;
+        text-align: center;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .file-input-wrapper:hover {
+        background: rgba(67, 56, 202, 0.1);
+    }
+    .upload-btn {
+        width: 100%;
+        padding: 15px;
+        background: #4338ca;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+        margin-top: 10px;
+    }
+    .upload-btn:hover {
+        background: #3730a3;
+        transform: translateY(-2px);
+    }
+    .upload-btn:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+    }
+    #progressBar {
+        width: 0%;
+        height: 6px;
+        background: #10b981;
+        border-radius: 4px;
+        transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- AUTHENTICATION BOX -->
+  <div id="authBox" class="upload-container" style="text-align: center;">
+      <i class="fas fa-lock" style="font-size: 3rem; color: #4338ca; margin-bottom: 20px;"></i>
+      <h2 style="margin: 0; font-size: 1.8rem; color: #333;">Admin Authentication</h2>
+      <p style="color: #666; font-size: 0.95rem; margin-top: 8px;">You must authenticate with a verified Google account to bypass Firebase Storage security rules.</p>
+      <button class="upload-btn" onclick="adminLogin()" style="margin-top: 25px; background: #fff; color: #333; border: 1px solid #ccc; font-weight: 600;">
+        <img src="https://img.icons8.com/color/48/000000/google-logo.png" style="width: 20px; vertical-align: middle; margin-right: 8px;"> Sign in with Google
+      </button>
+  </div>
+
+  <!-- MAIN UPLOAD FORM (Hidden by default) -->
+  <div id="mainForm" class="upload-container" style="display: none;">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 0.85rem; color: #666; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+          <span>Authenticated Account: <strong id="adminEmailText" style="color: #4338ca;">...</strong></span>
+          <button onclick="adminLogout()" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 30px;">
+          <h2 style="margin: 0; font-size: 1.8rem; color: #4338ca;"><i class="fas fa-cloud-upload-alt"></i> Admin Uploader</h2>
+          <p style="color: #666; font-size: 0.95rem; margin-top: 8px;">Upload a PDF to instantly sync to the Past Papers Database.</p>
+      </div>
+
+      <div class="form-group">
+          <label>Grade</label>
+          <select id="uGrade" class="form-control">
+              <option value="12">Grade 12</option>
+              <option value="11">Grade 11</option>
+              <option value="10">Grade 10</option>
+          </select>
+      </div>
+
+      <div style="display: flex; gap: 15px;">
+        <div class="form-group" style="flex: 1;">
+            <label>Subject</label>
+            <select id="uSubject" class="form-control">
+                <option value="mathematics">Mathematics</option>
+                <option value="physical-sciences">Physical Sciences</option>
+                <option value="life-sciences">Life Sciences</option>
+                <option value="english-hl">English HL</option>
+                <option value="accounting">Accounting</option>
+                <option value="geography">Geography</option>
+            </select>
+        </div>
+        <div class="form-group" style="flex: 1;">
+            <label>Year</label>
+            <select id="uYear" class="form-control">
+                <option value="2024">2024</option>
+                <option value="2023" selected>2023</option>
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
+                <option value="2020">2020</option>
+            </select>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 15px;">
+          <div class="form-group" style="flex: 1;">
+              <label>Month / Term</label>
+              <select id="uMonth" class="form-control">
+                  <option value="November" selected>November (Finals)</option>
+                  <option value="September">September (Prelims)</option>
+                  <option value="June">June (Mid-Year)</option>
+                  <option value="March">March (Term 1)</option>
+              </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+              <label>Province / Scope</label>
+              <select id="uProvince" class="form-control">
+                  <option value="National" selected>National / DBE</option>
+                  <option value="Gauteng">Gauteng</option>
+                  <option value="KZN">KwaZulu-Natal</option>
+                  <option value="Western Cape">Western Cape</option>
+                  <option value="Eastern Cape">Eastern Cape</option>
+                  <option value="Free State">Free State</option>
+                  <option value="Limpopo">Limpopo</option>
+                  <option value="Mpumalanga">Mpumalanga</option>
+                  <option value="North West">North West</option>
+                  <option value="Northern Cape">Northern Cape</option>
+              </select>
+          </div>
+      </div>
+
+      <div style="display: flex; gap: 15px;">
+          <div class="form-group" style="flex: 1;">
+              <label>Document Type</label>
+              <select id="uType" class="form-control">
+                  <option value="paperUrl">Question Paper</option>
+                  <option value="memoUrl">Memorandum</option>
+              </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+              <label>Paper Identifier</label>
+              <select id="uTitle" class="form-control">
+                  <option value="Paper 1">Paper 1</option>
+                  <option value="Paper 2">Paper 2</option>
+              </select>
+          </div>
+      </div>
+
+      <div class="form-group">
+          <label>PDF File</label>
+          <label class="file-input-wrapper" for="uFile">
+              <i class="fas fa-file-pdf" style="font-size: 2rem; color: #4338ca; margin-bottom: 10px;"></i>
+              <div id="fileNameDisplay" style="font-weight: 600;">Click to select a PDF file</div>
+              <input type="file" id="uFile" accept="application/pdf" style="display: none;" onchange="document.getElementById('fileNameDisplay').innerText = this.files[0] ? this.files[0].name : 'Click to select a PDF file'">
+          </label>
+      </div>
+
+      <div id="progressContainer" style="display: none; margin-bottom: 20px; background: #e5e7eb; border-radius: 4px; height: 6px; overflow: hidden;">
+          <div id="progressBar"></div>
+      </div>
+
+      <button id="uploadBtn" class="upload-btn" onclick="uploadDocument()">
+          <i class="fas fa-upload"></i> Upload to Firebase
+      </button>
+      
+      <div id="statusAlert" style="margin-top: 15px; padding: 15px; border-radius: 8px; text-align: center; display: none; font-weight: 600;"></div>
+
+      <!-- Admin Upload Guide -->
+      <div style="margin-top: 35px; background: rgba(67, 56, 202, 0.03); border: 1px solid rgba(67, 56, 202, 0.15); border-radius: 12px; padding: 25px; text-align: left;">
+         <h3 style="color: #4338ca; font-size: 1.05rem; margin-bottom: 10px; margin-top: 0;"><i class="fas fa-info-circle"></i> How this works</h3>
+         <p style="color: var(--text-muted, #666); font-size: 0.9rem; margin: 0; line-height: 1.5;">When you upload a Question Paper, a new record is created in the <code>past_papers</code> database. If you then upload the matching <strong>Memorandum</strong> for the exact same Grade, Subject, Year, Term, Province, and Paper ID, this tool will intelligently merge them into the same database record so they deploy together on the user UI!</p>
+      </div>
+  </div>
+
+  <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      import { getFirestore, collection, query, where, getDocs, addDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+      const firebaseConfig = {
+          apiKey: "AIzaSyDjNyRSkepOLHcYuK4ALI2xWibC-P849f0",
+          authDomain: "tutorai-5f97d.firebaseapp.com",
+          projectId: "tutorai-5f97d",
+          storageBucket: "tutorai-5f97d.firebasestorage.app",
+          messagingSenderId: "447039931727",
+          appId: "1:447039931727:web:e90fa57709aced5bb6713a"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      const storage = getStorage(app);
+      const provider = new GoogleAuthProvider();
+
+      // Ensure Admin Auth State
+      onAuthStateChanged(auth, (user) => {
+          if (user) {
+              document.getElementById("authBox").style.display = "none";
+              document.getElementById("mainForm").style.display = "block";
+              document.getElementById("adminEmailText").innerText = user.email;
+          } else {
+              document.getElementById("authBox").style.display = "block";
+              document.getElementById("mainForm").style.display = "none";
+          }
+      });
+
+      window.adminLogin = async () => {
+          try {
+              await signInWithPopup(auth, provider);
+          } catch(e) {
+              alert("Authentication Error: " + e.message);
+          }
+      };
+
+      window.adminLogout = async () => {
+          await signOut(auth);
+      };
+
+      window.uploadDocument = async function() {
+          const grade = document.getElementById("uGrade").value;
+          const subject = document.getElementById("uSubject").value;
+          const year = document.getElementById("uYear").value;
+          const month = document.getElementById("uMonth").value;
+          const province = document.getElementById("uProvince").value;
+          const docType = document.getElementById("uType").value; // 'paperUrl' or 'memoUrl'
+          const titleModifier = document.getElementById("uTitle").value; // 'Paper 1' or 'Paper 2'
+          const fileInput = document.getElementById("uFile");
+
+          const btn = document.getElementById("uploadBtn");
+          const progressContainer = document.getElementById("progressContainer");
+          const progressBar = document.getElementById("progressBar");
+          const alert = document.getElementById("statusAlert");
+
+          if (!fileInput.files.length) {
+              alert.style.display = "block";
+              alert.style.background = "#fee2e2";
+              alert.style.color = "#dc2626";
+              alert.innerText = "Please select a PDF file.";
+              return;
+          }
+
+          const file = fileInput.files[0];
+          btn.disabled = true;
+          btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Uploading...`;
+          alert.style.display = "none";
+          progressContainer.style.display = "block";
+          progressBar.style.width = "0%";
+
+          // 1. Upload to Firebase Storage
+          const storagePath = `past_papers/${year}_${month}_${province.replace(/\s/g, '')}_${grade}_${subject}_${titleModifier.replace(/\s/g, '')}_${docType === 'memoUrl' ? 'Memo' : 'Paper'}.pdf`;
+          const storageRef = ref(storage, storagePath);
+          const uploadTask = uploadBytesResumable(storageRef, file);
+
+          uploadTask.on('state_changed',
+              (snapshot) => {
+                  const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                  progressBar.style.width = progress + '%';
+              },
+              (error) => {
+                  btn.disabled = false;
+                  btn.innerHTML = `<i class="fas fa-upload"></i> Upload to Firebase`;
+                  alert.style.display = "block";
+                  alert.style.background = "#fee2e2";
+                  alert.style.color = "#dc2626";
+                  alert.innerText = "Upload Failed: " + error.message;
+              },
+              async () => {
+                  try {
+                      // 2. Get Download URL
+                      const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+                      // 3. Query Firestore to check if this Grade+Subject+Year+Month+Province+Paper1 already exists
+                      const q = query(
+                          collection(db, "past_papers"),
+                          where("grade", "==", grade),
+                          where("subject", "==", subject),
+                          where("year", "==", year),
+                          where("month", "==", month),
+                          where("province", "==", province),
+                          where("title", "==", titleModifier) // We group P1 / P2 separately!
+                      );
+                      
+                      const snapshot = await getDocs(q);
+                      
+                      if (!snapshot.empty) {
+                          // Update existing record (e.g. they uploaded the Paper, now uploading Memo)
+                          const docId = snapshot.docs[0].id;
+                          const refToUpdate = doc(db, "past_papers", docId);
+                          
+                          let updateObj = {};
+                          updateObj[docType] = downloadURL; // Dynamically sets paperUrl or memoUrl
+                          
+                          await updateDoc(refToUpdate, updateObj);
+                      } else {
+                          // Create brand new record
+                          let newDoc = {
+                              grade: grade,
+                              subject: subject,
+                              year: year,
+                              month: month,
+                              province: province,
+                              title: titleModifier
+                          };
+                          newDoc[docType] = downloadURL;
+                          
+                          await addDoc(collection(db, "past_papers"), newDoc);
+                      }
+
+                      btn.disabled = false;
+                      btn.innerHTML = `<i class="fas fa-upload"></i> Upload Another`;
+                      alert.style.display = "block";
+                      alert.style.background = "#d1fae5";
+                      alert.style.color = "#059669";
+                      alert.innerHTML = `<i class="fas fa-check-circle"></i> Successfully synced to Database!`;
+                      fileInput.value = "";
+                      document.getElementById("fileNameDisplay").innerText = "Click to select a PDF file";
+                      progressContainer.style.display = "none";
+                  } catch (e) {
+                      console.error("Firestore sync failed:", e);
+                      btn.disabled = false;
+                      btn.innerHTML = `<i class="fas fa-upload"></i> Upload to Firebase`;
+                      alert.style.display = "block";
+                      alert.style.background = "#fee2e2";
+                      alert.style.color = "#dc2626";
+                      alert.innerText = "Firestore Link Failed: " + e.message;
+                  }
+              }
+          );
+      };
+  </script>
+</body>
+</html>
