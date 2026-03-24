@@ -1429,3 +1429,100 @@ if (solveBtn && scanResultSection && scanResultContent) {
         }
     });
 }
+
+
+// --- Past Papers Data (fill with real PDF links) ---
+const pastPapersData = {
+  "Mathematics": [
+    { year: 2023, paper: "Paper 1", url: "https://working-link-to-maths-paper1.pdf" },
+    { year: 2023, paper: "Paper 2", url: "https://working-link-to-maths-paper2.pdf" },
+    { year: 2022, paper: "Paper 1", url: "https://working-link-to-maths-2022-p1.pdf" }
+  ],
+  "Physical Science": [
+    { year: 2023, paper: "Paper 1", url: "https://working-link-to-ps-paper1.pdf" }
+  ],
+  "Life Sciences": [
+    { year: 2023, paper: "Paper 1", url: "https://working-link-to-ls-paper1.pdf" }
+  ],
+  // Add other subjects here...
+};
+
+// --- Render Past Papers ---
+function renderPastPapers() {
+  const subjectEl = document.getElementById("subject");
+  const subject = subjectEl ? subjectEl.innerText.trim() : "Mathematics";
+
+  // Find the matching key case-insensitively
+  const subjectKey = Object.keys(pastPapersData).find(
+    key => key.toLowerCase() === subject.toLowerCase()
+  );
+
+  const papers = subjectKey ? pastPapersData[subjectKey] : [];
+
+  const container = document.getElementById("pastPapersList");
+  const countEl = document.getElementById("pastPapersCount");
+
+  container.innerHTML = "";
+  countEl.innerText = `${papers.length} available`;
+
+  if (papers.length === 0) {
+    container.innerHTML = "<p style='text-align:center'>No past papers available for this subject.</p>";
+    return;
+  }
+
+  const grid = document.createElement("div");
+  grid.style.display = "grid";
+  grid.style.gridTemplateColumns = "repeat(auto-fit, minmax(250px, 1fr))";
+  grid.style.gap = "16px";
+  container.appendChild(grid);
+
+  papers.forEach(paper => {
+    const card = document.createElement("div");
+    card.className = "section-card";
+    card.style.padding = "12px";
+    card.style.borderRadius = "12px";
+    card.style.background = "#f5f5f5";
+    card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.08)";
+    card.style.display = "flex";
+    card.style.flexDirection = "column";
+    card.style.alignItems = "center";
+    card.style.transition = "transform 0.2s, box-shadow 0.2s";
+
+    // Hover effect
+    card.addEventListener("mouseenter", () => {
+      card.style.transform = "scale(1.03)";
+      card.style.boxShadow = "0 8px 20px rgba(0,0,0,0.15)";
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "scale(1)";
+      card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.08)";
+    });
+
+    // Paper Title
+    const title = document.createElement("h3");
+    title.innerText = `${paper.year} - ${paper.paper}`;
+    title.style.textAlign = "center";
+    title.style.marginBottom = "8px";
+    card.appendChild(title);
+
+    // Link to PDF
+    const link = document.createElement("a");
+    link.href = paper.url;
+    link.target = "_blank";
+    link.innerText = "View / Download PDF";
+    link.style.textDecoration = "none";
+    link.style.background = "#4338ca";
+    link.style.color = "#fff";
+    link.style.padding = "6px 12px";
+    link.style.borderRadius = "8px";
+    link.style.fontWeight = "600";
+    card.appendChild(link);
+
+    grid.appendChild(card);
+  });
+}
+
+// --- Initialize Past Papers on page load ---
+window.addEventListener("DOMContentLoaded", () => {
+  renderPastPapers();
+});
