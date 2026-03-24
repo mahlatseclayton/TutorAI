@@ -797,38 +797,77 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
-//functions to load videos
-async function loadVideos() {
-  const topicTitle = document.getElementById("topicTitle");
-  const vidContainer = document.getElementById("videosSection");
-  if (!vidContainer || !topicTitle) return;
+// firebase.js
 
-  const sHeading = topicTitle.innerText;
-  console.log("🔹 loadVideos called with heading:", sHeading);
+// --- Watched videos tracking ---
+function addToWatched(video) {
+    let watched = JSON.parse(localStorage.getItem("watchedVideos") || "[]");
 
-  try {
-    const response = await fetch(
-      `https://yt-videos-xaudhnk2aq-uc.a.run.app?heading=${encodeURIComponent(
-        sHeading
-      )}`
-    );
-    const data = await response.json();
+    if (watched.some(v => v.id === video.id)) return; // prevent duplicates
+    watched.push({ id: video.id, title: video.title });
+    localStorage.setItem("watchedVideos", JSON.stringify(watched));
 
-    if (data.error) {
-      vidContainer.innerHTML =
-        "<p style='text-align:center'>No videos available. Try again later.</p>";
-      console.warn("Video fetch error:", data.message);
-      return;
-    }
-
-    renderVideos(data.videos, vidContainer);
-  } catch (err) {
-    console.error("Video fetch error:", err);
-    vidContainer.innerHTML =
-      "<p style='text-align:center'>Failed to fetch videos.</p>";
-  }
+    updateWatchedSection();
 }
 
+function updateWatchedSection() {
+    const list = document.getElementById("videosWatchedList");
+    const count = document.getElementById("videosWatchedCount");
+    if (!list || !count) return;
+
+    const watched = JSON.parse(localStorage.getItem("watchedVideos") || "[]");
+    list.innerHTML = ""; // clear skeletons / old entries
+
+    watched.forEach(video => {
+        // Create a link instead of a plain div
+        const link = document.createElement("a");
+        link.href = `https://www.youtube.com/watch?v=${video.id}`;
+        link.target = "_blank"; // open in new tab
+        link.rel = "noopener noreferrer";
+        link.style.display = "block";
+        link.style.padding = "12px";
+        link.style.marginBottom = "8px";
+        link.style.background = "#f5f5f5";
+        link.style.borderRadius = "12px";
+        link.style.fontWeight = "500";
+        link.style.textDecoration = "none";
+        link.style.color = "#000"; // text color
+        link.style.transition = "transform 0.2s, box-shadow 0.2s";
+
+        // Hover effect
+        link.addEventListener("mouseenter", () => {
+            link.style.transform = "scale(1.03)";
+            link.style.boxShadow = "0 8px 20px rgba(0,0,0,0.15)";
+        });
+        link.addEventListener("mouseleave", () => {
+            link.style.transform = "scale(1)";
+            link.style.boxShadow = "none";
+        });
+
+        link.textContent = video.title;
+        list.appendChild(link);
+    });
+
+    count.innerText = `${watched.length} watched`;
+}
+
+// --- YouTube API Loader ---
+function loadYouTubeAPI(callback) {
+    if (window.YT && YT.Player) return callback();
+
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    const checkReady = setInterval(() => {
+        if (window.YT && YT.Player) {
+            clearInterval(checkReady);
+            callback();
+        }
+    }, 100);
+}
+
+// --- Render Recommended Videos ---
 function renderVideos(videos, container) {
     container.innerHTML = "";
 
@@ -840,48 +879,27 @@ function renderVideos(videos, container) {
         return;
     }
 
-    // Optional heading
     const heading = document.createElement("h2");
     heading.style.textAlign = "center";
     heading.style.marginBottom = "16px";
     heading.innerText = "Recommended Videos";
     container.appendChild(heading);
 
-    // Create a wrapper div for grid layout
     const grid = document.createElement("div");
     grid.style.display = "grid";
     grid.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
     grid.style.gap = "20px";
     container.appendChild(grid);
 
-    videos.forEach(video => {
-        // Wrapper for each video + title
+    videos.forEach((video, index) => {
         const wrapper = document.createElement("div");
+        wrapper.style.position = "relative";
 
-        const iframe = document.createElement("iframe");
-        iframe.src = `https://www.youtube.com/embed/${video.id}`;
-        iframe.title = video.title;
-        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-        iframe.allowFullscreen = true;
-        iframe.style.width = "100%";
-        iframe.style.aspectRatio = "16/9";
-        iframe.style.borderRadius = "12px";
-        iframe.style.border = "2px solid #ddd";
-        iframe.style.transition = "transform 0.2s, box-shadow 0.2s";
+        const playerDiv = document.createElement("div");
+        const playerId = `yt-player-${index}`;
+        playerDiv.id = playerId;
+        wrapper.appendChild(playerDiv);
 
-        // Hover effect
-        iframe.addEventListener("mouseenter", () => {
-            iframe.style.transform = "scale(1.03)";
-            iframe.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.15)";
-        });
-        iframe.addEventListener("mouseleave", () => {
-            iframe.style.transform = "scale(1)";
-            iframe.style.boxShadow = "none";
-        });
-
-        wrapper.appendChild(iframe);
-
-        // Video title
         const title = document.createElement("p");
         title.innerText = video.title;
         title.style.textAlign = "center";
@@ -890,8 +908,59 @@ function renderVideos(videos, container) {
         wrapper.appendChild(title);
 
         grid.appendChild(wrapper);
+
+        // Initialize YT Player
+        new YT.Player(playerId, {
+            height: '180',
+            width: '100%',
+            videoId: video.id,
+            playerVars: { rel: 0, modestbranding: 1 },
+            events: {
+                onStateChange: (event) => {
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        addToWatched(video);
+                    }
+                }
+            }
+        });
     });
 }
+
+// --- Load videos dynamically from your API ---
+async function loadVideos() {
+    const topicTitle = document.getElementById("topicTitle");
+    const vidContainer = document.getElementById("videosContent"); // Recommended videos container
+    if (!vidContainer || !topicTitle) return;
+
+    const sHeading = topicTitle.innerText;
+    console.log("🔹 loadVideos called with heading:", sHeading);
+
+    try {
+        const response = await fetch(
+            `https://yt-videos-xaudhnk2aq-uc.a.run.app?heading=${encodeURIComponent(sHeading)}`
+        );
+        const data = await response.json();
+
+        if (data.error) {
+            vidContainer.innerHTML =
+                "<p style='text-align:center'>No videos available. Try again later.</p>";
+            console.warn("Video fetch error:", data.message);
+            return;
+        }
+
+        loadYouTubeAPI(() => renderVideos(data.videos, vidContainer));
+    } catch (err) {
+        console.error("Video fetch error:", err);
+        vidContainer.innerHTML =
+            "<p style='text-align:center'>Failed to fetch videos.</p>";
+    }
+}
+
+// --- Initialize on page load ---
+window.addEventListener("DOMContentLoaded", () => {
+    loadVideos();           // Recommended videos page
+    updateWatchedSection(); // Videos Watched page
+});
 
 // Video fetching removed from standalone DOMContentLoaded to handle sync in handleResponse
 
