@@ -1431,57 +1431,122 @@ if (solveBtn && scanResultSection && scanResultContent) {
 }
 
 
-// --- Past Papers Data (fill with real PDF links) ---
+// --- Past Papers Data (replace URLs with real links) ---
 const pastPapersData = {
   "Mathematics": [
-    { year: 2023, paper: "Paper 1", url: "https://working-link-to-maths-paper1.pdf" },
-    { year: 2023, paper: "Paper 2", url: "https://working-link-to-maths-paper2.pdf" },
-    { year: 2022, paper: "Paper 1", url: "https://working-link-to-maths-2022-p1.pdf" }
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2021, paper: "Paper 1", url: "#", memo: "#" }
   ],
+
+  "Economics": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2021, paper: "Paper 2", url: "#", memo: "#" }
+  ],
+
+  "Accounting": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2021, paper: "Paper 1", url: "#", memo: "#" }
+  ],
+
+  "Life Science": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 2", url: "#", memo: "#" }
+  ],
+
   "Physical Science": [
-    { year: 2023, paper: "Paper 1", url: "https://working-link-to-ps-paper1.pdf" }
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 2", url: "#", memo: "#" }
   ],
-  "Life Sciences": [
-    { year: 2023, paper: "Paper 1", url: "https://working-link-to-ls-paper1.pdf" }
+
+  "Geography": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" }
   ],
-  // Add other subjects here...
+
+  "Life Orientation": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" }
+  ],
+
+  "History": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 2", url: "#", memo: "#" }
+  ],
+
+  "Mathematical Literacy": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2021, paper: "Paper 1", url: "#", memo: "#" }
+  ]
 };
 
 // --- Render Past Papers ---
-function renderPastPapers() {
-  const subjectEl = document.getElementById("subject");
-  const subject = subjectEl ? subjectEl.innerText.trim() : "Mathematics";
-
-  // Find the matching key case-insensitively
-  const subjectKey = Object.keys(pastPapersData).find(
-    key => key.toLowerCase() === subject.toLowerCase()
-  );
-
-  const papers = subjectKey ? pastPapersData[subjectKey] : [];
-
+function renderPastPapers(subject = "Mathematics") {
+  const papers = pastPapersData[subject] || [];
   const container = document.getElementById("pastPapersList");
   const countEl = document.getElementById("pastPapersCount");
 
   container.innerHTML = "";
   countEl.innerText = `${papers.length} available`;
 
-  if (papers.length === 0) {
+  if (!papers.length) {
     container.innerHTML = "<p style='text-align:center'>No past papers available for this subject.</p>";
     return;
   }
 
   const grid = document.createElement("div");
   grid.style.display = "grid";
-  grid.style.gridTemplateColumns = "repeat(auto-fit, minmax(250px, 1fr))";
+  grid.style.gridTemplateColumns = "repeat(auto-fit, minmax(260px, 1fr))";
   grid.style.gap = "16px";
   container.appendChild(grid);
 
   papers.forEach(paper => {
     const card = document.createElement("div");
-    card.className = "section-card";
+    card.className = "pastPaperItem";
     card.style.padding = "12px";
     card.style.borderRadius = "12px";
-    card.style.background = "#f5f5f5";
+    //card.style.background = "#f5f5f5";
     card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.08)";
     card.style.display = "flex";
     card.style.flexDirection = "column";
@@ -1505,24 +1570,66 @@ function renderPastPapers() {
     title.style.marginBottom = "8px";
     card.appendChild(title);
 
-    // Link to PDF
+    // PDF Link
     const link = document.createElement("a");
     link.href = paper.url;
     link.target = "_blank";
-    link.innerText = "View / Download PDF";
-    link.style.textDecoration = "none";
-    link.style.background = "#4338ca";
-    link.style.color = "#fff";
-    link.style.padding = "6px 12px";
-    link.style.borderRadius = "8px";
-    link.style.fontWeight = "600";
+    link.innerText = "View / Download Paper";
+    link.className = "paperBtn";
     card.appendChild(link);
+
+    // Memorandum Button + Section
+    if (paper.memo) {
+      const memoBtn = document.createElement("button");
+      memoBtn.innerText = "Show Memorandum";
+      memoBtn.className = "showMemoBtn paperBtn";
+      memoBtn.style.marginTop = "8px";
+      card.appendChild(memoBtn);
+
+      const memoDiv = document.createElement("div");
+      memoDiv.className = "memorandum";
+      memoDiv.style.display = "none";
+      memoDiv.style.marginTop = "8px";
+
+      const memoLink = document.createElement("a");
+      memoLink.href = paper.memo;
+      memoLink.target = "_blank";
+      memoLink.innerText = "Open Memorandum PDF";
+      memoLink.className = "paperBtn";
+      memoDiv.appendChild(memoLink);
+
+      card.appendChild(memoDiv);
+    }
 
     grid.appendChild(card);
   });
 }
 
-// --- Initialize Past Papers on page load ---
+// --- Initialize on page load ---
 window.addEventListener("DOMContentLoaded", () => {
   renderPastPapers();
+
+  // PDF export
+  const pdfBtn = document.getElementById('pdfBtn');
+  if(pdfBtn){
+    pdfBtn.addEventListener('click', () => {
+      const element = document.getElementById('pastPapersSection');
+      html2pdf().from(element).save('PastPapers.pdf');
+    });
+  }
+});
+
+// --- Event delegation for memorandum toggle ---
+document.addEventListener("click", function(e){
+  if(e.target.classList.contains('showMemoBtn')){
+    const btn = e.target;
+    const memo = btn.closest('.pastPaperItem').querySelector('.memorandum');
+    if (memo.style.display === 'none' || memo.style.display === '') {
+      memo.style.display = 'block';
+      btn.textContent = 'Hide Memorandum';
+    } else {
+      memo.style.display = 'none';
+      btn.textContent = 'Show Memorandum';
+    }
+  }
 });
