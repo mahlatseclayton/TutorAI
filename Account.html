@@ -522,8 +522,10 @@
                 <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
             </div>
             <nav class="navBar">
+                <a class="navItem" href="pastpapers.html"><i class="fas fa-file-alt"></i> Past Papers</a>
+                <a class="navItem" href="solutionPage.html"><i class="fas fa-lightbulb"></i> Solutions & Resources</a>
                 <a class="navItem" href="mainPage.html"><i class="fas fa-plus-circle"></i> New Lesson</a>
-                <a class="navItem" href="scanSolve.html"><i class="fas fa-camera"></i> Scan &amp; Solve</a>
+                <a class="navItem" href="scanSolve.html"><i class="fas fa-camera"></i> Scan & Solve</a>
                 <a class="navItem active" href="Account.html"><i class="fas fa-user-circle"></i> Account</a>
             </nav>
             <div class="headerActions">
@@ -621,6 +623,25 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-video"></i> Videos Watched
+            </h2>
+            <span id="videosWatchedCount" style="font-size:0.85rem; color:var(--text-muted); font-weight:600;"></span>
+        </div>
+        <div id="videosWatchedList">
+            <!-- Loading skeleton -->
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div class="skeleton skel-line" style="height:62px; border-radius:14px;"></div>
+                <div class="skeleton skel-line" style="height:62px; border-radius:14px;"></div>
+                <div class="skeleton skel-line" style="height:62px; border-radius:14px;"></div>
+            </div>
+        </div>
+    </div>
+
+                
 
             </div><!-- /loggedInContent -->
         </div><!-- /account-page -->
@@ -884,4 +905,5 @@
         <p>Fetching your saved lesson from TutorAI</p>
     </div>
 </body>
+<script type="module" src="firebase.js"></script>
 </html>

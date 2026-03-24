@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Past Papers - TutorAI</title>
+
+  <!-- App-wide styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- JS Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Theme & app scripts -->
+  <script src="theme.js" defer></script>
+</head>
+<body>
+
+  <!-- AppBar (consistent across app) -->
+  <header class="appBar">
+    <div class="lCon">
+      <img class="cLogo" src="images/tlogo.jpeg" alt="Logo">
+      <h1 class="appTitle">Tutor<span class="aiHandle">AI</span></h1>
+    </div>
+    <nav class="navBar">
+            <a class="navItem" href="pastpapers.html"><i class="fas fa-file-alt"></i> Past Papers</a>
+            <a class="navItem" href="solutionPage.html"><i class="fas fa-lightbulb"></i>Solutions & Resourcess</a>
+            <a class="navItem" href="mainPage.html"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a class="navItem" href="scanSolve.html"><i class="fas fa-camera"></i> Scan & Solve</a>
+            <a class="navItem" href="Account.html"><i class="fas fa-user-circle"></i> Account</a>
+    </nav>
+    
+  </header>
+
+  <!-- Past Papers Section -->
+  <main>
+    <section class="contentCard" id="pastPapersSection">
+      <div class="section-header">
+        <h2 class="section-title"><i class="fas fa-book"></i> Past Papers</h2>
+        <span id="pastPapersCount"></span>
+      </div>
+      <div id="pastPapersList">
+        <!-- Loading skeleton -->
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="skeleton skel-line" style="height:62px; border-radius:14px;"></div>
+          <div class="skeleton skel-line" style="height:62px; border-radius:14px;"></div>
+          <div class="skeleton skel-line" style="height:62px; border-radius:14px;"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Firebase handles everything -->
+  <script type="module" src="firebase.js"></script>
+
+</body>
+</html>

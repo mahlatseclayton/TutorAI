@@ -784,75 +784,186 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
-//functions to load videos
-async function loadVideos() {
-  const topicTitle = document.getElementById("topicTitle");
-  const vidContainer = document.getElementById("videosSection");
-  if (!vidContainer || !topicTitle) return;
+// firebase.js
 
-  const sHeading = topicTitle.innerText;
-  console.log("🔹 loadVideos called with heading:", sHeading);
+// --- Watched videos tracking ---
+function addToWatched(video) {
+    let watched = JSON.parse(localStorage.getItem("watchedVideos") || "[]");
 
-  try {
-    const response = await fetch(
-      `https://yt-videos-xaudhnk2aq-uc.a.run.app?heading=${encodeURIComponent(
-        sHeading
-      )}`
-    );
-    const data = await response.json();
+    if (watched.some(v => v.id === video.id)) return; // prevent duplicates
+    watched.push({ id: video.id, title: video.title });
+    localStorage.setItem("watchedVideos", JSON.stringify(watched));
 
-    if (data.error) {
-      vidContainer.innerHTML =
-        "<p style='text-align:center'>No videos available. Try again later.</p>";
-      console.warn("Video fetch error:", data.message);
-      return;
-    }
-
-    renderVideos(data.videos, vidContainer);
-  } catch (err) {
-    console.error("Video fetch error:", err);
-    vidContainer.innerHTML =
-      "<p style='text-align:center'>Failed to fetch videos.</p>";
-  }
+    updateWatchedSection();
 }
 
+function updateWatchedSection() {
+    const list = document.getElementById("videosWatchedList");
+    const count = document.getElementById("videosWatchedCount");
+    if (!list || !count) return;
+
+    const watched = JSON.parse(localStorage.getItem("watchedVideos") || "[]");
+    list.innerHTML = ""; // clear skeletons / old entries
+
+    watched.forEach(video => {
+        // Create a link instead of a plain div
+        const link = document.createElement("a");
+        link.href = `https://www.youtube.com/watch?v=${video.id}`;
+        link.target = "_blank"; // open in new tab
+        link.rel = "noopener noreferrer";
+        link.style.display = "block";
+        link.style.padding = "12px";
+        link.style.marginBottom = "8px";
+        link.style.background = "#f5f5f5";
+        link.style.borderRadius = "12px";
+        link.style.fontWeight = "500";
+        link.style.textDecoration = "none";
+        link.style.color = "#000"; // text color
+        link.style.transition = "transform 0.2s, box-shadow 0.2s";
+
+        // Hover effect
+        link.addEventListener("mouseenter", () => {
+            link.style.transform = "scale(1.03)";
+            link.style.boxShadow = "0 8px 20px rgba(0,0,0,0.15)";
+        });
+        link.addEventListener("mouseleave", () => {
+            link.style.transform = "scale(1)";
+            link.style.boxShadow = "none";
+        });
+
+        link.textContent = video.title;
+        list.appendChild(link);
+    });
+
+    count.innerText = `${watched.length} watched`;
+}
+
+// --- YouTube API Loader ---
+function loadYouTubeAPI(callback) {
+    if (window.YT && YT.Player) return callback();
+
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    const checkReady = setInterval(() => {
+        if (window.YT && YT.Player) {
+            clearInterval(checkReady);
+            callback();
+        }
+    }, 100);
+}
+
+// --- Render Recommended Videos ---
 function renderVideos(videos, container) {
-    const section = document.getElementById("videosSection");
-    if (!section) return;
-    
-    section.innerHTML = "";
-    
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (!Array.isArray(videos) || videos.length === 0) {
+        const msg = document.createElement("p");
+        msg.style.textAlign = "center";
+        msg.innerText = "No videos available for this topic.";
+        container.appendChild(msg);
+        return;
+    }
+
     const heading = document.createElement("h2");
     heading.style.textAlign = "left";
     heading.innerHTML = "<i class='fas fa-play-circle'></i> Recommended Videos";
     heading.className = "sidebarTitle";
-    section.appendChild(heading);
+    heading.style.marginBottom = "16px";
+    container.appendChild(heading);
 
-    const vidGrid = document.createElement("div");
-    vidGrid.style.display = "grid";
-    vidGrid.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
-    vidGrid.style.gap = "20px";
-    vidGrid.style.marginTop = "15px";
+    const grid = document.createElement("div");
+    grid.style.display = "grid";
+    grid.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
+    grid.style.gap = "20px";
+    container.appendChild(grid);
 
+    // Limit to 4 videos
     const maxVids = videos.slice(0, 4);
 
-    maxVids.forEach(video => {
-        const iframe = document.createElement("iframe");
-        iframe.classList.add("yt-videos");
-        iframe.style.width = "100%";
-        iframe.style.aspectRatio = "16 / 9";
-        iframe.style.borderRadius = "12px";
-        iframe.style.boxShadow = "0 4px 15px rgba(0,0,0,0.1)";
-        iframe.style.border = "none";
-        iframe.src = `https://www.youtube.com/embed/${video.id}`;
-        iframe.title = video.title;
-        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-        iframe.allowFullscreen = true;
-        vidGrid.appendChild(iframe);
+    maxVids.forEach((video, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.style.position = "relative";
+        wrapper.style.background = "#fff";
+        wrapper.style.borderRadius = "12px";
+        wrapper.style.boxShadow = "0 4px 15px rgba(0,0,0,0.05)";
+        wrapper.style.overflow = "hidden";
+
+        const playerDiv = document.createElement("div");
+        const playerId = `yt-player-${index}`;
+        playerDiv.id = playerId;
+        wrapper.appendChild(playerDiv);
+
+        const title = document.createElement("p");
+        title.innerText = video.title;
+        title.style.textAlign = "center";
+        title.style.fontWeight = "600";
+        title.style.fontSize = "0.9rem";
+        title.style.padding = "8px";
+        title.style.margin = "0";
+        wrapper.appendChild(title);
+
+        grid.appendChild(wrapper);
+
+        // Initialize YT Player seamlessly via API
+        if (window.YT && YT.Player) {
+            new YT.Player(playerId, {
+                height: '180',
+                width: '100%',
+                videoId: video.id,
+                playerVars: { rel: 0, modestbranding: 1 },
+                events: {
+                    onStateChange: (event) => {
+                        if (event.data === YT.PlayerState.PLAYING) {
+                            if(typeof addToWatched === "function") addToWatched(video);
+                        }
+                    }
+                }
+            });
+        } else {
+            // Fallback natively if YouTube API fails to load
+            playerDiv.innerHTML = `<iframe width="100%" height="180" src="https://www.youtube.com/embed/${video.id}?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+        }
     });
-    
-    section.appendChild(vidGrid);
 }
+
+// --- Load videos dynamically from your API ---
+async function loadVideos() {
+    const topicTitle = document.getElementById("topicTitle");
+    const vidContainer = document.getElementById("videosContent"); // Recommended videos container
+    if (!vidContainer || !topicTitle) return;
+
+    const sHeading = topicTitle.innerText;
+    console.log("🔹 loadVideos called with heading:", sHeading);
+
+    try {
+        const response = await fetch(
+            `https://yt-videos-xaudhnk2aq-uc.a.run.app?heading=${encodeURIComponent(sHeading)}`
+        );
+        const data = await response.json();
+
+        if (data.error) {
+            vidContainer.innerHTML =
+                "<p style='text-align:center'>No videos available. Try again later.</p>";
+            console.warn("Video fetch error:", data.message);
+            return;
+        }
+
+        loadYouTubeAPI(() => renderVideos(data.videos, vidContainer));
+    } catch (err) {
+        console.error("Video fetch error:", err);
+        vidContainer.innerHTML =
+            "<p style='text-align:center'>Failed to fetch videos.</p>";
+    }
+}
+
+// --- Initialize on page load ---
+window.addEventListener("DOMContentLoaded", () => {
+    loadVideos();           // Recommended videos page
+    updateWatchedSection(); // Videos Watched page
+});
 
 // Video fetching removed from standalone DOMContentLoaded to handle sync in handleResponse
 
@@ -1258,3 +1369,207 @@ if (solveBtn && scanResultSection && scanResultContent) {
         }
     });
 }
+
+
+// --- Past Papers Data (replace URLs with real links) ---
+const pastPapersData = {
+  "Mathematics": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2021, paper: "Paper 1", url: "#", memo: "#" }
+  ],
+
+  "Economics": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2021, paper: "Paper 2", url: "#", memo: "#" }
+  ],
+
+  "Accounting": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2021, paper: "Paper 1", url: "#", memo: "#" }
+  ],
+
+  "Life Science": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 2", url: "#", memo: "#" }
+  ],
+
+  "Physical Science": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 2", url: "#", memo: "#" }
+  ],
+
+  "Geography": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" }
+  ],
+
+  "Life Orientation": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" }
+  ],
+
+  "History": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2025, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 2", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 2", url: "#", memo: "#" }
+  ],
+
+  "Mathematical Literacy": [
+    { year: 2025, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2024, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2023, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2022, paper: "Paper 1", url: "#", memo: "#" },
+    { year: 2021, paper: "Paper 1", url: "#", memo: "#" }
+  ]
+};
+
+// --- Render Past Papers ---
+function renderPastPapers(subject = "Mathematics") {
+  const papers = pastPapersData[subject] || [];
+  const container = document.getElementById("pastPapersList");
+  const countEl = document.getElementById("pastPapersCount");
+
+  container.innerHTML = "";
+  countEl.innerText = `${papers.length} available`;
+
+  if (!papers.length) {
+    container.innerHTML = "<p style='text-align:center'>No past papers available for this subject.</p>";
+    return;
+  }
+
+  const grid = document.createElement("div");
+  grid.style.display = "grid";
+  grid.style.gridTemplateColumns = "repeat(auto-fit, minmax(260px, 1fr))";
+  grid.style.gap = "16px";
+  container.appendChild(grid);
+
+  papers.forEach(paper => {
+    const card = document.createElement("div");
+    card.className = "pastPaperItem";
+    card.style.padding = "12px";
+    card.style.borderRadius = "12px";
+    //card.style.background = "#f5f5f5";
+    card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.08)";
+    card.style.display = "flex";
+    card.style.flexDirection = "column";
+    card.style.alignItems = "center";
+    card.style.transition = "transform 0.2s, box-shadow 0.2s";
+
+    // Hover effect
+    card.addEventListener("mouseenter", () => {
+      card.style.transform = "scale(1.03)";
+      card.style.boxShadow = "0 8px 20px rgba(0,0,0,0.15)";
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "scale(1)";
+      card.style.boxShadow = "0 4px 10px rgba(0,0,0,0.08)";
+    });
+
+    // Paper Title
+    const title = document.createElement("h3");
+    title.innerText = `${paper.year} - ${paper.paper}`;
+    title.style.textAlign = "center";
+    title.style.marginBottom = "8px";
+    card.appendChild(title);
+
+    // PDF Link
+    const link = document.createElement("a");
+    link.href = paper.url;
+    link.target = "_blank";
+    link.innerText = "View / Download Paper";
+    link.className = "paperBtn";
+    card.appendChild(link);
+
+    // Memorandum Button + Section
+    if (paper.memo) {
+      const memoBtn = document.createElement("button");
+      memoBtn.innerText = "Show Memorandum";
+      memoBtn.className = "showMemoBtn paperBtn";
+      memoBtn.style.marginTop = "8px";
+      card.appendChild(memoBtn);
+
+      const memoDiv = document.createElement("div");
+      memoDiv.className = "memorandum";
+      memoDiv.style.display = "none";
+      memoDiv.style.marginTop = "8px";
+
+      const memoLink = document.createElement("a");
+      memoLink.href = paper.memo;
+      memoLink.target = "_blank";
+      memoLink.innerText = "Open Memorandum PDF";
+      memoLink.className = "paperBtn";
+      memoDiv.appendChild(memoLink);
+
+      card.appendChild(memoDiv);
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+// --- Initialize on page load ---
+window.addEventListener("DOMContentLoaded", () => {
+  renderPastPapers();
+
+  // PDF export
+  const pdfBtn = document.getElementById('pdfBtn');
+  if(pdfBtn){
+    pdfBtn.addEventListener('click', () => {
+      const element = document.getElementById('pastPapersSection');
+      html2pdf().from(element).save('PastPapers.pdf');
+    });
+  }
+});
+
+// --- Event delegation for memorandum toggle ---
+document.addEventListener("click", function(e){
+  if(e.target.classList.contains('showMemoBtn')){
+    const btn = e.target;
+    const memo = btn.closest('.pastPaperItem').querySelector('.memorandum');
+    if (memo.style.display === 'none' || memo.style.display === '') {
+      memo.style.display = 'block';
+      btn.textContent = 'Hide Memorandum';
+    } else {
+      memo.style.display = 'none';
+      btn.textContent = 'Show Memorandum';
+    }
+  }
+});
