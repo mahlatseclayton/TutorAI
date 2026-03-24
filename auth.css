@@ -46,13 +46,12 @@
 
 /* Google */
 .googleBtn {
-    background-color: #fff;
-    color: #000;
-    border: 1px solid #dadce0;
-}
-
-/* Apple */
-.appleBtn {
-    background-color: #000;
-    color: #fff;
+    background: var(--card-bg, #fff);
+    color: var(--text-main, #000);
+    border: 1px solid var(--border-color, #dadce0);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 1.05rem;
+    width: 100%;
 }

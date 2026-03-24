@@ -161,10 +161,48 @@
     <!-- ===== Dedicated Quiz Section ===== -->
     <section class="contentCard" style="text-align: center; padding: 40px 20px;">
       <h2 class="cTry" style="margin-bottom: 15px;"><i class="fas fa-brain"></i> Ready to test your knowledge?</h2>
-      <p style="color: var(--text-muted); margin-bottom: 25px;">Take a strict, randomly generated 5-question multiple choice quiz on this exact topic. Earn +10 points for correct answers, but beware: incorrect answers cost you -5 points!</p>
-      <button id="takeQuizBtn" class="authBtn" style="width: auto; padding: 15px 40px;" onclick="generateQuiz()">
-        Generate Strict Quiz <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
-      </button>
+      <p style="color: var(--text-muted); margin-bottom: 25px;">Configure your custom multiple choice quiz below. Correct answers earn points, but incorrect answers cost points!</p>
+      
+      <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 25px; flex-wrap: wrap;">
+          <div style="text-align: left;">
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Difficulty</span>
+              <select id="quizDifficulty" class="authInput" style="width: auto; padding: 10px 15px; border-radius: 8px;">
+                  <option value="Easy">Easy</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="Hard">Hard</option>
+              </select>
+          </div>
+          <div style="text-align: left;">
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Questions</span>
+              <select id="quizCount" class="authInput" style="width: auto; padding: 10px 15px; border-radius: 8px;">
+                  <option value="3">3 Questions</option>
+                  <option value="5" selected>5 Questions</option>
+                  <option value="10">10 Questions</option>
+                  <option value="15">15 Questions</option>
+              </select>
+          </div>
+      </div>
+
+      <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+          <button id="resumeQuizBtn" class="authBtn" style="width: auto; padding: 15px 30px; display: none; background: #10b981; border-color: #10b981;" onclick="window.location.href='quizPage.html'">
+            <i class="fas fa-play-circle"></i> Resume Quiz
+          </button>
+          <button id="takeQuizBtn" class="authBtn" style="width: auto; padding: 15px 30px;" onclick="generateQuiz()">
+            Generate New Quiz <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+          </button>
+      </div>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const topic = localStorage.getItem("topic");
+            const quizTopic = localStorage.getItem("quizTopic");
+            const hasQuiz = localStorage.getItem("quizResponse");
+            
+            if (topic && quizTopic === topic && hasQuiz) {
+                document.getElementById("resumeQuizBtn").style.display = "inline-block";
+            }
+        });
+      </script>
     </section>
     
 

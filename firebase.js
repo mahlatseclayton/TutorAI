@@ -811,27 +811,30 @@ function updateWatchedSection() {
         link.href = `https://www.youtube.com/watch?v=${video.id}`;
         link.target = "_blank"; // open in new tab
         link.rel = "noopener noreferrer";
-        link.style.display = "block";
-        link.style.padding = "12px";
-        link.style.marginBottom = "8px";
-        link.style.background = "#f5f5f5";
+        link.style.display = "flex";
+        link.style.alignItems = "center";
+        link.style.gap = "15px";
+        link.style.padding = "16px";
+        link.style.marginBottom = "12px";
+        link.style.background = "var(--card-bg, #fff)";
         link.style.borderRadius = "12px";
-        link.style.fontWeight = "500";
+        link.style.fontWeight = "600";
         link.style.textDecoration = "none";
-        link.style.color = "#000"; // text color
+        link.style.color = "var(--text-main, #1e1b4b)";
+        link.style.border = "1px solid var(--border-color, rgba(0,0,0,0.05))";
         link.style.transition = "transform 0.2s, box-shadow 0.2s";
 
         // Hover effect
         link.addEventListener("mouseenter", () => {
-            link.style.transform = "scale(1.03)";
-            link.style.boxShadow = "0 8px 20px rgba(0,0,0,0.15)";
+            link.style.transform = "scale(1.02)";
+            link.style.boxShadow = "0 8px 20px rgba(0,0,0,0.1)";
         });
         link.addEventListener("mouseleave", () => {
             link.style.transform = "scale(1)";
             link.style.boxShadow = "none";
         });
 
-        link.textContent = video.title;
+        link.innerHTML = `<i class="fab fa-youtube" style="color: #ef4444; font-size: 1.5rem;"></i> <span>${video.title}</span>`;
         list.appendChild(link);
     });
 
@@ -886,7 +889,8 @@ function renderVideos(videos, container) {
     maxVids.forEach((video, index) => {
         const wrapper = document.createElement("div");
         wrapper.style.position = "relative";
-        wrapper.style.background = "#fff";
+        wrapper.style.background = "var(--card-bg, #fff)";
+        wrapper.style.border = "1px solid var(--border-color, rgba(0,0,0,0.05))";
         wrapper.style.borderRadius = "12px";
         wrapper.style.boxShadow = "0 4px 15px rgba(0,0,0,0.05)";
         wrapper.style.overflow = "hidden";
@@ -898,6 +902,7 @@ function renderVideos(videos, container) {
 
         const title = document.createElement("p");
         title.innerText = video.title;
+        title.style.color = "var(--text-main, #1e1b4b)";
         title.style.textAlign = "center";
         title.style.fontWeight = "600";
         title.style.fontSize = "0.9rem";
@@ -1012,6 +1017,44 @@ window.generateQuiz = async function() {
 
     if (!topic) return;
 
+    const diffEl = document.getElementById("quizDifficulty");
+    const countEl = document.getElementById("quizCount");
+    const difficulty = diffEl ? diffEl.value : "Medium";
+    const count = countEl ? parseInt(countEl.value) : 5;
+
+    const grade = localStorage.getItem("grade") || "NA";
+    const cacheKey = `${level}_${grade}_${subject}_${topic}_${difficulty}_${count}`.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
+    let globalDocRef = null;
+    let globalDocSnap = null;
+    
+    // Track which variants this local device has already played
+    const takenVarKey = "quiz_taken_" + cacheKey;
+    const takenIndices = JSON.parse(localStorage.getItem(takenVarKey) || "[]");
+
+    try {
+        globalDocRef = doc(db, "public_quizzes", cacheKey);
+        globalDocSnap = await getDoc(globalDocRef);
+        
+        if (globalDocSnap.exists()) {
+            const quizVariants = globalDocSnap.data().variants || [];
+            // Retrieve first variant index the user has never seen
+            const unseenIndex = quizVariants.findIndex((v, idx) => !takenIndices.includes(idx));
+            
+            if (unseenIndex !== -1) {
+                console.log("Global Cache Hit! Serving unused variant #" + unseenIndex);
+                takenIndices.push(unseenIndex);
+                localStorage.setItem(takenVarKey, JSON.stringify(takenIndices));
+                
+                localStorage.setItem("quizResponse", JSON.stringify(quizVariants[unseenIndex]));
+                localStorage.setItem("quizTopic", topic);
+                window.location.href = "quizPage.html";
+                return; // Early return to save API Tokens!
+            }
+        }
+    } catch(err) {
+        console.warn("Firestore public pool read skipped:", err);
+    }
+
     const loader = document.getElementById("loaderOverlay");
     const loaderText = document.getElementById("loaderText");
     if (loader && loaderText) {
@@ -1025,9 +1068,10 @@ window.generateQuiz = async function() {
 
     try {
         const prompt = `
-          Generate a STRICT 5-question multiple choice quiz on the topic: "${topic}" (${subject}, ${level} Level).
+          Generate a STRICT ${count}-question multiple choice quiz on the topic: "${topic}" (${subject}, ${level} Level).
+          DIFFICULTY LEVEL: ${difficulty}.
           RULES:
-          - MUST be exactly 5 questions.
+          - MUST be exactly ${count} questions.
           - Each question MUST have exactly 4 OPTIONS.
           - Return ONLY a valid JSON array format. No markdown blocks outside JSON.
           - Math equations must use MathJax format ($...$ for inline, $$...$$ for block). Escape backslashes natively.
@@ -1060,7 +1104,24 @@ window.generateQuiz = async function() {
         
         const parsed = JSON.parse(cleaned);
         if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+            
+            // Upload the brand new quiz into the global library so others can use it
+            try {
+                if (globalDocRef) {
+                    let existingVars = globalDocSnap && globalDocSnap.exists() ? globalDocSnap.data().variants || [] : [];
+                    existingVars.push(parsed); // Push the new quiz
+                    await setDoc(globalDocRef, { variants: existingVars }, { merge: true });
+                    
+                    // Mark as played locally
+                    takenIndices.push(existingVars.length - 1);
+                    localStorage.setItem(takenVarKey, JSON.stringify(takenIndices));
+                }
+            } catch (err) {
+                console.warn("Firestore public pool update skipped:", err);
+            }
+
             localStorage.setItem("quizResponse", JSON.stringify(parsed));
+            localStorage.setItem("quizTopic", topic); // Cache the relation
             window.location.href = "quizPage.html";
         } else {
             throw new Error("Invalid Output");
