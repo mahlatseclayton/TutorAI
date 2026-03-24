@@ -831,20 +831,65 @@ async function loadVideos() {
 
 function renderVideos(videos, container) {
     container.innerHTML = "";
+
+    if (!Array.isArray(videos) || videos.length === 0) {
+        const msg = document.createElement("p");
+        msg.style.textAlign = "center";
+        msg.innerText = "No videos available for this topic.";
+        container.appendChild(msg);
+        return;
+    }
+
+    // Optional heading
     const heading = document.createElement("h2");
     heading.style.textAlign = "center";
+    heading.style.marginBottom = "16px";
     heading.innerText = "Recommended Videos";
     container.appendChild(heading);
 
+    // Create a wrapper div for grid layout
+    const grid = document.createElement("div");
+    grid.style.display = "grid";
+    grid.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
+    grid.style.gap = "20px";
+    container.appendChild(grid);
+
     videos.forEach(video => {
+        // Wrapper for each video + title
+        const wrapper = document.createElement("div");
+
         const iframe = document.createElement("iframe");
-        iframe.classList.add("yt-videos");
         iframe.src = `https://www.youtube.com/embed/${video.id}`;
         iframe.title = video.title;
         iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
         iframe.allowFullscreen = true;
-        iframe.frameBorder = 1;
-        container.appendChild(iframe);
+        iframe.style.width = "100%";
+        iframe.style.aspectRatio = "16/9";
+        iframe.style.borderRadius = "12px";
+        iframe.style.border = "2px solid #ddd";
+        iframe.style.transition = "transform 0.2s, box-shadow 0.2s";
+
+        // Hover effect
+        iframe.addEventListener("mouseenter", () => {
+            iframe.style.transform = "scale(1.03)";
+            iframe.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.15)";
+        });
+        iframe.addEventListener("mouseleave", () => {
+            iframe.style.transform = "scale(1)";
+            iframe.style.boxShadow = "none";
+        });
+
+        wrapper.appendChild(iframe);
+
+        // Video title
+        const title = document.createElement("p");
+        title.innerText = video.title;
+        title.style.textAlign = "center";
+        title.style.fontWeight = "600";
+        title.style.marginTop = "8px";
+        wrapper.appendChild(title);
+
+        grid.appendChild(wrapper);
     });
 }
 

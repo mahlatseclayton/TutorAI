@@ -84,49 +84,31 @@ exports.topicTutor = onRequest(
 const fetch = require("node-fetch");
 const cors = require("cors")({ origin: true });
 
+
 exports.YT_VIDEOS = functions.https.onRequest(
   {
-    secrets: ["YOUTUBE_API_KEY", "YOUTUBE_API_KEY_2"], // Both secrets
+    secrets: ["YOUTUBE_API_KEY"], // Only the old key
   },
   (req, res) => {
     cors(req, res, async () => {
       try {
         const heading = req.query.heading || "Default Topic";
+        const subject = req.query.subject || "";
 
-        // New key first, old key second
-        const apiKeys = [
-          process.env.YOUTUBE_API_KEY_2, // NEW key first tested
-          process.env.YOUTUBE_API_KEY,   // OLD key second
-        ];
+        // Teaching-focused keywords for better relevance
+        const keywords = ["lesson", "tutorial"];
+        const searchQuery = `"${heading}" "${subject}" "Grade 12" ${keywords.join(" ")}`.trim();
 
-        let data = null;
-        let lastError = null;
+        const apiKey = process.env.YOUTUBE_API_KEY;
 
-        for (const key of apiKeys) {
-          try {
-            const response = await fetch(
-              `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=4&q=${encodeURIComponent(
-                heading
-              )}&key=${key}`
-            );
-            data = await response.json();
+        // Fetch only teaching videos, medium length, high quality, ordered by relevance
+        const response = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=6&q=${encodeURIComponent(searchQuery)}&videoDefinition=high&videoDuration=medium&order=relevance&key=${apiKey}`
+        );
+        const data = await response.json();
 
-            // If quota error, try next key
-            if (data.error && data.error.code === 403) {
-              lastError = data.error;
-              continue;
-            }
-
-            // If success, break the loop
-            if (!data.error) break;
-          } catch (err) {
-            lastError = err;
-            continue;
-          }
-        }
-
-        if (!data || data.error) {
-          console.error("YouTube API Error:", lastError);
+        if (data.error) {
+          console.error("YouTube API Error:", data.error);
           return res.status(200).json({
             error: true,
             message: "Could not fetch videos. YouTube API quota may be exceeded.",
