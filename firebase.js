@@ -34,12 +34,13 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+export { auth, db };
 
 
 
-// Helper to trigger MathJax multiple times to ensure everything is rendered
+
 // Helper to trigger MathJax and return a promise that resolves when done
-async function triggerMathJax() {
+async function triggerMathJax(retries = 10) {
     if (window.MathJax && window.MathJax.typesetPromise) {
         console.log("Triggering MathJax...");
         try {
@@ -51,9 +52,13 @@ async function triggerMathJax() {
             console.error("MathJax error:", err);
         }
     } else {
-        console.log("MathJax not ready, waiting...");
+        if (retries <= 0) {
+            console.log("MathJax failed to load after retries.");
+            return;
+        }
+        console.log(`MathJax not ready, waiting... (${retries} retries left)`);
         await new Promise(resolve => setTimeout(resolve, 500));
-        return triggerMathJax();
+        return triggerMathJax(retries - 1);
     }
 }
 
@@ -255,6 +260,7 @@ async function validateTopic(topic, subject) {
 }
 
 async function getTopic() {
+    let isNavigating = false;
     const gradeElem = document.getElementById("gradeId");
     const subjectElem = document.getElementById("subjectId");
     const topicElem = document.getElementById("topicId");
@@ -362,7 +368,9 @@ LEVEL: ${level}
 GENERATE 3 DIVERSE WORKED EXAMPLES (Varying Difficulty).
 STRICT JSON RULES:
 - COVER ALL CORE CONCEPTS, COMMON EDGE CASES, AND PITFALLS.
+- PROVIDE A "DEEP_DIVE" ARRAY WITH 2-4 SUBTOPICS TO COMPREHENSIVELY COVER THE WHOLE TOPIC INDEPTH.
 - FOR "BEGINNER": Keep the entire scope of the topic but use extremely simple language/analogies.
+- DO NOT TRUNCATE THE JSON. BE CONCISE TO FIT TOKEN LIMITS IF NEEDED.
 - RETURN ONLY VALID JSON.
 - USE $...$ FOR ALL MATH (INLINE AND BLOCK).
 - USE LATEX FOR ALL MATHEMATICAL EXPRESSIONS.
@@ -377,6 +385,9 @@ STRUCTURE:
   "LEVEL": "${level}",
   "OVERVIEW": "...",
   "EXPLANATION": "...",
+  "DEEP_DIVE": [
+    { "SUBTOPIC_TITLE": "...", "CONTENT": "Detailed deep dive explanation of this specific subtopic, breaking it down thoroughly." }
+  ],
   "SUMMARY": "Concise bullet points recap.",
   "VOCABULARY": [
     { "TERM": "Word", "DEFINITION": "Definition" }
@@ -394,14 +405,8 @@ STRUCTURE:
   ],
   "PITFALLS": [
     { "TITLE": "Expert Insight or Common Pitfall", "DESCRIPTION": "..." }
-  ],
-  "PRACTICE": {
-    "EASY": [{ "QUESTION": "q", "ANSWER": "a", "SOLUTION_EXPLANATION": "expl" }],
-    "MEDIUM": [{ "QUESTION": "q", "ANSWER": "a", "SOLUTION_EXPLANATION": "expl" }],
-    "HARD": [{ "QUESTION": "q", "ANSWER": "a", "SOLUTION_EXPLANATION": "expl" }]
-  }
+  ]
 }
-- PRACTICE: Each level should have questions with "QUESTION", "ANSWER", and "SOLUTION_EXPLANATION".
 - ALL BACKSLASHES MUST BE ESCAPED (e.g. \\\\frac, \\\\theta).
 - NEVER RETURN A SINGLE BACKSLASH UNLESS IT IS FOR LATEX ($...$).
 - FOR PLAIN TEXT, DO NOT USE BACKSLASHES (\\) AS LINE BREAKS. USE \\\\n INSTEAD.
@@ -471,14 +476,10 @@ STRUCTURE:
                             VOCABULARY: scavengeArray("VOCABULARY"),
                             APPLICATIONS: scavengeArray("APPLICATIONS"),
                             EXPLANATION: scavenge("EXPLANATION"),
+                            DEEP_DIVE: scavengeArray("DEEP_DIVE"),
                             EXAMPLES: scavengeArray("EXAMPLES"),
                             FORMULAS: scavengeArray("FORMULAS"),
-                            PITFALLS: scavengeArray("PITFALLS"),
-                            PRACTICE: {
-                                EASY: scavengeArray("EASY"),
-                                MEDIUM: scavengeArray("MEDIUM"),
-                                HARD: scavengeArray("HARD")
-                            }
+                            PITFALLS: scavengeArray("PITFALLS")
                         };
                         
                         if (!parsedResponse.OVERVIEW && !parsedResponse.EXPLANATION) {
@@ -492,7 +493,7 @@ STRUCTURE:
                 }
             }
             
-            localStorage.setItem("aiResponse", cleaned);
+            localStorage.setItem("aiResponse", JSON.stringify(parsedResponse));
             
             // 3. Save to Cache (Awaiting to ensure it's sent before redirect)
             try {
@@ -512,17 +513,21 @@ STRUCTURE:
         localStorage.setItem("subject", subject);
         localStorage.setItem("topic", topic);
         localStorage.setItem("level", level);
+        
+        isNavigating = true;
         window.location.href = "solutionPage.html";
         
     } catch (error) {
         console.error("Critical Failure in getTopic:", error);
         alert(`TutorAI Error: ${error.message}. Please try again in few seconds.`);
     } finally {
-        if (startedBtn) {
-            startedBtn.disabled = false;
-            startedBtn.innerText = originalText;
+        if (!isNavigating) {
+            if (startedBtn) {
+                startedBtn.disabled = false;
+                startedBtn.innerText = originalText;
+            }
+            if (loader) loader.style.display = "none";
         }
-        if (loader) loader.style.display = "none";
     }
 }
 
@@ -617,18 +622,36 @@ async function handleResponse() {
                 `;
             }
 
+            // Render Deep Dive (New)
+            const deepDiveSec = document.getElementById("deepDiveSection");
+            const deepDiveCon = document.getElementById("deepDiveContent");
+            if (deepDiveSec && deepDiveCon && aiResponse.DEEP_DIVE && aiResponse.DEEP_DIVE.length > 0) {
+                let deepDiveHtml = `<div style="display: flex; flex-direction: column; gap: 20px; margin-top: 15px;">`;
+                aiResponse.DEEP_DIVE.forEach(dd => {
+                    const cleanContent = sanitize(dd.CONTENT);
+                    deepDiveHtml += `
+                        <div class="deepDiveCard" style="padding: 20px; background: rgba(67, 56, 202, 0.02); border-left: 4px solid #4338ca; border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                <h3 style="color: #4338ca; margin: 0;"><i class="fas fa-layer-group"></i> ${dd.SUBTOPIC_TITLE}</h3>
+                                <button class="explainSecBtn" onclick="explainSection('${dd.SUBTOPIC_TITLE}', '${cleanContent.replace(/'/g, "\\'").replace(/\n/g, " ")}')"><i class="fas fa-magic"></i> Explain</button>
+                            </div>
+                            <div class="lesson-body" style="font-size: 0.95rem;">${typeof marked !== 'undefined' ? marked.parse(cleanContent) : cleanContent}</div>
+                        </div>
+                    `;
+                });
+                deepDiveHtml += `</div>`;
+                deepDiveCon.innerHTML = deepDiveHtml;
+                deepDiveSec.style.display = "block";
+            }
+
             const examplesContainer = document.getElementById("examplesContent");
-            const practiceContainer = document.getElementById("practiceContent");
             
             if (examplesContainer && aiResponse.EXAMPLES) {
                 let examplesHtml = '';
-                // Limit to 3 if AI returns more, or show all if specifically 3
                 const samples = aiResponse.EXAMPLES.slice(0, 3);
-                
                 samples.forEach((example, idx) => {
                     const cleanProblem = (example.PROBLEM || "").replace(/\\n/g, '\n');
                     const cleanSolution = (example.SOLUTION_STEPS || example.SOLUTION || "").replace(/\\n/g, '\n');
-                    
                     examplesHtml += `
                         <div class="exampleCard">
                             <div class="exampleHeader">
@@ -667,42 +690,6 @@ async function handleResponse() {
                     </div>
                 `;
                 appsSec.style.display = "block";
-            }
-        
-            if (practiceContainer && aiResponse.PRACTICE) {
-                let practiceHtml = '';
-                window.currentPractice = aiResponse.PRACTICE; // Global store to avoid string mangling
-                
-                const renderPracticeLevel = (levelName, items, color, bg) => {
-                    if (!items || items.length === 0) return '';
-                    return `
-                        <div style="margin-bottom: 30px;">
-                            <h3 style="color: ${color}; margin-bottom: 15px;">${levelName}</h3>
-                            <div style="display: flex; flex-direction: column; gap: 15px;">
-                                ${items.map((q, idx) => `
-                                    <div class="practiceCard" style="padding: 20px; background: ${bg}; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.02);">
-                                        <div style="font-weight: 500; font-size: 16px; color: ${color}; margin-bottom: 12px;">
-                                            ${typeof marked !== 'undefined' ? marked.parseInline(q.QUESTION || q) : (q.QUESTION || q)}
-                                        </div>
-                                        <div class="quizInputGroup">
-                                            <div class="quizInputRow" id="inputRow-${levelName}-${idx}">
-                                                <input type="text" placeholder="Your answer..." id="ans-${levelName}-${idx}">
-                                                <button class="checkBtn" onclick="checkAnswer('${levelName}', ${idx})">Check</button>
-                                            </div>
-                                            <div id="feedback-${levelName}-${idx}" class="feedbackMsg"></div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                };
-
-                practiceHtml += renderPracticeLevel('EASY', aiResponse.PRACTICE.EASY, '#059669', '#d1fae5');
-                practiceHtml += renderPracticeLevel('MEDIUM', aiResponse.PRACTICE.MEDIUM, '#d97706', '#fef3c7');
-                practiceHtml += renderPracticeLevel('HARD', aiResponse.PRACTICE.HARD, '#dc2626', '#fee2e2');
-                
-                practiceContainer.innerHTML = practiceHtml;
             }
 
             // Render Key Concepts (Simplified Vertical List)
@@ -830,138 +817,48 @@ async function loadVideos() {
 }
 
 function renderVideos(videos, container) {
-    container.innerHTML = "";
+    const section = document.getElementById("videosSection");
+    if (!section) return;
+    
+    section.innerHTML = "";
+    
     const heading = document.createElement("h2");
-    heading.style.textAlign = "center";
-    heading.innerText = "Recommended Videos";
-    container.appendChild(heading);
+    heading.style.textAlign = "left";
+    heading.innerHTML = "<i class='fas fa-play-circle'></i> Recommended Videos";
+    heading.className = "sidebarTitle";
+    section.appendChild(heading);
 
-    videos.forEach(video => {
+    const vidGrid = document.createElement("div");
+    vidGrid.style.display = "grid";
+    vidGrid.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
+    vidGrid.style.gap = "20px";
+    vidGrid.style.marginTop = "15px";
+
+    const maxVids = videos.slice(0, 4);
+
+    maxVids.forEach(video => {
         const iframe = document.createElement("iframe");
         iframe.classList.add("yt-videos");
+        iframe.style.width = "100%";
+        iframe.style.aspectRatio = "16 / 9";
+        iframe.style.borderRadius = "12px";
+        iframe.style.boxShadow = "0 4px 15px rgba(0,0,0,0.1)";
+        iframe.style.border = "none";
         iframe.src = `https://www.youtube.com/embed/${video.id}`;
         iframe.title = video.title;
         iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
         iframe.allowFullscreen = true;
-        iframe.frameBorder = 1;
-        container.appendChild(iframe);
+        vidGrid.appendChild(iframe);
     });
+    
+    section.appendChild(vidGrid);
 }
 
 // Video fetching removed from standalone DOMContentLoaded to handle sync in handleResponse
 
 // --- New Features Logic ---
 
-// 1. Interactive Quiz Logic
-window.checkAnswer = async function(level, index) {
-    const practiceData = window.currentPractice[level][index];
-    const correctAns = practiceData.ANSWER;
-    const solutionExpl = (practiceData.SOLUTION_EXPLANATION || "").replace(/\\n/g, "\n");
-    
-    const input = document.getElementById(`ans-${level}-${index}`);
-    const feedback = document.getElementById(`feedback-${level}-${index}`);
-    const inputRow = document.getElementById(`inputRow-${level}-${index}`);
-    const checkBtn = inputRow.querySelector(".checkBtn");
-    const userAns = input.value.trim().toLowerCase();
-    
-    if (!userAns) return;
-
-    // Show loading state
-    const originalBtnText = checkBtn.innerText;
-    checkBtn.innerText = "Verifying...";
-    checkBtn.disabled = true;
-
-    try {
-        const topic = localStorage.getItem("topic");
-        const prompt = `
-          QUESTON: ${document.querySelector(`#ans-${level}-${index}`).closest('.practiceCard').querySelector('div').innerText}
-          EXPECTED ANSWER: ${correctAns}
-          USER ANSWER: ${userAns}
-
-          TASK: Determine if the user's answer is CONCEPTUALLY CORRECT even if worded differently.
-          RULES:
-          - RETURN ONLY VALID JSON: {"result": "CORRECT" or "INCORRECT", "explanation": "Short feedback"}
-          - Be lenient on theory questions.
-          - If it's a math question, be strict on the value but lenient on formatting.
-        `;
-
-        const response = await fetch(
-            "https://topictutor-xaudhnk2aq-uc.a.run.app",
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: prompt })
-            }
-        );
-        
-        const data = await response.json();
-        let aiResult = { result: "INCORRECT", explanation: solutionExpl };
-        
-        try {
-            // Parse the AI's JSON response from within the text
-            const cleaned = data.aiResponse.replace(/```json|```/g, "").trim();
-            aiResult = JSON.parse(cleaned);
-        } catch (e) {
-            // Fallback if AI doesn't return clean JSON
-            if (data.aiResponse.includes("CORRECT")) aiResult.result = "CORRECT";
-        }
-
-        if (aiResult.result === "CORRECT") {
-            feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${aiResult.explanation || "Correct! Great job."}`;
-            feedback.className = 'feedbackMsg correct';
-            input.style.borderColor = '#10b981';
-            triggerMathJax();
-            
-            // award points
-            const user = auth.currentUser;
-            if (user) {
-                const userRef = doc(db, "users", user.uid);
-                window.userPoints = (window.userPoints || 0) + 10;
-                setDoc(userRef, { points: window.userPoints }, { merge: true })
-                    .then(() => {
-                        const scoreEl = document.getElementById("userPoints");
-                        if (scoreEl) scoreEl.innerText = window.userPoints;
-                    })
-                    .catch(e => console.error("Points update failed:", e));
-            }
-        } else {
-            feedback.innerHTML = `
-                <div style="margin-top: 10px; padding: 15px; background: rgba(239, 68, 68, 0.05); border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.1);">
-                    <p style="color: #ef4444; font-weight: 700; margin: 0 0 8px 0;"><i class="fas fa-times-circle"></i> ${aiResult.explanation || "Not quite."}</p>
-                    <div style="color: #374151; font-weight: 400; margin: 0 0 12px 0; line-height: 1.5;">${typeof marked !== 'undefined' ? marked.parse(solutionExpl || "") : solutionExpl}</div>
-                    <button class="checkBtn" style="background: #374151;" onclick="tryAgain('${level}', ${index})">Try Again</button>
-                </div>
-            `;
-            feedback.className = 'feedbackMsg';
-            inputRow.style.display = 'none';
-            triggerMathJax();
-        }
-    } catch (error) {
-        console.error("AI Verification error:", error);
-        // Fallback to strict string match if AI fails
-        if (userAns === correctAns.toLowerCase()) {
-            feedback.innerHTML = '<i class="fas fa-check-circle"></i> Correct!';
-            feedback.className = 'feedbackMsg correct';
-        } else {
-            feedback.innerHTML = '<i class="fas fa-times-circle"></i> Incorrect. Try again.';
-            feedback.className = 'feedbackMsg incorrect';
-        }
-    } finally {
-        checkBtn.innerText = originalBtnText;
-        checkBtn.disabled = false;
-    }
-};
-
-window.tryAgain = function(level, index) {
-    const input = document.getElementById(`ans-${level}-${index}`);
-    const feedback = document.getElementById(`feedback-${level}-${index}`);
-    const inputRow = document.getElementById(`inputRow-${level}-${index}`);
-    
-    input.value = "";
-    input.style.borderColor = 'rgba(0,0,0,0.1)';
-    feedback.innerHTML = "";
-    inputRow.style.display = 'flex';
-};
+// Interactive Quiz Logic moved to quiz.js
 
 // 1.5 Explain Section Logic
 window.explainSection = function(sectionName, sectionContent) {
@@ -996,7 +893,75 @@ if (themeBtn) {
     }
 }
 
-// 3. Mark as Mastered Logic
+// 3. Generate Dedicated Quiz Page Data
+window.generateQuiz = async function() {
+    const topic = localStorage.getItem("topic");
+    const subject = localStorage.getItem("subject");
+    const level = localStorage.getItem("level");
+
+    if (!topic) return;
+
+    const loader = document.getElementById("loaderOverlay");
+    const loaderText = document.getElementById("loaderText");
+    if (loader && loaderText) {
+        loaderText.innerText = "Crafting your Strict Quiz...";
+        loader.style.opacity = "1";
+        loader.style.display = "flex";
+    } else if (loader) {
+        loader.style.opacity = "1";
+        loader.style.display = "flex";
+    }
+
+    try {
+        const prompt = `
+          Generate a STRICT 5-question multiple choice quiz on the topic: "${topic}" (${subject}, ${level} Level).
+          RULES:
+          - MUST be exactly 5 questions.
+          - Each question MUST have exactly 4 OPTIONS.
+          - Return ONLY a valid JSON array format. No markdown blocks outside JSON.
+          - Math equations must use MathJax format ($...$ for inline, $$...$$ for block). Escape backslashes natively.
+          
+          STRUCTURE:
+          [
+            {
+              "QUESTION": "...",
+              "OPTIONS": ["A) ...", "B) ...", "C) ...", "D) ..."],
+              "CORRECT_INDEX": 0, // Integer 0-3 corresponding to the correct option index
+              "MEMO": "Detailed explanation of why this answer is correct and others are wrong."
+            }
+          ]
+        `;
+
+        const response = await fetch("https://topictutor-xaudhnk2aq-uc.a.run.app", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: prompt })
+        });
+        
+        const data = await response.json();
+        
+        let cleaned = data.aiResponse.replace(/```json|```/g, "").trim();
+        const startIdx = cleaned.indexOf('[');
+        const endIdx = cleaned.lastIndexOf(']');
+        if(startIdx !== -1 && endIdx !== -1) {
+            cleaned = cleaned.substring(startIdx, endIdx + 1);
+        }
+        
+        const parsed = JSON.parse(cleaned);
+        if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+            localStorage.setItem("quizResponse", JSON.stringify(parsed));
+            window.location.href = "quizPage.html";
+        } else {
+            throw new Error("Invalid Output");
+        }
+    } catch (e) {
+        console.error("Quiz fetch failed:", e);
+        if (loaderText) loaderText.innerText = "Failed to generate. Please try again.";
+        setTimeout(() => { if (loader) loader.style.display = "none"; }, 2000);
+    }
+};
+
+// 4. Mark as Mastered Logic
 const markBtn = document.getElementById("masteredBtn");
 if (markBtn) {
     markBtn.addEventListener("click", async () => {
@@ -1050,29 +1015,7 @@ if (markBtn) {
     });
 }
 
-// 4. PDF Export Logic
-const pdfBtn = document.getElementById("pdfBtn");
-if (pdfBtn) {
-    pdfBtn.addEventListener("click", () => {
-        const element = document.getElementById("learningContent");
-        const opt = {
-            margin:       [10, 10],
-            filename:     `${localStorage.getItem("topic") || "Lesson"}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        
-        // Hide elements that shouldn't be in PDF (like "Explain" buttons)
-        const buttons = document.querySelectorAll('.explainSecBtn');
-        buttons.forEach(b => b.style.setProperty('display', 'none', 'important'));
-        
-        html2pdf().set(opt).from(element).save().then(() => {
-            // Restore buttons
-            buttons.forEach(b => b.style.display = '');
-        });
-    });
-}
+// PDF Export Logic removed per user request
 
 // 5. AI Chat Bubble Logic
 const chatToggle = document.getElementById("chatToggle");

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic Quiz - TutorAI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+        options: { ignoreHtmlClass: 'tex2jax_ignore', processHtmlClass: 'tex2jax_process' }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        .quiz-option {
+            padding: 15px; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s;
+            background: var(--card-bg, white);
+            color: var(--text-main, #1e1b4b);
+        }
+        body.dark-mode .quiz-option { border-color: rgba(255,255,255,0.1); background: rgba(15,23,42,0.9); }
+        .quiz-option:hover { border-color: #4338ca; background: rgba(67, 56, 202, 0.05); }
+        .quiz-option.selected { border-color: #4338ca; background: rgba(67, 56, 202, 0.1); font-weight: bold; }
+        .quiz-option.correct { border-color: #10b981 !important; background: rgba(16, 185, 129, 0.1) !important; color: #047857; }
+        .quiz-option.wrong { border-color: #ef4444 !important; background: rgba(239, 68, 68, 0.1) !important; color: #b91c1c; }
+        .memo-box { display: none; padding: 20px; border-radius: 12px; margin-top: 15px; font-size: 0.95rem; background: rgba(67, 56, 202, 0.05); border: 1px solid rgba(67, 56, 202, 0.1); color: var(--text-main); line-height: 1.6;}
+    </style>
+</head>
+<body>
+    <div class="circles"></div><div class="circles"></div><div class="circles"></div>
+    <header class="appBar">
+        <div class="lCon"><img class="cLogo" src="images/tlogo.jpeg" alt="Logo"><h1 class="appTitle" style="color: white; margin: 0; font-size: 1.8rem;">Tutor<span class="aiHandle" style="color: #ef4444;">AI</span></h1></div>
+        <nav class="navBar"><a class="navItem" href="mainPage.html" style="color: white;"><i class="fas fa-plus-circle"></i> New Lesson</a><a class="navItem" href="solutionPage.html" style="color: white;"><i class="fas fa-arrow-left"></i> Back to Lesson</a></nav>
+        <div class="headerActions" style="display: flex; gap: 15px; align-items: center;">
+            <div id="pointsDisplay" style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; color: white; font-weight: bold;"><i class="fas fa-star" style="color: #fbbf24;"></i> <span id="userPoints">...</span> pts</div>
+            <button id="themeToggle" class="themeToggleBtn"><i class="fas fa-moon"></i></button>
+        </div>
+    </header>
+
+    <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 10;">
+        <div style="text-align: center; margin-bottom: 30px; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.5);">
+            <h1 id="quizTitle" style="font-size: 2.2rem; margin-bottom: 10px; color: #1e1b4b;">Topic Quiz</h1>
+            <p style="color: #6b7280; font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Answer all questions. Correct answers earn <span style="color: #10b981; font-weight:bold;">+10 points</span>. Incorrect answers cost <span style="color: #ef4444; font-weight:bold;">-5 points</span>.</p>
+        </div>
+        
+        <div id="quizContainer">
+            <!-- Rendered by JS -->
+        </div>
+
+        <div id="resultsCard" style="display: none; text-align: center; margin-top: 20px; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; padding: 30px; border-radius: 20px;">
+            <h2 id="resultsHeading" style="color: #10b981; margin-bottom: 10px;">Quiz Complete!</h2>
+            <p id="resultsText" style="font-size: 1.2rem; margin-bottom: 0; font-weight: bold;">You earned X points.</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; margin-bottom: 60px;">
+            <button id="submitQuizBtn" class="authBtn" style="padding: 15px 50px; display: none; width: 100%; max-width: 400px; margin: 0 auto;">Submit Strict Quiz</button>
+            <button id="backBtn" class="authBtn" style="padding: 15px 50px; display: none; background: #4b5563; width: 100%; max-width: 400px; margin: 0 auto;" onclick="window.location.href='solutionPage.html'">Return to Lesson</button>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loaderOverlay" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary, #f0f4f8); z-index: 10000; flex-direction: column; align-items: center; justify-content: center;">
+        <div class="spinner"></div>
+        <h3 id="loaderText" style="margin-top: 30px; color: #1e1b4b;">Crafting your Strict Quiz...</h3>
+    </div>
+
+    <script type="module" src="quiz.js"></script>
+</body>
+</html>

@@ -41,7 +41,7 @@
         </div>
         
         <nav class="navBar">
-          <a class="navItem" href="mainPage.html"><i class="fas fa-th-large"></i> Dashboard</a>
+          <a class="navItem" href="mainPage.html"><i class="fas fa-plus-circle"></i> New Lesson</a>
           <a class="navItem" href="scanSolve.html"><i class="fas fa-camera"></i> Scan & Solve</a>
           <a class="navItem" href="Account.html"><i class="fas fa-user-circle"></i> Account</a>
         </nav>
@@ -50,9 +50,6 @@
           <div id="pointsDisplay" class="pointsBadge">
             <i class="fas fa-star"></i> <span id="userPoints">0</span> pts
           </div>
-          <button id="pdfBtn" class="themeToggleBtn" title="Export as PDF" style="font-size: 1rem;">
-             <i class="fas fa-file-pdf"></i>
-          </button>
           <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme">
             <i class="fas fa-moon"></i>
           </button>
@@ -116,6 +113,14 @@
       </div>
     </section>
 
+    <!-- ===== Deep Dive (New) ===== -->
+    <section class="contentCard" id="deepDiveSection" style="display:none;">
+      <h2 class="sidebarTitle"><i class="fas fa-layer-group"></i> In-Depth Analysis</h2>
+      <div id="deepDiveContent">
+        <!-- AI deep dive inserted here -->
+      </div>
+    </section>
+
     <!-- ===== Vocabulary (New) ===== -->
     <section class="contentCard" id="vocabSection" style="display:none;">
       <h2 class="cVocab"><i class="fas fa-book"></i> Key Terminology</h2>
@@ -152,33 +157,14 @@
     </section>
 
 
-    <!-- ===== Practice questions ===== -->
-    <section class="contentCard" id="practiceSection">
-      <h2 class="cTry">Try It Yourself</h2>
-
-      <div id="practiceContent">
-
-
-        <div class="practiceLevel">
-          <h3>Easy</h3>
-          <div class="questionsContainer" id="easyQuestions"></div>
-        </div>
-
-      
-        <div class="practiceLevel">
-          <h3>Medium</h3>
-          <div class="questionsContainer" id="mediumQuestions"></div>
-        </div>
-
-    
-        <div class="practiceLevel">
-          <h3>Hard</h3>
-          <div class="questionsContainer" id="hardQuestions"></div>
-        </div>
-
-      </div>
+    <!-- ===== Dedicated Quiz Section ===== -->
+    <section class="contentCard" style="text-align: center; padding: 40px 20px;">
+      <h2 class="cTry" style="margin-bottom: 15px;"><i class="fas fa-brain"></i> Ready to test your knowledge?</h2>
+      <p style="color: var(--text-muted); margin-bottom: 25px;">Take a strict, randomly generated 5-question multiple choice quiz on this exact topic. Earn +10 points for correct answers, but beware: incorrect answers cost you -5 points!</p>
+      <button id="takeQuizBtn" class="authBtn" style="width: auto; padding: 15px 40px;" onclick="generateQuiz()">
+        Generate Strict Quiz <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+      </button>
     </section>
-
   </div>
 
   <!-- Explain This AI Chat Bubble -->
