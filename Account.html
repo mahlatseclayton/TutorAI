@@ -747,6 +747,8 @@
             list.appendChild(grid);
         }
 
+
+
         /* ── Preview a mastered topic ── */
         async function previewTopic(btn) {
             const topic    = btn.dataset.topic;
@@ -811,8 +813,14 @@
                 return;
             }
 
-            el("notLoggedIn").style.display  = "none";
-            el("loggedInContent").style.display = "block";
+         const storedUid = localStorage.getItem("currentUid");
+         if (storedUid && storedUid !== user.uid) {
+            localStorage.removeItem("watchedVideos");
+        }
+        localStorage.setItem("currentUid", user.uid);
+
+       el("notLoggedIn").style.display  = "none";
+       el("loggedInContent").style.display = "block";
 
             /* Firestore user doc */
             try {
@@ -861,6 +869,8 @@
                 const progressSnap = await getDocs(collection(db, "users", user.uid, "progress"));
                 const topics = progressSnap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderMastered(topics);
+                updateWatchedSection();
+               
 
             } catch (err) {
                 console.error("Failed to load account data:", err);
@@ -895,6 +905,44 @@
                 themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
             }
         }
+
+
+        // Add this function inside the inline <script type="module"> in Account.html
+function updateWatchedSection() {
+    const list = document.getElementById("videosWatchedList");
+    const count = document.getElementById("videosWatchedCount");
+    if (!list || !count) return;
+
+    const watched = JSON.parse(localStorage.getItem("watchedVideos") || "[]");
+    list.innerHTML = "";
+
+    if (watched.length === 0) {
+        list.innerHTML = `<div class="empty-state">
+            <i class="fas fa-video"></i>
+            <p>No videos watched yet — watch lessons to track your progress!</p>
+        </div>`;
+        count.innerText = "0 watched";
+        return;
+    }
+
+    watched.forEach(video => {
+        const link = document.createElement("a");
+        link.href = `https://www.youtube.com/watch?v=${video.id}`;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.style.cssText = `display:flex; align-items:center; gap:15px; padding:16px;
+            margin-bottom:12px; background:var(--card-bg,#fff); border-radius:12px;
+            font-weight:600; text-decoration:none; color:var(--text-main,#1e1b4b);`;
+        link.innerHTML = `<i class="fab fa-youtube" style="color:#ef4444;font-size:1.5rem;"></i>
+            <div>
+                <div style="font-weight:700;">${video.title}</div>
+                <div style="font-size:0.78rem;color:var(--text-muted);">${video.subject || ""} ${video.topic ? "· " + video.topic : ""}</div>
+            </div>`;
+        list.appendChild(link);
+    });
+
+    count.innerText = `${watched.length} watched`;
+}
     </script>
 
     <!-- Preview loading overlay -->
@@ -904,5 +952,5 @@
         <p>Fetching your saved lesson from TutorAI</p>
     </div>
 </body>
-<script type="module" src="firebase.js"></script>
+
 </html>
