@@ -62,19 +62,7 @@ async function triggerMathJax(retries = 10) {
     }
 }
 
-function validate(){
-     const name=document.getElementById("name").value;
-    const grade=document.getElementById("grade").value;
-    const email=document.getElementById("email").value;
-    const password=document.getElementById("password").value;
-    const cpassword=document.getElementById("cpassword").value;
-    if(name==""|| grade=="" || email=="" || password=="" || cpassword==""){
-        alert("All fields are required.");
-        return false;
-    }
-    return true;
-
-}
+// Validation is now handled via HTML5 required attributes and setCustomValidity
 // define id's for the input fields and buttons and add event listeners to them
 const overView=document.getElementById("overviewContent");
 const explanation=document.getElementById("explanationContent");
@@ -85,99 +73,86 @@ const explanation=document.getElementById("explanationContent");
 // Initialize Firebase
 
 // the export allows us to use the method outside this file and the async to allow the program to wait a bit
-async function signUp(){
-    const name=document.getElementById("name").value;
-    const grade=document.getElementById("grade").value;
-    const email=document.getElementById("email").value;
-    const password=document.getElementById("password").value;
-    const cpassword=document.getElementById("cpassword").value;
-   if(validate()){
-    if(password!=cpassword){
-        alert("Passwords do not match");
-        return;
-    //   validation
-    }
-    else if(password.length<8){
-        alert("Password must be at least 8 characters.");
-         return;
-    }
-    else if(!/[A-Z]/.test(password)){
-        alert("Password must contain atleast one upper case");
-         return;
-    }
-    else if(!/[0-9]/.test(password)){
-        alert("Password must contain atleast one number");
-         return;
-    }
+// Signup logic via form submit
+const signUpForm = document.getElementById("signUpForm");
+if (signUpForm) {
+    signUpForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("name").value;
+        const grade = document.getElementById("grade").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const cpassword = document.getElementById("cpassword").value;
+        const cpassInp = document.getElementById("cpassword");
+        const passInp = document.getElementById("password");
 
-    // add other validations here for security purposes
-    else{
-    //   signup here
-    try{
-        // create a user credetials then send verification using the user object??
-       const userCredential= await createUserWithEmailAndPassword(auth,email,password);
-       const user=userCredential.user;
+        cpassInp.setCustomValidity("");
+        passInp.setCustomValidity("");
 
-    //    pause verifications for now
-        // await sendEmailVerification(user);
-     await   setDoc(doc(db, "users", user.uid), {
-    name: name,
-    grade: grade,
-    email: email,
-    createdAt: new Date()
-});
-        alert("Success:Account successfully created!");
-        
-        window.location.href="signIn.html";
-       
-    }
-    catch(error){
-        alert("Error creating account ");
-        console.log(error.message);
-        
-    } 
-    
-    }
-}
-
-}
-    //  make an oncliick lister for the signup button
-    const signUpbtn=document.getElementById("signUpBtn");
-
-if (signUpbtn) {
-
-     signUpbtn.addEventListener("click", signUp);
-    
-}
-const signInBtn=document.getElementById("signInBtn");
-if(signInBtn){
-    
-    signInBtn.addEventListener("click",async () =>{
-    const email=document.getElementById("email").value;
-    const password=document.getElementById("password").value;
-        if(email=="" || password==""){
-        alert("All fields are required.");
-        return;
-    }
-
-        try{
-               const userCredential= await signInWithEmailAndPassword(auth,email,password);
-                const user=userCredential.user;
-                // checking verification
-                // if(!user.emailVerified){
-                //     alert("Verify email to log in.")
-                //     auth.signOut;
-                //     return;
-                // }
-                alert("Success:Log in successful.");
-                     window.location.href="mainPage.html";
-        }catch(error){
-                alert("Error:Log in failed , validate your email or password .");
-                console.log(error.message);
-                
+        if (password !== cpassword) {
+            cpassInp.setCustomValidity("Passwords do not match");
+            signUpForm.reportValidity();
+            return;
         }
 
-    })
+        if (password.length < 8) {
+             passInp.setCustomValidity("Password must be at least 8 characters.");
+             signUpForm.reportValidity();
+             return;
+        } else if (!/[A-Z]/.test(password)) {
+             passInp.setCustomValidity("Password must contain at least one upper case letter.");
+             signUpForm.reportValidity();
+             return;
+        } else if (!/[0-9]/.test(password)) {
+             passInp.setCustomValidity("Password must contain at least one number.");
+             signUpForm.reportValidity();
+             return;
+        }
+
+        const signUpBtn = document.getElementById("signUpBtn");
+        signUpBtn.disabled = true;
+        signUpBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            await setDoc(doc(db, "users", user.uid), {
+                name, grade, email, createdAt: new Date()
+            });
+            alert("Success: Account successfully created!");
+            window.location.href = "signIn.html";
+        } catch (error) {
+            alert("Error creating account: " + error.message);
+            console.error("Signup error:", error);
+        } finally {
+            signUpBtn.disabled = false;
+            signUpBtn.innerHTML = 'Create Account <i class="fas fa-user-plus" style="margin-left: 10px;"></i>';
+        }
+    });
+}
+// Login logic via form submit
+const signInForm = document.getElementById("signInForm");
+if (signInForm) {
+    signInForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        const signInBtn = document.getElementById("signInBtn");
+        signInBtn.disabled = true;
+        signInBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging In...';
+
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            window.location.href = "mainPage.html";
+        } catch (error) {
+            alert("Log-in failed. Please check your email or password.");
+            console.error("Login error:", error.message);
+        } finally {
+            signInBtn.disabled = false;
+            signInBtn.innerHTML = 'Sign In <i class="fas fa-sign-in-alt" style="margin-left: 10px;"></i>';
+        }
+    });
 }
 
 const googleProvider = new GoogleAuthProvider();
@@ -220,21 +195,21 @@ const forgotBtn=document.getElementById("forgotBtn");
 if(forgotBtn){
     
 
-    forgotBtn.addEventListener("click",async()=>{
-         const email=document.getElementById("email").value;
-         if(email==null || email==""){
-            alert("Email required.");
+    forgotBtn.addEventListener("click", async () => {
+        const emailInput = document.getElementById("email");
+        if (!emailInput.checkValidity()) {
+            emailInput.reportValidity();
             return;
-         }
-         try{
-await sendPasswordResetEmail(auth,email);
-        alert("Reset password link sent.");
-         }catch(error){
-            alert("Error sending reset link");
-            console.log(error.message);
-         }
-        
-    })
+        }
+        const email = emailInput.value;
+        try {
+            await sendPasswordResetEmail(auth, email);
+            alert("Reset password link sent to your email.");
+        } catch (error) {
+            alert("Error sending reset link: " + error.message);
+            console.error(error);
+        }
+    });
 }
 // getting topic from ai
 async function validateTopic(topic, subject) {
@@ -274,8 +249,6 @@ async function getTopic() {
     const subject = subjectElem.value;
     const topic = topicElem.value.trim();
     const level = levelElem.value;
-
-    if (!topic) return alert("Please enter a topic!");
 
     const startedBtn = document.getElementById("startedBtn");
     const originalText = startedBtn?.innerText || "Start Learning";
@@ -531,9 +504,10 @@ STRUCTURE:
     }
 }
 
-const startedBtn = document.getElementById("startedBtn");
-if (startedBtn) {
-    startedBtn.addEventListener("click", async (e) => {
+// Lesson generator logic via form submit
+const tutorForm = document.getElementById("tutorForm");
+if (tutorForm) {
+    tutorForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         await getTopic();
     });
