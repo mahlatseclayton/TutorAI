@@ -763,12 +763,9 @@ document.addEventListener("DOMContentLoaded", function() {
 // --- Watched videos tracking ---
 function addToWatched(video) {
     let watched = JSON.parse(localStorage.getItem("watchedVideos") || "[]");
-
-    if (watched.some(v => v.id === video.id)) return; // prevent duplicates
-    watched.push({ id: video.id, title: video.title });
+    if (watched.some(v => v.id === video.id)) return;
+    watched.push({ id: video.id, title: video.title, topic: video.topic || "", subject: video.subject || "" });
     localStorage.setItem("watchedVideos", JSON.stringify(watched));
-
-    updateWatchedSection();
 }
 
 function updateWatchedSection() {
@@ -779,11 +776,17 @@ function updateWatchedSection() {
     const watched = JSON.parse(localStorage.getItem("watchedVideos") || "[]");
     list.innerHTML = ""; // clear skeletons / old entries
 
+    if (watched.length === 0) {
+        list.innerHTML = `<div class="empty-state">
+            <i class="fas fa-video"></i>
+            <p>No videos watched yet — watch lessons to track your progress!</p>
+        </div>`;
+    }
+
     watched.forEach(video => {
-        // Create a link instead of a plain div
         const link = document.createElement("a");
         link.href = `https://www.youtube.com/watch?v=${video.id}`;
-        link.target = "_blank"; // open in new tab
+        link.target = "_blank";
         link.rel = "noopener noreferrer";
         link.style.display = "flex";
         link.style.alignItems = "center";
@@ -795,19 +798,6 @@ function updateWatchedSection() {
         link.style.fontWeight = "600";
         link.style.textDecoration = "none";
         link.style.color = "var(--text-main, #1e1b4b)";
-        link.style.border = "1px solid var(--border-color, rgba(0,0,0,0.05))";
-        link.style.transition = "transform 0.2s, box-shadow 0.2s";
-
-        // Hover effect
-        link.addEventListener("mouseenter", () => {
-            link.style.transform = "scale(1.02)";
-            link.style.boxShadow = "0 8px 20px rgba(0,0,0,0.1)";
-        });
-        link.addEventListener("mouseleave", () => {
-            link.style.transform = "scale(1)";
-            link.style.boxShadow = "none";
-        });
-
         link.innerHTML = `<i class="fab fa-youtube" style="color: #ef4444; font-size: 1.5rem;"></i> <span>${video.title}</span>`;
         list.appendChild(link);
     });
@@ -815,37 +805,14 @@ function updateWatchedSection() {
     count.innerText = `${watched.length} watched`;
 }
 
-// --- YouTube API Loader ---
-function loadYouTubeAPI(callback) {
-    if (window.YT && YT.Player) return callback();
+// Expose globally so Account.html can call it
+window.updateWatchedSection = updateWatchedSection;
 
-    const tag = document.createElement("script");
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(tag);
-
-    const checkReady = setInterval(() => {
-        if (window.YT && YT.Player) {
-            clearInterval(checkReady);
-            callback();
-        }
-    }, 100);
-}
-
-// --- Render Recommended Videos ---
 function renderVideos(videos, container) {
     if (!container) return;
     container.innerHTML = "";
 
-    if (!Array.isArray(videos) || videos.length === 0) {
-        const msg = document.createElement("p");
-        msg.style.textAlign = "center";
-        msg.innerText = "No videos available for this topic.";
-        container.appendChild(msg);
-        return;
-    }
-
     const heading = document.createElement("h2");
-    heading.style.textAlign = "left";
     heading.innerHTML = "<i class='fas fa-play-circle'></i> Recommended Videos";
     heading.className = "sidebarTitle";
     heading.style.marginBottom = "16px";
@@ -857,70 +824,106 @@ function renderVideos(videos, container) {
     grid.style.gap = "20px";
     container.appendChild(grid);
 
-    // Limit to 4 videos
     const maxVids = videos.slice(0, 4);
 
-    maxVids.forEach((video, index) => {
+    maxVids.forEach((video) => {
+        const watched = JSON.parse(localStorage.getItem("watchedVideos") || "[]");
+        const isWatched = watched.some(v => v.id === video.id);
+
         const wrapper = document.createElement("div");
-        wrapper.style.position = "relative";
-        wrapper.style.background = "var(--card-bg, #fff)";
-        wrapper.style.border = "1px solid var(--border-color, rgba(0,0,0,0.05))";
-        wrapper.style.borderRadius = "12px";
-        wrapper.style.boxShadow = "0 4px 15px rgba(0,0,0,0.05)";
-        wrapper.style.overflow = "hidden";
+        wrapper.style.cssText = `
+            position:relative; background:var(--card-bg,#fff);
+            border:2px solid ${isWatched ? "#ef4444" : "var(--border-color,rgba(0,0,0,0.05))"};
+            border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.05);
+            overflow:hidden; transition:transform 0.2s,box-shadow 0.2s;
+            opacity:${isWatched ? "0.7" : "1"};
+        `;
 
-        const playerDiv = document.createElement("div");
-        const playerId = `yt-player-${index}`;
-        playerDiv.id = playerId;
-        wrapper.appendChild(playerDiv);
+        // Thumbnail container
+        const thumbWrapper = document.createElement("div");
+        thumbWrapper.style.cssText = "position:relative; cursor:pointer; width:100%; height:180px; overflow:hidden;";
 
+        const thumb = document.createElement("img");
+        thumb.src = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+        thumb.style.cssText = "width:100%; height:100%; object-fit:cover; display:block;";
+
+        // Play button overlay
+        const playBtn = document.createElement("div");
+        playBtn.style.cssText = `
+            position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+            background:rgba(0,0,0,0.3); transition:background 0.2s;
+        `;
+        playBtn.innerHTML = `<div style="width:54px;height:54px;background:#ef4444;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+        </div>`;
+
+        thumbWrapper.addEventListener("mouseenter", () => playBtn.style.background = "rgba(0,0,0,0.5)");
+        thumbWrapper.addEventListener("mouseleave", () => playBtn.style.background = "rgba(0,0,0,0.3)");
+
+        // On click: swap thumbnail for real iframe and mark as watched
+        thumbWrapper.addEventListener("click", () => {
+            const iframe = document.createElement("iframe");
+            iframe.width = "100%";
+            iframe.height = "180";
+            iframe.src = `https://www.youtube.com/embed/${video.id}?rel=0&autoplay=1`;
+            iframe.frameBorder = "0";
+            iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+            iframe.allowFullscreen = true;
+            iframe.style.display = "block";
+
+            thumbWrapper.replaceWith(iframe);
+
+            // Mark as watched
+            addToWatched(video);
+            wrapper.style.opacity = "0.7";
+            wrapper.style.borderColor = "#ef4444";
+        });
+
+        thumbWrapper.appendChild(thumb);
+        thumbWrapper.appendChild(playBtn);
+        wrapper.appendChild(thumbWrapper);
+
+        // Title
         const title = document.createElement("p");
         title.innerText = video.title;
-        title.style.color = "var(--text-main, #1e1b4b)";
-        title.style.textAlign = "center";
-        title.style.fontWeight = "600";
-        title.style.fontSize = "0.9rem";
-        title.style.padding = "8px";
-        title.style.margin = "0";
+        title.style.cssText = "color:var(--text-main,#1e1b4b);text-align:center;font-weight:600;font-size:0.9rem;padding:8px;margin:0;";
         wrapper.appendChild(title);
 
-        grid.appendChild(wrapper);
+        // Hover effect on card
+        wrapper.addEventListener("mouseenter", () => {
+            wrapper.style.transform = "scale(1.02)";
+            wrapper.style.boxShadow = "0 8px 20px rgba(0,0,0,0.1)";
+        });
+        wrapper.addEventListener("mouseleave", () => {
+            wrapper.style.transform = "scale(1)";
+            wrapper.style.boxShadow = "0 4px 15px rgba(0,0,0,0.05)";
+        });
 
-        // Initialize YT Player seamlessly via API
-        if (window.YT && YT.Player) {
-            new YT.Player(playerId, {
-                height: '180',
-                width: '100%',
-                videoId: video.id,
-                playerVars: { rel: 0, modestbranding: 1 },
-                events: {
-                    onStateChange: (event) => {
-                        if (event.data === YT.PlayerState.PLAYING) {
-                            if(typeof addToWatched === "function") addToWatched(video);
-                        }
-                    }
-                }
-            });
-        } else {
-            // Fallback natively if YouTube API fails to load
-            playerDiv.innerHTML = `<iframe width="100%" height="180" src="https://www.youtube.com/embed/${video.id}?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-        }
+        grid.appendChild(wrapper);
     });
 }
 
-// --- Load videos dynamically from your API ---
+// --- Load videos dynamically from Searlo API ---
 async function loadVideos() {
     const topicTitle = document.getElementById("topicTitle");
-    const vidContainer = document.getElementById("videosContent"); // Recommended videos container
+    const subjectTitle = document.getElementById("subject");
+    const vidContainer = document.getElementById("videosContent");
+
     if (!vidContainer || !topicTitle) return;
 
-    const sHeading = topicTitle.innerText;
-    console.log("🔹 loadVideos called with heading:", sHeading);
+    const sHeading = topicTitle.innerText || "";
+    const sSubject = subjectTitle?.innerText || "";
+
+    console.log("🔹 loadVideos called with:", sHeading, "|", sSubject);
 
     try {
         const response = await fetch(
-            `https://yt-videos-xaudhnk2aq-uc.a.run.app?heading=${encodeURIComponent(sHeading)}`
+            `https://yt-videos-xaudhnk2aq-uc.a.run.app?heading=${encodeURIComponent(sHeading)}&subject=${encodeURIComponent(sSubject)}`
         );
+
         const data = await response.json();
 
         if (data.error) {
@@ -930,7 +933,9 @@ async function loadVideos() {
             return;
         }
 
-        loadYouTubeAPI(() => renderVideos(data.videos, vidContainer));
+       
+        renderVideos(data.videos, vidContainer);
+
     } catch (err) {
         console.error("Video fetch error:", err);
         vidContainer.innerHTML =
@@ -940,9 +945,12 @@ async function loadVideos() {
 
 // --- Initialize on page load ---
 window.addEventListener("DOMContentLoaded", () => {
-    loadVideos();           // Recommended videos page
-    updateWatchedSection(); // Videos Watched page
+    loadVideos();  
+    updateWatchedSection();         // Recommended videos page
+  
 });
+
+
 
 // Video fetching removed from standalone DOMContentLoaded to handle sync in handleResponse
 
