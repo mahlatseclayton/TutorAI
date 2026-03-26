@@ -101,7 +101,7 @@
 
         <div class="dashboard-container">
             <div class="dashboard-header">
-                <h2>Welcome Back, Scholar</h2>
+                <h2 id="welcomeHeading"></h2>
                 <p>What are we mastering today?</p>
             </div>
 
@@ -162,5 +162,39 @@
 
     <script src="script.js"></script>
     <script type="module" src="firebase.js"></script>
+
+
+    <script type="module">
+    import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDjNyRSkepOLHcYuK4ALI2xWibC-P849f0",
+        authDomain: "tutorai-5f97d.firebaseapp.com",
+        projectId: "tutorai-5f97d",
+        storageBucket: "tutorai-5f97d.firebasestorage.app",
+        messagingSenderId: "447039931727",
+        appId: "1:447039931727:web:e90fa57709aced5bb6713a"
+    };
+
+    // Avoid duplicate app initialization
+    const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) return;
+        try {
+            const snap = await getDoc(doc(db, "users", user.uid));
+            const data = snap.exists() ? snap.data() : {};
+            const name = data.name || user.displayName || user.email?.split("@")[0] || "Scholar";
+            const firstName = name.split(" ")[0];
+            document.getElementById("welcomeHeading").textContent = `Welcome, ${firstName}!`;
+        } catch (e) {
+            console.error("Could not load name:", e);
+        }
+    });
+</script>
 </body>
 </html>
