@@ -184,17 +184,31 @@
     const db   = getFirestore(app);
 
     onAuthStateChanged(auth, async (user) => {
-        if (!user) return;
-        try {
-            const snap = await getDoc(doc(db, "users", user.uid));
-            const data = snap.exists() ? snap.data() : {};
-            const name = data.name || user.displayName || user.email?.split("@")[0] || "Scholar";
-            const firstName = name.split(" ")[0];
-            document.getElementById("welcomeHeading").textContent = `Welcome, ${firstName}!`;
-        } catch (e) {
-            console.error("Could not load name:", e);
-        }
-    });
+    if (!user) {
+        document.getElementById("welcomeHeading").textContent = `Welcome, Scholar!`;
+        return;
+    }
+
+    // Show cached name instantly if available
+    const cached = localStorage.getItem("userName");
+    if (cached) {
+        document.getElementById("welcomeHeading").textContent = `Welcome, ${cached}!`;
+    }
+
+    try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const data = snap.exists() ? snap.data() : {};
+        const name = data.name || user.displayName || user.email?.split("@")[0] || "Scholar";
+        const firstName = name.split(" ")[0];
+
+        // Cache it for next time
+        localStorage.setItem("userName", firstName);
+
+        document.getElementById("welcomeHeading").textContent = `Welcome, ${firstName}!`;
+    } catch (e) {
+        console.error("Could not load name:", e);
+    }
+});
 </script>
 </body>
 </html>
