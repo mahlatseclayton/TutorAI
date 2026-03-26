@@ -320,7 +320,7 @@ async function getTopic() {
                 const vResult = JSON.parse(vClean);
                 
                 if (!vResult.valid) {
-                    const proceed = confirm(`TutorAI Suggestion: ${vResult.reason}. This topic might better belong in "${vResult.suggested_subject}". Do you want to continue anyway?`);
+                    const proceed = confirm(`MzansiMind Suggestion: ${vResult.reason}. This topic might better belong in "${vResult.suggested_subject}". Do you want to continue anyway?`);
                     if (!proceed) {
                         return; // Stop the generation
                     }
@@ -461,7 +461,7 @@ STRUCTURE:
                         console.log("Last Resort Regex Recovery successful!");
                     } catch (finalErr) {
                         console.error("All recovery attempts failed:", finalErr);
-                        throw new Error("TutorAI received a complex response it couldn't decode. Please try a slightly different topic or level.");
+                        throw new Error("MzansiMind received a complex response it couldn't decode. Please try a slightly different topic or level.");
                     }
                 }
             }
@@ -492,7 +492,7 @@ STRUCTURE:
         
     } catch (error) {
         console.error("Critical Failure in getTopic:", error);
-        alert(`TutorAI Error: ${error.message}. Please try again in few seconds.`);
+        alert(`MzansiMind Error: ${error.message}. Please try again in few seconds.`);
     } finally {
         if (!isNavigating) {
             if (startedBtn) {
@@ -1219,7 +1219,7 @@ async function handleChat() {
         const data = await response.json();
         botDiv.innerText = data.aiResponse || "I'm sorry, I couldn't process that.";
     } catch (error) {
-        botDiv.innerText = "Error connecting to TutorAI.";
+        botDiv.innerText = "Error connecting to MzansiMind.";
     }
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -1337,7 +1337,7 @@ if (solveBtn && scanResultSection && scanResultContent) {
             solveBtn.disabled = true;
             solveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analyzing...';
             scanResultSection.style.display = "block";
-            scanResultContent.innerHTML = '<div class="spinner" style="margin: 20px auto;"></div><p style="text-align:center;">TutorAI is scanning your question...</p>';
+            scanResultContent.innerHTML = '<div class="spinner" style="margin: 20px auto;"></div><p style="text-align:center;">MzansiMind is scanning your question...</p>';
             
             // Construct Prompt based on mode
             let stylePrompt = "";

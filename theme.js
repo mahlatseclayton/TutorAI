@@ -34,9 +34,13 @@
 
     // --- Dynamic Active Lesson Link ---
     window.initDynamicNav = function() {
+        // Don't show active lesson on auth or lander pages
+        const authPages = ['signIn.html', 'signUp.html', 'index.html', 'welcome'];
+        const isAuthPage = authPages.some(page => window.location.pathname.includes(page)) || window.location.pathname === '/' || window.location.pathname.endsWith('TutorAI/');
+        
         const navBars = document.querySelectorAll('.navBar');
-        // Only show if there is actually a stored lesson to view
-        if (navBars.length > 0 && localStorage.getItem('aiResponse')) {
+        // Only show if there is actually a stored lesson to view AND we aren't on an auth page
+        if (!isAuthPage && navBars.length > 0 && localStorage.getItem('aiResponse')) {
             navBars.forEach(nav => {
                 nav.classList.add('has-active-lesson');
                 if (!nav.querySelector('a[href="solutionPage.html"]')) {
