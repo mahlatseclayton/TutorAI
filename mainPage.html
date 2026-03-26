@@ -72,6 +72,15 @@
             text-align: center;
         }
     </style>
+
+    <script>
+    const cached = localStorage.getItem("userName");
+    if (cached) {
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("welcomeHeading").textContent = `Welcome, ${cached}!`;
+        });
+    }
+</script>
 </head>
 <body style="font-family: 'Outfit', sans-serif !important;">
     <div class="circles"></div>
@@ -209,6 +218,8 @@
         console.error("Could not load name:", e);
     }
 });
+
+
 </script>
 </body>
 </html>
