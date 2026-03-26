@@ -907,7 +907,7 @@
         }
 
 
-        // Add this function inside the inline <script type="module"> in Account.html
+        
 function updateWatchedSection() {
     const list = document.getElementById("videosWatchedList");
     const count = document.getElementById("videosWatchedCount");
@@ -926,6 +926,13 @@ function updateWatchedSection() {
     }
 
     watched.forEach(video => {
+        const date = video.watchedAt 
+            ? new Date(video.watchedAt).toLocaleString("en-ZA", { 
+                day: "numeric", month: "short", year: "numeric", 
+                hour: "2-digit", minute: "2-digit" 
+              }) 
+            : "";
+
         const link = document.createElement("a");
         link.href = `https://www.youtube.com/watch?v=${video.id}`;
         link.target = "_blank";
@@ -937,6 +944,7 @@ function updateWatchedSection() {
             <div>
                 <div style="font-weight:700;">${video.title}</div>
                 <div style="font-size:0.78rem;color:var(--text-muted);">${video.subject || ""} ${video.topic ? "· " + video.topic : ""}</div>
+                ${date ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:3px;"><i class="fas fa-clock" style="font-size:0.7rem;"></i> ${date}</div>` : ""}
             </div>`;
         list.appendChild(link);
     });

@@ -764,7 +764,13 @@ document.addEventListener("DOMContentLoaded", function() {
 function addToWatched(video) {
     let watched = JSON.parse(localStorage.getItem("watchedVideos") || "[]");
     if (watched.some(v => v.id === video.id)) return;
-    watched.push({ id: video.id, title: video.title, topic: video.topic || "", subject: video.subject || "" });
+    watched.push({ 
+        id: video.id, 
+        title: video.title, 
+        topic: video.topic || "", 
+        subject: video.subject || "",
+        watchedAt: new Date().toISOString() 
+    });
     localStorage.setItem("watchedVideos", JSON.stringify(watched));
 }
 
