@@ -529,6 +529,7 @@ html{
         flex-direction: column;
         gap: 10px;
         text-align: center;
+     
     }
 
     #learningContent {
@@ -746,6 +747,7 @@ select:focus {
     position: sticky;
     top: 80px;
     z-index: 10;
+    margin-top: -30px;
 }
 
 #backBtn {
