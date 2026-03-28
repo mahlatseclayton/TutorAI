@@ -2267,7 +2267,7 @@ body.dark-mode #scanResultSection {
   border-radius: 10px;
   font-size: 0.9rem;
   font-weight: 600;
-  text-decoration: none;
+  text-decoration: none;        
   cursor: pointer;
   border: none;
 }
@@ -2303,4 +2303,11 @@ body.dark-mode #scanResultSection {
 #pastPapersCount {
   font-size: 0.9rem;
   opacity: 0.7;
+}
+
+/* captcha box styiling */
+.captchaBox {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
 }
