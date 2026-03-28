@@ -49,16 +49,16 @@ if (passwordContainer) {
     }
 }
 
-//captcha
-document.getElementById("signInForm").addEventListener("submit", function(e) {
-    const captcha = grecaptcha.getResponse();
+// //captcha
+// document.getElementById("signInForm").addEventListener("submit", function(e) {
+//     const captcha = grecaptcha.getResponse();
 
-    if (captcha.length === 0) {
-        e.preventDefault();
-        alert("Please complete the CAPTCHA");
-        return;
-    }
-});
+//     if (captcha.length === 0) {
+//         e.preventDefault();
+//         alert("Please complete the CAPTCHA");
+//         return;
+//     }
+// });
 
 
 
