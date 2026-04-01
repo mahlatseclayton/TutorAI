@@ -234,38 +234,28 @@ main {
 
 .concept-item {
     flex: 1 1 300px;
-    min-width: 0;
+    min-width: 0; /* Essential for flex-wrap text overflow */
     word-break: break-word;
     overflow-wrap: break-word;
     background: var(--card-bg);
     padding: 15px;
     border-radius: 12px;
     border: 1px solid var(--card-border);
+    overflow-x: auto; /* Allow horizontal scroll for long equations */
 }
 
 .concept-value {
     word-wrap: break-word;
     white-space: normal !important;
+    overflow-x: auto; /* Sub-container scrolling just in case */
+    max-width: 100%;
 }
 
-/* Key Concepts Wrapping */
-#formulaContent {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    width: 100%;
-}
-
-.concept-item {
-    flex: 1 1 300px; /* Allow items to grow/shrink, wrap at 300px */
-    min-width: 0; /* Essential for flex-wrap text overflow */
-    word-break: break-word;
-    overflow-wrap: break-word;
-}
-
-.concept-value {
-    word-wrap: break-word;
-    white-space: normal !important;
+/* Prevent MathJax overflow system-wide */
+mjx-container {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 /* Removed redundant dark mode block to prevent specificity issues */

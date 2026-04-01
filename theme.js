@@ -66,6 +66,7 @@
     };
     
     document.addEventListener("DOMContentLoaded", window.initDynamicNav);
+    window.addEventListener("pageshow", window.initDynamicNav);
 
     // Poll to catch the button as soon as it exists
     document.addEventListener("DOMContentLoaded", window.initTheme);

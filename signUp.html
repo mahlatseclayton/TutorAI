@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - MzansiMind</title>
+    <title>Create Account - MzansiEd</title>
     <script src="theme.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -18,7 +18,7 @@
         <header class="appBar">
             <div class="lCon">
                 <img class="cLogo" src="images/tlogo.jpeg" alt="Logo">
-                <h1 class="appTitle">Mzansi<span style="color: #ef4444;">Mind</span></h1>
+                <h1 class="appTitle">Mzansi<span style="color: #ef4444;">Ed</span></h1>
             </div>
             
             <nav class="navBar">
@@ -40,8 +40,8 @@
                     <input id="name" class="authInput" type="text" placeholder="Full Name(s)" required>
                     <input id="email" class="authInput" type="email" placeholder="Email Address" required>
                     <input id="grade" class="authInput" type="number" placeholder="Your Grade" required>
-                    <input id="password" class="authInput" type="password" placeholder="Create Password" required>
-                    <input id="cpassword" class="authInput" type="password" placeholder="Confirm Password" required>
+                    <input id="password" class="authInput" type="password" placeholder="Create Password" required minlength="6">
+                    <input id="cpassword" class="authInput" type="password" placeholder="Confirm Password" required minlength="6">
 
                     <div class="authLinks">
                         <a href="signIn.html">Already have an account? Sign In</a>
