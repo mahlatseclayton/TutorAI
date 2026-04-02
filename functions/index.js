@@ -95,7 +95,7 @@ exports.YT_VIDEOS = functions.https.onRequest(
         const heading = req.query.heading || "Default Topic";
         const subject = req.query.subject || "";
 
-        // 🔥 BETTER search query (IMPORTANT)
+        
         const searchQuery = `${heading} ${subject} Grade 12 lesson site:youtube.com`;
 
         const apiKey = process.env.SEARLO_API_KEY;
@@ -123,7 +123,7 @@ exports.YT_VIDEOS = functions.https.onRequest(
         const results = data.organic || [];
         const REQUIRED_VIDEOS = 4;
 
-        // 🎥 Filter YouTube links
+        
         const youtubeResults = results.filter(
           (r) =>
             r.link &&
@@ -131,7 +131,7 @@ exports.YT_VIDEOS = functions.https.onRequest(
              r.link.includes("youtu.be/"))
         );
 
-        // 🔧 Extract unique videos
+        
         const videos = [];
         const seen = new Set();
 
@@ -157,7 +157,7 @@ exports.YT_VIDEOS = functions.https.onRequest(
           }
         }
 
-        // 🧨 Minimal fallback
+        
         const fallbackVideos = [
           "M7lc1UVf-VE",
           "3JZ_D3ELwOQ",
@@ -176,7 +176,7 @@ exports.YT_VIDEOS = functions.https.onRequest(
           i++;
         }
 
-        // ✂️ Ensure exactly 4
+        
         const finalVideos = videos.slice(0, REQUIRED_VIDEOS);
 
         res.json({ error: false, videos: finalVideos });
