@@ -1,4 +1,9 @@
 {
+  "name": "tutor-ai",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'No build step required'"
+  },
   "dependencies": {
     "cors": "^2.8.6",
     "firebase": "^12.9.0",
