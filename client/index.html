@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to MzansiEd</title>
     <link rel="icon" type="image/jpeg" href="images/tlogo.jpeg">
-    <script src="theme.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <script src="js/theme.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -164,9 +164,9 @@
                 margin-top: 60px;
             }
             #mainLogo { 
-                width: 180px; 
-                height: 180px; 
-                border-width: 8px;
+                width: 250px; 
+                height: 250px; 
+                border-width: 10px;
             }
             .hero-container {
                 min-height: auto;
@@ -174,9 +174,24 @@
                 gap: 20px;
             }
             .logo-glow {
-                width: 250px;
-                height: 250px;
+                width: 300px;
+                height: 300px;
             }
+            #indexGetStarted {
+                padding: 18px 60px;
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .welcome-text h1 { font-size: 2.8rem; letter-spacing: -1px; }
+            .welcome-text h4 { font-size: 1.2rem; margin-top: 15px; }
+            .welcome-text p { font-size: 1.1rem; }
+            #mainLogo { width: 180px; height: 180px; }
+            .hero-container { padding: 20px; }
+            .headerActions { top: 20px; right: 20px; }
+            .about-us h2 { font-size: 2.2rem; }
+            .about-us p { font-size: 1rem; }
         }
     </style>
 </head>
@@ -284,7 +299,7 @@
 
     </main>
 
-    <script type="module" src="firebase.js"></script>
-    <script src="script.js"></script>
+    <script type="module" src="js/firebase.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>

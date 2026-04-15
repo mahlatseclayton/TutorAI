@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lesson Generator - MzansiEd</title>
     <link rel="icon" type="image/jpeg" href="images/tlogo.jpeg">
-    <script src="theme.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <script src="js/theme.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -71,6 +71,11 @@
             justify-content: center;
             color: white;
             text-align: center;
+        }
+        @media (max-width: 480px) {
+            .dashboard-header h2 { font-size: 1.8rem; }
+            .dashboard-container { padding: 20px 10px; }
+            .form-card { padding: 20px 15px !important; }
         }
     </style>
 
@@ -170,8 +175,8 @@
         <p style="opacity: 0.8; margin-top: 10px;">MzansiEd is generating personalized insights for you.</p>
     </div>
 
-    <script src="script.js"></script>
-    <script type="module" src="firebase.js"></script>
+    <script src="js/script.js"></script>
+    <script type="module" src="js/firebase.js"></script>
 
 
     <script type="module">

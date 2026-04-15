@@ -103,10 +103,18 @@ if (signUpForm) {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+            
+            // Send verification email
+            await sendEmailVerification(user);
+            
             await setDoc(doc(db, "users", user.uid), {
                 name, grade, email, createdAt: new Date()
             });
-            alert("Success: Account successfully created!");
+            
+            // Sign out immediately after registration to force verification
+            await signOut(auth);
+            
+            alert("Success: Account successfully created! A verification email has been sent to your inbox. Please verify your email before signing in.");
             window.location.href = "signIn.html";
         } catch (error) {
             alert("Error creating account: " + error.message);
@@ -130,7 +138,16 @@ if (signInForm) {
         signInBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging In...';
 
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Check if email is verified
+            if (!user.emailVerified) {
+                alert("Account not verified: Please check your email and verify your account before logging in.");
+                await signOut(auth);
+                return;
+            }
+
             window.location.href = "mainPage.html";
         } catch (error) {
             alert("Log-in failed. Please check your email or password.");
@@ -178,10 +195,8 @@ if (googleSignInBtn) {
 }
 
 // forgot password funtionality
-const forgotBtn=document.getElementById("forgotBtn");
-if(forgotBtn){
-    
-
+const forgotBtn = document.getElementById("forgotBtn");
+if (forgotBtn) {
     forgotBtn.addEventListener("click", async () => {
         const emailInput = document.getElementById("email");
         if (!emailInput.checkValidity()) {
@@ -195,6 +210,37 @@ if(forgotBtn){
         } catch (error) {
             alert("Error sending reset link: " + error.message);
             console.error(error);
+        }
+    });
+}
+
+// Resend verification email functionality
+const resendBtn = document.getElementById("resendBtn");
+if (resendBtn) {
+    resendBtn.addEventListener("click", async () => {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        if (!email || !password) {
+            alert("Please enter both your email and password to resend the verification email.");
+            return;
+        }
+
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            if (user.emailVerified) {
+                alert("This account is already verified. You can sign in now.");
+                window.location.href = "mainPage.html";
+            } else {
+                await sendEmailVerification(user);
+                alert("Verification email has been resent! Please check your inbox.");
+                await signOut(auth);
+            }
+        } catch (error) {
+            alert("Error resending verification: " + error.message);
+            console.error("Resend error:", error);
         }
     });
 }
