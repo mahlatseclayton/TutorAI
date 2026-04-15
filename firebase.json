@@ -20,18 +20,11 @@
     }
   ],
   "hosting": {
-    "public": "client",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**",
-      "functions/**",
-      "package.json",
-      "package-lock.json",
-      "firestore.rules",
-      "firestore.indexes.json",
-      "skills-lock.json",
-      "public/**"
+      "**/node_modules/**"
     ],
     "rewrites": [
       {

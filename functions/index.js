@@ -1,9 +1,4 @@
-/**
- * TutorAI Backend Entry Point
- * 
- * This file modularizes the Cloud Functions by exporting 
- * them from individual API files.
- */
+// this acts as a server
 
 // --- API: Gemini / Topic Tutor ---
 const { topicTutor } = require("./api/gemini");
