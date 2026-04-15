@@ -20,6 +20,8 @@ import { getAuth,
          sendEmailVerification, 
          signOut 
        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFunctions, httpsCallable } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDjNyRSkepOLHcYuK4ALI2xWibC-P849f0",
@@ -33,6 +35,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const functions = getFunctions(app);
 
 export { auth, db };
 
@@ -98,9 +101,32 @@ if (signUpForm) {
 
         const signUpBtn = document.getElementById("signUpBtn");
         signUpBtn.disabled = true;
-        signUpBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+        signUpBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating...';
 
         try {
+            // reCAPTCHA v3 verification
+            const captchaToken = await new Promise((resolve, reject) => {
+                grecaptcha.ready(async () => {
+                    try {
+                        const token = await grecaptcha.execute('6LcLg7ksAAAAAOUdsc6hoOd75Jw0hSrG-WJQs12b', {action: 'signup'});
+                        resolve(token);
+                    } catch (err) {
+                        reject(err);
+                    }
+                });
+            });
+
+            const verifyCaptcha = httpsCallable(functions, 'verifyCaptcha');
+            const captchaResult = await verifyCaptcha({ token: captchaToken });
+
+            if (!captchaResult.data.success) {
+                alert("Security check failed. Please refresh and try again.");
+                signUpBtn.disabled = false;
+                signUpBtn.innerHTML = 'Create Account <i class="fas fa-user-plus" style="margin-left: 10px;"></i>';
+                return;
+            }
+
+            signUpBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
@@ -135,9 +161,32 @@ if (signInForm) {
 
         const signInBtn = document.getElementById("signInBtn");
         signInBtn.disabled = true;
-        signInBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging In...';
+        signInBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating...';
 
         try {
+            // reCAPTCHA v3 verification
+            const captchaToken = await new Promise((resolve, reject) => {
+                grecaptcha.ready(async () => {
+                    try {
+                        const token = await grecaptcha.execute('6LcLg7ksAAAAAOUdsc6hoOd75Jw0hSrG-WJQs12b', {action: 'signin'});
+                        resolve(token);
+                    } catch (err) {
+                        reject(err);
+                    }
+                });
+            });
+
+            const verifyCaptcha = httpsCallable(functions, 'verifyCaptcha');
+            const captchaResult = await verifyCaptcha({ token: captchaToken });
+
+            if (!captchaResult.data.success) {
+                alert("Security check failed. Please refresh and try again.");
+                signInBtn.disabled = false;
+                signInBtn.innerHTML = 'Sign In <i class="fas fa-sign-in-alt" style="margin-left: 10px;"></i>';
+                return;
+            }
+
+            signInBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging In...';
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
@@ -179,9 +228,6 @@ if (googleSignInBtn) {
                     email: user.email,
                     createdAt: new Date()
                 });
-                console.log("New user added:", user.displayName);
-            } else {
-                console.log("Returning user:", user.displayName);
             }
 
             alert(`Welcome ${user.displayName}!`);
@@ -956,8 +1002,6 @@ async function loadVideos() {
     const sHeading = topicTitle.innerText || "";
     const sSubject = subjectTitle?.innerText || "";
 
-    console.log("🔹 loadVideos called with:", sHeading, "|", sSubject);
-
     try {
         const response = await fetch(
             `https://yt-videos-xaudhnk2aq-uc.a.run.app?heading=${encodeURIComponent(sHeading)}&subject=${encodeURIComponent(sSubject)}`
@@ -1062,7 +1106,6 @@ window.generateQuiz = async function() {
             const unseenIndex = quizVariants.findIndex((v, idx) => !takenIndices.includes(idx));
             
             if (unseenIndex !== -1) {
-                console.log("Global Cache Hit! Serving unused variant #" + unseenIndex);
                 takenIndices.push(unseenIndex);
                 localStorage.setItem(takenVarKey, JSON.stringify(takenIndices));
                 

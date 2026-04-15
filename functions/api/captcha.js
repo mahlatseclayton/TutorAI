@@ -1,11 +1,11 @@
-const functions = require("firebase-functions");
+const { onCall } = require("firebase-functions/v2/https");
 const axios = require("axios");
 
-exports.verifyCaptcha = functions.https.onCall(
-  { secrets: ["RECAPTCHA_SECRET"] },
-  async (data, context) => {
+exports.verifyCaptcha = onCall(
+  { secrets: ["RECAPTCHA_API"] },
+  async (request) => {
     try {
-      const token = data.token;
+      const token = request.data.token;
 
       if (!token) {
         return {
@@ -14,7 +14,7 @@ exports.verifyCaptcha = functions.https.onCall(
         };
       }
 
-      const secret = process.env.RECAPTCHA_SECRET;
+      const secret = process.env.RECAPTCHA_API;
 
       const response = await axios.post(
         "https://www.google.com/recaptcha/api/siteverify",
