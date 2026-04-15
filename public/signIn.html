@@ -56,6 +56,10 @@
                         <a href="signUp.html">Create account</a>
                     </div>
                     
+                    <div class="captchaBox" style="margin: 20px 0; display: flex; justify-content: center; width: 100%;">
+                        <div class="g-recaptcha" data-sitekey="6Lc1lrksAAAAALI97mnMQW6fQ4X4ymKiP98PuVz9"></div>
+                    </div>
+
                     <button id="signInBtn" class="authBtn" type="submit">Sign In <i class="fas fa-sign-in-alt" style="margin-left: 10px;"></i></button>
                 </form>
             </div>
@@ -76,6 +80,6 @@
 
     <script src="js/script.js"></script>
     <script type="module" src="js/firebase.js"></script>
-    <script src="https://www.google.com/recaptcha/api.js?render=6LcLg7ksAAAAAOUdsc6hoOd75Jw0hSrG-WJQs12b"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 </html>

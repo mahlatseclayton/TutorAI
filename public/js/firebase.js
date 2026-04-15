@@ -104,23 +104,21 @@ if (signUpForm) {
         signUpBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating...';
 
         try {
-            // reCAPTCHA v3 verification
-            const captchaToken = await new Promise((resolve, reject) => {
-                grecaptcha.ready(async () => {
-                    try {
-                        const token = await grecaptcha.execute('6LcLg7ksAAAAAOUdsc6hoOd75Jw0hSrG-WJQs12b', {action: 'signup'});
-                        resolve(token);
-                    } catch (err) {
-                        reject(err);
-                    }
-                });
-            });
+            // reCAPTCHA verification (v2)
+            const captchaToken = grecaptcha.getResponse();
+            if (!captchaToken) {
+                alert("Please check the 'I'm not a robot' box.");
+                signUpBtn.disabled = false;
+                signUpBtn.innerHTML = 'Create Account <i class="fas fa-user-plus" style="margin-left: 10px;"></i>';
+                return;
+            }
 
             const verifyCaptcha = httpsCallable(functions, 'verifyCaptcha');
             const captchaResult = await verifyCaptcha({ token: captchaToken });
 
             if (!captchaResult.data.success) {
-                alert("Security check failed. Please refresh and try again.");
+                alert("reCAPTCHA verification failed. Please try again.");
+                grecaptcha.reset();
                 signUpBtn.disabled = false;
                 signUpBtn.innerHTML = 'Create Account <i class="fas fa-user-plus" style="margin-left: 10px;"></i>';
                 return;
@@ -164,23 +162,21 @@ if (signInForm) {
         signInBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating...';
 
         try {
-            // reCAPTCHA v3 verification
-            const captchaToken = await new Promise((resolve, reject) => {
-                grecaptcha.ready(async () => {
-                    try {
-                        const token = await grecaptcha.execute('6LcLg7ksAAAAAOUdsc6hoOd75Jw0hSrG-WJQs12b', {action: 'signin'});
-                        resolve(token);
-                    } catch (err) {
-                        reject(err);
-                    }
-                });
-            });
+            // reCAPTCHA verification (v2)
+            const captchaToken = grecaptcha.getResponse();
+            if (!captchaToken) {
+                alert("Please check the 'I'm not a robot' box.");
+                signInBtn.disabled = false;
+                signInBtn.innerHTML = 'Sign In <i class="fas fa-sign-in-alt" style="margin-left: 10px;"></i>';
+                return;
+            }
 
             const verifyCaptcha = httpsCallable(functions, 'verifyCaptcha');
             const captchaResult = await verifyCaptcha({ token: captchaToken });
 
             if (!captchaResult.data.success) {
-                alert("Security check failed. Please refresh and try again.");
+                alert("reCAPTCHA verification failed. Please try again.");
+                grecaptcha.reset();
                 signInBtn.disabled = false;
                 signInBtn.innerHTML = 'Sign In <i class="fas fa-sign-in-alt" style="margin-left: 10px;"></i>';
                 return;
