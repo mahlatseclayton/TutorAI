@@ -295,6 +295,9 @@ if (resendBtn) {
         }
     });
 }
+// --- AI Gateway URL (Common for all AI functions) ---
+const AI_GATEWAY_URL = "https://topictutor-xaudhnk2aq-uc.a.run.app";
+
 // getting topic from ai
 async function validateTopic(topic, subject) {
     const prompt = `
@@ -305,13 +308,26 @@ async function validateTopic(topic, subject) {
     `;
     
     try {
-        const res = await fetch("https://topictutor-xaudhnk2aq-uc.a.run.app", {
+        const res = await fetch(AI_GATEWAY_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: prompt })
         });
+        
+        if (!res.ok) {
+            let errorDetails = "";
+            try {
+                const errorData = await res.json();
+                errorDetails = errorData.error || errorData.details || "";
+            } catch (e) {
+                errorDetails = res.statusText;
+            }
+            console.warn(`Topic Validation failed at server (${res.status}): ${errorDetails}`);
+            return "VALID"; // Fail safe
+        }
+        
         const data = await res.json();
-        return data.aiResponse.trim();
+        return (data.aiResponse || "VALID").trim();
     } catch (e) {
         console.error("Validation error:", e);
         return "VALID";
@@ -394,12 +410,17 @@ async function getTopic() {
             Respond ONLY in JSON: {"valid": true, "reason": "..."} or {"valid": false, "reason": "...", "suggested_subject": "..."}`;
             
             try {
-                const vRes = await fetch("https://topictutor-xaudhnk2aq-uc.a.run.app", {
+                const vRes = await fetch(AI_GATEWAY_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ message: validatePrompt })
                 });
+                
+                if (!vRes.ok) throw new Error(`Validation check failed (${vRes.status})`);
+                
                 const vData = await vRes.json();
+                if (!vData.aiResponse) throw new Error("Validation response missing aiResponse");
+                
                 const vClean = vData.aiResponse.replace(/```json|```/g, "").trim();
                 const vResult = JSON.parse(vClean);
                 
@@ -469,7 +490,7 @@ STRUCTURE:
 - FOR PLAIN TEXT, DO NOT USE BACKSLASHES (\\) AS LINE BREAKS. USE \\\\n INSTEAD.
 - ENSURE ALL JSON STRINGS ARE PROPERLY ESCAPED.
 `;
-            const res = await fetch("https://topictutor-xaudhnk2aq-uc.a.run.app", {
+            const res = await fetch(AI_GATEWAY_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: fullPrompt })
