@@ -221,7 +221,7 @@ main {
 
 #mainSection h4 {
     color: var(--text-muted);
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 /* Key Concepts Wrapping */
@@ -274,35 +274,37 @@ mjx-container {
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
     border: 1px solid var(--card-border);
-    border-radius: 30px;
-    padding: 40px;
+    border-radius: 20px;
+    padding: 25px;
     width: 100%;
     max-width: 480px;
+    margin: 0 15px;
+    box-sizing: border-box;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
     animation: fadeIn 0.8s ease-out;
 }
 
 .authTitle {
-    font-size: 2.2rem;
+    font-size: 1.8rem;
     font-weight: 800;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     text-align: center;
     color: var(--text-main);
-    letter-spacing: -1px;
+    letter-spacing: -0.5px;
 }
 
 .authForm {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
 }
 
 .authInput {
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(255, 255, 255, 0.1);
-    padding: 16px 20px;
-    border-radius: 15px;
-    font-size: 1rem;
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-size: 0.9rem;
     color: var(--text-main);
     transition: all 0.3s ease;
     width: 100%;
@@ -321,13 +323,13 @@ body.dark-mode .authInput {
 }
 
 .authBtn {
-    margin-top: 10px;
-    padding: 16px;
-    border-radius: 15px;
+    margin-top: 5px;
+    padding: 12px;
+    border-radius: 10px;
     background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
     color: white;
     border: none;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -341,7 +343,9 @@ body.dark-mode .authInput {
 
 .authLinks {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
     margin-top: 10px;
     font-size: 0.9rem;
 }
