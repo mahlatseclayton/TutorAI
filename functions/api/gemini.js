@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 const { onRequest } = require("firebase-functions/v2/https");
 
 exports.topicTutor = onRequest(
@@ -20,11 +20,11 @@ exports.topicTutor = onRequest(
         "http://localhost:5000",
         "http://127.0.0.1:5000"
       ];
-
+      
       if (allowedOrigins.includes(origin)) {
         res.set("Access-Control-Allow-Origin", origin);
       }
-
+      
       res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
       res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
       res.set("Access-Control-Max-Age", "3600");
@@ -52,13 +52,11 @@ exports.topicTutor = onRequest(
         });
       }
 
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({
-        model: "gemini-2.5-flash",
-        systemInstruction: "You are a highly capable South African science and math tutor. Analyze the provided image or PDF document which contains a question. Provide a clear, accurate, and helpful response based on the requested style (Memo, Teaching, or Step-by-Step). \n\nCRITICAL RULES:\n1. Use LaTeX ($...$) for ALL mathematical expressions.\n2. If a sketch, diagram, or graph is needed, use clear SVG XML code (wrapped in ```html blocks) or highly structured text labels. Avoid messy ASCII art.\n3. Ensure all scientific constants and formulas are accurate."
-      });
+      // Initialize the new Google Gen AI SDK (2026 Standard)
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const systemInstruction = "You are a highly capable South African science and math tutor. Analyze the provided image or PDF document which contains a question. Provide a clear, accurate, and helpful response based on the requested style (Memo, Teaching, or Step-by-Step). \n\nCRITICAL RULES:\n1. Use LaTeX ($...$) for ALL mathematical expressions.\n2. If a sketch, diagram, or graph is needed, use clear SVG XML code (wrapped in ```html blocks) or highly structured text labels. Avoid messy ASCII art.\n3. Ensure all scientific constants and formulas are accurate.";
 
-      let result;
+      let contents = [];
       if (base64Data) {
         console.log("Multimodal request detected (Image/PDF).");
         const matches = base64Data.match(/^data:([^;]+);base64,(.+)$/);
@@ -68,21 +66,30 @@ exports.topicTutor = onRequest(
         const mimeType = matches[1];
         const data = matches[2];
 
-        result = await model.generateContent([
-          userPrompt,
+        contents = [
+          { text: userPrompt },
           {
             inlineData: {
               data: data,
               mimeType: mimeType
             }
           }
-        ]);
+        ];
       } else {
         console.log("Text-only request detected.");
-        result = await model.generateContent(userPrompt);
+        contents = [{ text: userPrompt }];
       }
 
-      const responseText = result.response.text();
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: contents,
+        config: {
+          systemInstruction: systemInstruction,
+          temperature: 0.7,
+        }
+      });
+
+      const responseText = response.text;
       console.log("AI Generation successful.");
 
       return res.status(200).json({
@@ -96,7 +103,7 @@ exports.topicTutor = onRequest(
         success: false,
         error: error.message || "AI_GENERATION_FAILED",
         details: error.toString(),
-        stack: error.stack // Include stack for internal debugging
+        stack: error.stack
       });
     }
   }
