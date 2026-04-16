@@ -7,8 +7,6 @@ exports.topicTutor = onRequest(
 
     // Enhanced Logging for Debugging
     const origin = req.headers.origin;
-    console.log(`Incoming request from origin: ${origin}`);
-    console.log(`GEMINI_API_KEY present: ${!!process.env.GEMINI_API_KEY}`);
 
     try {
       // CORS Headers
@@ -58,7 +56,6 @@ exports.topicTutor = onRequest(
 
       let contents = [];
       if (base64Data) {
-        console.log("Multimodal request detected (Image/PDF).");
         const matches = base64Data.match(/^data:([^;]+);base64,(.+)$/);
         if (!matches || matches.length !== 3) {
           throw new Error("Invalid base64 image data format");
@@ -76,7 +73,6 @@ exports.topicTutor = onRequest(
           }
         ];
       } else {
-        console.log("Text-only request detected.");
         contents = [{ text: userPrompt }];
       }
 
@@ -87,7 +83,6 @@ exports.topicTutor = onRequest(
       
       for (const currentModel of modelsToTry) {
         try {
-          console.log(`Attempting generation with model: ${currentModel}`);
           response = await ai.models.generateContent({
             model: currentModel,
             contents: contents,
@@ -99,16 +94,13 @@ exports.topicTutor = onRequest(
           // If successful, break out of the retry loop
           break;
         } catch (err) {
-          console.warn(`Model ${currentModel} failed:`, err.message);
           lastError = err;
           
           if (err.status === 503 || err.status === 429) {
             // High demand or rate limit - wait 1.5 seconds then try the next model
-            console.log(`High demand or rate limit detected (HTTP ${err.status}). Waiting and falling back...`);
             await new Promise(resolve => setTimeout(resolve, 1500));
           } else if (err.status === 404) {
             // Model not found, immediately try the next model without waiting
-            console.log(`Model ${currentModel} not found (HTTP 404). Falling back...`);
           } else {
             // Unhandled error type, throw it immediately
             throw err;
@@ -121,7 +113,6 @@ exports.topicTutor = onRequest(
       }
 
       const responseText = response.text;
-      console.log("AI Generation successful.");
 
       return res.status(200).json({
         success: true,
