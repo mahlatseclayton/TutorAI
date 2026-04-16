@@ -2,7 +2,7 @@ const { GoogleGenAI } = require("@google/genai");
 const { onRequest } = require("firebase-functions/v2/https");
 
 exports.topicTutor = onRequest(
-  { secrets: ["GEMINI_API_KEY"] },
+  { secrets: ["GEMINI_API_KEY"], timeoutSeconds: 300 },
   async (req, res) => {
 
     // Enhanced Logging for Debugging
@@ -80,14 +80,45 @@ exports.topicTutor = onRequest(
         contents = [{ text: userPrompt }];
       }
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: contents,
-        config: {
-          systemInstruction: systemInstruction,
-          temperature: 0.7,
+      // Robust retry logic for 503 High Demand errors
+      let response;
+      let lastError;
+      const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"];
+      
+      for (const currentModel of modelsToTry) {
+        try {
+          console.log(`Attempting generation with model: ${currentModel}`);
+          response = await ai.models.generateContent({
+            model: currentModel,
+            contents: contents,
+            config: {
+              systemInstruction: systemInstruction,
+              temperature: 0.7,
+            }
+          });
+          // If successful, break out of the retry loop
+          break;
+        } catch (err) {
+          console.warn(`Model ${currentModel} failed:`, err.message);
+          lastError = err;
+          
+          if (err.status === 503 || err.status === 429) {
+            // High demand or rate limit - wait 1.5 seconds then try the next model
+            console.log(`High demand or rate limit detected (HTTP ${err.status}). Waiting and falling back...`);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+          } else if (err.status === 404) {
+            // Model not found, immediately try the next model without waiting
+            console.log(`Model ${currentModel} not found (HTTP 404). Falling back...`);
+          } else {
+            // Unhandled error type, throw it immediately
+            throw err;
+          }
         }
-      });
+      }
+
+      if (!response) {
+        throw lastError || new Error("All fallback models failed.");
+      }
 
       const responseText = response.text;
       console.log("AI Generation successful.");
