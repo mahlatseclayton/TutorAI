@@ -37,7 +37,14 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const functions = getFunctions(app);
 
-export { auth, db };
+const actionCodeSettings = {
+  // URL to redirect back to after verification.
+  url: window.location.origin + '/signIn.html',
+  handleCodeInApp: true,
+};
+
+export { auth, db, actionCodeSettings };
+
 
 
 
@@ -128,8 +135,9 @@ if (signUpForm) {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
-            // Send verification email
-            await sendEmailVerification(user);
+            // Send verification email with redirection settings
+            await sendEmailVerification(user, actionCodeSettings);
+
             
             await setDoc(doc(db, "users", user.uid), {
                 name, grade, email, createdAt: new Date()
@@ -276,7 +284,8 @@ if (resendBtn) {
                 alert("This account is already verified. You can sign in now.");
                 window.location.href = "mainPage.html";
             } else {
-                await sendEmailVerification(user);
+                await sendEmailVerification(user, actionCodeSettings);
+
                 alert("Verification email has been resent! Please check your inbox.");
                 await signOut(auth);
             }
