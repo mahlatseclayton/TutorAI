@@ -6,6 +6,8 @@ exports.getYoutubeVideos = onRequest(
     const allowedOrigins = [
       "https://tutorai-5f97d.web.app",
       "https://tutorai-5f97d.firebaseapp.com",
+      "https://mzansied.co.za",
+      "https://www.mzansied.co.za",
       "http://localhost:5000",
       "http://127.0.0.1:5000"
     ];

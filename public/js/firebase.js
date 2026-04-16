@@ -1597,6 +1597,9 @@ function renderPastPapers(subject = "Mathematics") {
   const container = document.getElementById("pastPapersList");
   const countEl = document.getElementById("pastPapersCount");
 
+  // Safety check: ensure elements exist on the current page
+  if (!container || !countEl) return;
+
   container.innerHTML = "";
   countEl.innerText = `${papers.length} available`;
 
