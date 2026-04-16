@@ -475,7 +475,17 @@ STRUCTURE:
                 body: JSON.stringify({ message: fullPrompt })
             });
             
-            if (!res.ok) throw new Error(`AI Gateway Error ${res.status}`);
+            if (!res.ok) {
+                // Attempt to get the detailed error from the response
+                let errorDetails = "";
+                try {
+                    const errorData = await res.json();
+                    errorDetails = errorData.error || errorData.details || "";
+                } catch (e) {
+                    errorDetails = res.statusText;
+                }
+                throw new Error(`AI Gateway Error ${res.status}${errorDetails ? ': ' + errorDetails : ''}`);
+            }
             const data = await res.json();
             
             if (!data || !data.aiResponse) throw new Error("The AI didn't provide a lesson. Try a different topic.");

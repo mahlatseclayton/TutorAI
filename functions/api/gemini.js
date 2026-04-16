@@ -38,6 +38,15 @@ exports.topicTutor = onRequest(
         });
       }
 
+      // Explicit API Key Check
+      if (!process.env.GEMINI_API_KEY) {
+        console.error("CRITICAL: GEMINI_API_KEY secret is missing from environment.");
+        return res.status(500).json({
+          success: false,
+          error: "API_KEY_NOT_CONFIGURED"
+        });
+      }
+
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({
         model: "gemini-1.5-flash",
@@ -78,9 +87,11 @@ exports.topicTutor = onRequest(
 
     } catch (error) {
       console.error("CRITICAL AI GENERATION ERROR:", error);
+      // Expose the error message to help troubleshooting (e.g. quota, invalid key)
       return res.status(500).json({
         success: false,
-        error: error.message || "AI_GENERATION_FAILED"
+        error: error.message || "AI_GENERATION_FAILED",
+        details: error.toString() // Additional context
       });
     }
   }
