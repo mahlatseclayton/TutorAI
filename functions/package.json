@@ -6,7 +6,9 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "engines": {
     "node": "22"
@@ -23,7 +25,10 @@
     "firebase-functions": "^6.1.1"
   },
   "devDependencies": {
-    "firebase-functions-test": "^3.4.1"
+    "axios-mock-adapter": "^2.1.0",
+    "firebase-functions-test": "^3.4.1",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0"
   },
   "private": true
 }
