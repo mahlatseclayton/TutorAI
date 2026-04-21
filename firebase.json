@@ -28,6 +28,14 @@
     ],
     "rewrites": [
       {
+        "source": "/api/youtube",
+        "function": "getYoutubeVideos"
+      },
+      {
+        "source": "/api/tutor",
+        "function": "topicTutor"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

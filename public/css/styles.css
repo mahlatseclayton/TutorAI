@@ -2550,3 +2550,25 @@ body.dark-mode #scanResultSection {
         font-size: 1rem;
     }
 }
+
+/* --- Dark Mode Chat Fixes --- */
+body.dark-mode .botMsg {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode .chatInputCon {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .chatInputCon input {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+}
+
+body.dark-mode .chatBubble {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4) !important;
+}
+

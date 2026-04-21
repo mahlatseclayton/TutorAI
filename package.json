@@ -2,7 +2,9 @@
   "name": "tutor-ai",
   "version": "1.0.0",
   "scripts": {
-    "build": "echo 'No build step required'"
+    "build": "echo 'No build step required'",
+    "test": "npm test --prefix functions",
+    "coverage": "npm run test:coverage --prefix functions"
   },
   "dependencies": {
     "cors": "^2.8.6",

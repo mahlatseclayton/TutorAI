@@ -296,7 +296,7 @@ if (resendBtn) {
     });
 }
 // --- AI Gateway URL (Common for all AI functions) ---
-const AI_GATEWAY_URL = "https://topictutor-xaudhnk2aq-uc.a.run.app";
+const AI_GATEWAY_URL = "/api/tutor";
 
 // getting topic from ai
 async function validateTopic(topic, subject) {
@@ -1040,8 +1040,14 @@ async function loadVideos() {
 
     try {
         const response = await fetch(
-            `https://yt-videos-xaudhnk2aq-uc.a.run.app?heading=${encodeURIComponent(sHeading)}&subject=${encodeURIComponent(sSubject)}`
+            `/api/youtube?heading=${encodeURIComponent(sHeading)}&subject=${encodeURIComponent(sSubject)}`
         );
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("RAW SERVER RESPONSE:", errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
+        }
 
         const data = await response.json();
 
@@ -1052,13 +1058,12 @@ async function loadVideos() {
             return;
         }
 
-       
         renderVideos(data.videos, vidContainer);
 
     } catch (err) {
         console.error("Video fetch error:", err);
         vidContainer.innerHTML =
-            "<p style='text-align:center'>Failed to fetch videos.</p>";
+            "<p style='text-align:center'>Failed to fetch videos. Check backend status.</p>";
     }
 }
 

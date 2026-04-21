@@ -165,23 +165,25 @@ document.getElementById("submitQuizBtn").addEventListener("click", async () => {
     }
 
     // Update Firebase Points
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            try {
-                const userRef = doc(db, "users", user.uid);
-                const userDoc = await getDoc(userRef);
-                let currentPts = userDoc.exists() && userDoc.data().points ? userDoc.data().points : 0;
-                
-                currentPts += totalScoreChange;
-                if (currentPts < 0) currentPts = 0; // Prevent negative points floor
-                
-                await setDoc(userRef, { points: currentPts }, { merge: true });
-                document.getElementById("userPoints").innerText = currentPts;
-            } catch (err) {
-                console.error("Failed to update points:", err);
-            }
+    const user = auth.currentUser;
+    if (user) {
+        try {
+            const userRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userRef);
+            let currentPts = userDoc.exists() && userDoc.data().points ? userDoc.data().points : 0;
+            
+            currentPts += totalScoreChange;
+            if (currentPts < 0) currentPts = 0; // Prevent negative points floor
+            
+            await setDoc(userRef, { points: currentPts }, { merge: true });
+            const ptsEl = document.getElementById("userPoints");
+            if (ptsEl) ptsEl.innerText = currentPts;
+        } catch (err) {
+            console.error("Failed to update points:", err);
         }
-    });
+    } else {
+        console.warn("User not authenticated, points not saved.");
+    }
 });
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -192,9 +194,11 @@ window.addEventListener("DOMContentLoaded", () => {
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists() && docSnap.data().points !== undefined) {
-                    document.getElementById("userPoints").innerText = docSnap.data().points;
+                    const ptsEl = document.getElementById("userPoints");
+                    if (ptsEl) ptsEl.innerText = docSnap.data().points;
                 } else {
-                    document.getElementById("userPoints").innerText = "0";
+                    const ptsEl = document.getElementById("userPoints");
+                    if (ptsEl) ptsEl.innerText = "0";
                 }
             } catch (e) {
                 console.error(e);
