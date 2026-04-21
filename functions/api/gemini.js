@@ -1,4 +1,5 @@
-const { GoogleGenAI } = require("@google/genai");
+const { generateText } = require("ai");
+const { createGoogleGenerativeAI } = require("@ai-sdk/google");
 const { onRequest } = require("firebase-functions/v2/https");
 
 exports.topicTutor = onRequest(
@@ -50,11 +51,11 @@ exports.topicTutor = onRequest(
         });
       }
 
-      // Initialize the new Google Gen AI SDK (2026 Standard)
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      // Initialize System Instructions
       const systemInstruction = "You are a highly capable South African science and math tutor. Analyze the provided image or PDF document which contains a question. Provide a clear, accurate, and helpful response based on the requested style (Memo, Teaching, or Step-by-Step). \n\nCRITICAL RULES:\n1. Use LaTeX ($...$) for ALL mathematical expressions.\n2. If a sketch, diagram, or graph is needed, use clear SVG XML code (wrapped in ```html blocks) or highly structured text labels. Avoid messy ASCII art.\n3. Ensure all scientific constants and formulas are accurate.";
 
-      let contents = [];
+      // Prepare multi-modal content for Vercel AI SDK
+      let messageContent = [];
       if (base64Data) {
         const matches = base64Data.match(/^data:([^;]+);base64,(.+)$/);
         if (!matches || matches.length !== 3) {
@@ -63,38 +64,48 @@ exports.topicTutor = onRequest(
         const mimeType = matches[1];
         const data = matches[2];
 
-        contents = [
-          { text: userPrompt },
+        messageContent = [
+          { type: "text", text: userPrompt },
           {
-            inlineData: {
-              data: data,
-              mimeType: mimeType
-            }
+            type: "image",
+            image: data,
+            mimeType: mimeType
           }
         ];
       } else {
-        contents = [{ text: userPrompt }];
+        messageContent = [{ type: "text", text: userPrompt }];
       }
 
+      // Initialize the Google provider explicitly with the API key from secrets
+      const google = createGoogleGenerativeAI({
+        apiKey: process.env.GEMINI_API_KEY,
+      });
+
       // Robust retry logic for 503 High Demand errors
-      let response;
+      let responseText;
       let lastError;
-      const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"];
+      const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
       
       for (const currentModel of modelsToTry) {
         try {
-          response = await ai.models.generateContent({
-            model: currentModel,
-            contents: contents,
-            config: {
-              systemInstruction: systemInstruction,
-              temperature: 0.7,
-            }
+          const result = await generateText({
+            model: google(currentModel),
+            system: systemInstruction,
+            messages: [
+              {
+                role: "user",
+                content: messageContent,
+              },
+            ],
+            temperature: 0.7,
           });
+          
+          responseText = result.text;
           // If successful, break out of the retry loop
           break;
         } catch (err) {
           lastError = err;
+          console.warn(`Model ${currentModel} failed:`, err.message);
           
           if (err.status === 503 || err.status === 429) {
             // High demand or rate limit - wait 1.5 seconds then try the next model
@@ -102,17 +113,14 @@ exports.topicTutor = onRequest(
           } else if (err.status === 404) {
             // Model not found, immediately try the next model without waiting
           } else {
-            // Unhandled error type, throw it immediately
-            throw err;
+            // Unhandled error type, continue to next fallback
           }
         }
       }
 
-      if (!response) {
+      if (!responseText) {
         throw lastError || new Error("All fallback models failed.");
       }
-
-      const responseText = response.text;
 
       return res.status(200).json({
         success: true,
