@@ -1048,8 +1048,10 @@ async function loadVideos() {
 
     if (!vidContainer || !topicTitle) return;
 
-    const sHeading = topicTitle.innerText || "";
-    const sSubject = subjectTitle?.innerText || "";
+    const sHeading = (topicTitle.innerText || "").trim();
+    const sSubject = (subjectTitle?.innerText || "").trim();
+
+    console.log(`FETCHING VIDEOS FOR: "${sHeading}" in "${sSubject}"`);
 
     try {
         const response = await fetch(

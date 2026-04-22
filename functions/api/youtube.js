@@ -24,7 +24,7 @@ exports.getYoutubeVideos = onRequest(
       return res.status(204).send("");
     }
 
-    // Default Fallback Videos
+    // Default Fallback Videos (Used if search is empty or fails)
     const fallbackVideos = [
       { id: "M7lc1UVf-VE", title: "Study Skills & Motivation" },
       { id: "3JZ_D3ELwOQ", title: "Effective Learning Techniques" },
@@ -33,23 +33,25 @@ exports.getYoutubeVideos = onRequest(
     ];
 
     try {
-        const heading = req.query.heading || "Education";
-        const subject = req.query.subject || "";
+        const heading = (req.query.heading || "").trim();
+        const subject = (req.query.subject || "").trim();
         const apiKey = process.env.SEARLO_API_KEY;
 
         if (!apiKey) {
             console.error("SEARCH FAIL: SEARLO_API_KEY missing.");
-            // Don't crash (500), just return fallbacks
             return res.json({ error: false, videos: fallbackVideos, message: "API_KEY_MISSING" });
         }
 
-        const searchQuery = `${heading} ${subject} Grade 12 lesson site:youtube.com`;
+        // Broaden query: remove site: restriction which can be brittle with some aggregators
+        // Use natural language that search engines favor for YouTube content.
+        const searchQuery = `best highly recommended ${heading} ${subject} Grade 12 lesson youtube`.trim();
+        console.log(`POLLING SEARLO FOR: "${searchQuery}"`);
         
         const response = await fetch(
           `https://api.searlo.com/search?q=${encodeURIComponent(searchQuery)}&level=8`,
           {
             headers: { "X-API-KEY": apiKey },
-            signal: AbortSignal.timeout(8000) // 8 second timeout for the upstream API
+            signal: AbortSignal.timeout(8000)
           }
         );
 
@@ -61,9 +63,19 @@ exports.getYoutubeVideos = onRequest(
 
         const data = await response.json();
         const results = data.organic || [];
-        const youtubeResults = results.filter(r => r.link && (r.link.includes("youtube.com/watch") || r.link.includes("youtu.be/")));
+        
+        // More robust link detection: catch shorts, mobile links, and standard watches
+        const youtubeResults = results.filter(r => {
+            if (!r.link) return false;
+            const l = r.link.toLowerCase();
+            return l.includes("youtube.com/watch") || 
+                   l.includes("youtu.be/") || 
+                   l.includes("youtube.com/shorts/") ||
+                   l.includes("m.youtube.com/watch");
+        });
 
         if (youtubeResults.length === 0) {
+            console.warn(`ZERO RESULTS FOR: "${searchQuery}"`);
             return res.json({ error: false, videos: fallbackVideos, message: "NO_SEARCH_RESULTS" });
         }
 
@@ -79,8 +91,15 @@ exports.getYoutubeVideos = onRequest(
 
             if (item.link.includes("youtu.be/")) {
               videoId = url.pathname.substring(1);
+            } else if (item.link.includes("/shorts/")) {
+              videoId = url.pathname.split("/").pop();
             } else {
               videoId = url.searchParams.get("v");
+            }
+
+            // Secondary check if searchParams didn't work (some mobile links)
+            if (!videoId && item.link.includes("v=")) {
+                 videoId = item.link.split("v=")[1].split("&")[0];
             }
 
             if (videoId && !seen.has(videoId)) {
@@ -97,7 +116,7 @@ exports.getYoutubeVideos = onRequest(
           }
         }
 
-        // Fill remaining slots with fallbacks if needed
+        // Fill remaining slots with fallbacks if search returned < 4 specific videos
         let i = 0;
         while (videos.length < 4 && i < fallbackVideos.length) {
             if (!seen.has(fallbackVideos[i].id)) {
@@ -116,7 +135,6 @@ exports.getYoutubeVideos = onRequest(
 
       } catch (error) {
         console.error("CRITICAL YOUTUBE ERROR:", error);
-        // CRITICAL: Always return fallback instead of 500 to keep the UI clean
         return res.json({ 
             error: false, 
             videos: fallbackVideos, 
