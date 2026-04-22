@@ -24,7 +24,7 @@ exports.getYoutubeVideos = onRequest(
       return res.status(204).send("");
     }
 
-    // Default Fallback Videos (Used if search is empty or fails)
+    // Default Fallback Videos
     const fallbackVideos = [
       { id: "M7lc1UVf-VE", title: "Study Skills & Motivation" },
       { id: "3JZ_D3ELwOQ", title: "Effective Learning Techniques" },
@@ -38,85 +38,90 @@ exports.getYoutubeVideos = onRequest(
         const apiKey = process.env.SEARLO_API_KEY;
 
         if (!apiKey) {
-            console.error("SEARCH FAIL: SEARLO_API_KEY missing.");
             return res.json({ error: false, videos: fallbackVideos, message: "API_KEY_MISSING" });
-        }
-
-        // Broaden query: remove site: restriction which can be brittle with some aggregators
-        // Use natural language that search engines favor for YouTube content.
-        const searchQuery = `best highly recommended ${heading} ${subject} Grade 12 lesson youtube`.trim();
-        console.log(`POLLING SEARLO FOR: "${searchQuery}"`);
-        
-        const response = await fetch(
-          `https://api.searlo.com/search?q=${encodeURIComponent(searchQuery)}&level=8`,
-          {
-            headers: { "X-API-KEY": apiKey },
-            signal: AbortSignal.timeout(8000)
-          }
-        );
-
-        if (!response.ok) {
-            const errText = await response.text();
-            console.error(`Searlo API Failure (${response.status}):`, errText);
-            return res.json({ error: false, videos: fallbackVideos, message: `UPSTREAM_FAILURE_${response.status}` });
-        }
-
-        const data = await response.json();
-        const results = data.organic || [];
-        
-        // More robust link detection: catch shorts, mobile links, and standard watches
-        const youtubeResults = results.filter(r => {
-            if (!r.link) return false;
-            const l = r.link.toLowerCase();
-            return l.includes("youtube.com/watch") || 
-                   l.includes("youtu.be/") || 
-                   l.includes("youtube.com/shorts/") ||
-                   l.includes("m.youtube.com/watch");
-        });
-
-        if (youtubeResults.length === 0) {
-            console.warn(`ZERO RESULTS FOR: "${searchQuery}"`);
-            return res.json({ error: false, videos: fallbackVideos, message: "NO_SEARCH_RESULTS" });
         }
 
         const videos = [];
         const seen = new Set();
 
-        for (let item of youtubeResults) {
-          if (videos.length >= 4) break;
+        // --- DUAL SEARCH STRATEGY ---
+        
+        // Search 1: Ultra Precise (Quotes around heading)
+        const preciseQuery = `"${heading}" ${subject} Grade 12 lesson youtube`.trim();
+        const broadQuery = `${heading} ${subject} Grade 12 educational youtube`.trim();
 
-          try {
-            const url = new URL(item.link);
-            let videoId = "";
-
-            if (item.link.includes("youtu.be/")) {
-              videoId = url.pathname.substring(1);
-            } else if (item.link.includes("/shorts/")) {
-              videoId = url.pathname.split("/").pop();
-            } else {
-              videoId = url.searchParams.get("v");
-            }
-
-            // Secondary check if searchParams didn't work (some mobile links)
-            if (!videoId && item.link.includes("v=")) {
-                 videoId = item.link.split("v=")[1].split("&")[0];
-            }
-
-            if (videoId && !seen.has(videoId)) {
-              seen.add(videoId);
-              videos.push({
-                id: videoId,
-                title: item.title || `${heading} Lesson`,
-                topic: heading,
-                subject: subject,
-              });
-            }
-          } catch (urlErr) {
-            continue;
-          }
+        async function performSearch(query) {
+            console.log(`POLLING SEARLO FOR: "${query}"`);
+            const response = await fetch(
+                `https://api.searlo.com/search?q=${encodeURIComponent(query)}&level=8`,
+                {
+                    headers: { "X-API-KEY": apiKey },
+                    signal: AbortSignal.timeout(6000)
+                }
+            );
+            if (!response.ok) return [];
+            const data = await response.json();
+            return data.organic || [];
         }
 
-        // Fill remaining slots with fallbacks if search returned < 4 specific videos
+        // Try Precise Search
+        let results = await performSearch(preciseQuery);
+        
+        // Extract videos
+        const extractVideos = (organicResults) => {
+            const filtered = organicResults.filter(r => {
+                if (!r.link) return false;
+                const l = r.link.toLowerCase();
+                return l.includes("youtube.com/watch") || 
+                       l.includes("youtu.be/") || 
+                       l.includes("youtube.com/shorts/") ||
+                       l.includes("m.youtube.com/watch");
+            });
+
+            for (let item of filtered) {
+                if (videos.length >= 4) break;
+                try {
+                    const url = new URL(item.link);
+                    let videoId = "";
+                    if (item.link.includes("youtu.be/")) {
+                      videoId = url.pathname.substring(1);
+                    } else if (item.link.includes("/shorts/")) {
+                      videoId = url.pathname.split("/").pop();
+                    } else {
+                      videoId = url.searchParams.get("v");
+                    }
+                    if (!videoId && item.link.includes("v=")) {
+                         videoId = item.link.split("v=")[1].split("&")[0];
+                    }
+                    if (videoId && !seen.has(videoId)) {
+                      seen.add(videoId);
+                      videos.push({
+                        id: videoId,
+                        title: item.title || `${heading} Lesson`,
+                        topic: heading,
+                        subject: subject,
+                      });
+                    }
+                } catch (e) { continue; }
+            }
+        };
+
+        extractVideos(results);
+
+        // Try Broad Search if we don't have enough videos
+        if (videos.length < 2) {
+            console.log("PRECISE SEARCH RETURNED LOW RESULTS. TRYING BROAD...");
+            results = await performSearch(broadQuery);
+            extractVideos(results);
+        }
+
+        // Final Fallbacks if still low
+        if (videos.length === 0) {
+            console.warn(`CRITICAL: ZERO RESULTS FOR BOTH QUERIES. USING FALLBACKS.`);
+            return res.json({ error: false, videos: fallbackVideos, message: "NO_SEARCH_RESULTS" });
+        }
+
+        // Fill remaining slots with fallbacks to avoid empty space
         let i = 0;
         while (videos.length < 4 && i < fallbackVideos.length) {
             if (!seen.has(fallbackVideos[i].id)) {
@@ -138,8 +143,7 @@ exports.getYoutubeVideos = onRequest(
         return res.json({ 
             error: false, 
             videos: fallbackVideos, 
-            message: "INTERNAL_ERROR",
-            debug_info: error.message 
+            message: "INTERNAL_ERROR"
         });
       }
   }
