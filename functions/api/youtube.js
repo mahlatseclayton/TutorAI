@@ -30,6 +30,11 @@ exports.getYoutubeVideos = onRequest(
         const searchQuery = `${heading} ${subject} Grade 12 lesson site:youtube.com`;
         const apiKey = process.env.SEARLO_API_KEY;
 
+        if (!apiKey) {
+            console.error("SEARLO_API_KEY is missing from environment secrets.");
+            return res.status(500).json({ error: true, message: "API_KEY_NOT_CONFIGURED" });
+        }
+
         const response = await fetch(
           `https://api.searlo.com/search?q=${encodeURIComponent(searchQuery)}&level=8`,
           {
@@ -39,10 +44,16 @@ exports.getYoutubeVideos = onRequest(
           }
         );
 
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error(`Searlo API Error (${response.status}):`, errText);
+            return res.status(500).json({ error: true, message: `Upstream API failure: ${response.status}` });
+        }
+
         const data = await response.json();
 
         if (!data || data.success === false) {
-          console.error("Searlo API FULL RESPONSE:", JSON.stringify(data, null, 2));
+          console.error("Searlo API returned success: false", data);
           return res.status(200).json({
             error: true,
             message: "Could not fetch videos from Searlo.",
@@ -52,6 +63,8 @@ exports.getYoutubeVideos = onRequest(
 
         const results = data.organic || [];
         const REQUIRED_VIDEOS = 4;
+        const videos = [];
+        const seen = new Set();
 
         const youtubeResults = results.filter(
           (r) =>
@@ -60,29 +73,30 @@ exports.getYoutubeVideos = onRequest(
               r.link.includes("youtu.be/"))
         );
 
-        const videos = [];
-        const seen = new Set();
-
         for (let item of youtubeResults) {
           if (videos.length >= REQUIRED_VIDEOS) break;
 
-          const url = new URL(item.link);
-          let videoId = "";
+          try {
+            const url = new URL(item.link);
+            let videoId = "";
 
-          if (item.link.includes("youtu.be/")) {
-            videoId = url.pathname.substring(1);
-          } else {
-            videoId = url.searchParams.get("v");
-          }
+            if (item.link.includes("youtu.be/")) {
+              videoId = url.pathname.substring(1);
+            } else {
+              videoId = url.searchParams.get("v");
+            }
 
-          if (videoId && !seen.has(videoId)) {
-            seen.add(videoId);
-            videos.push({
-              id: videoId,
-              title: item.title || `${heading} lesson`,
-              topic: heading,
-              subject: subject,
-            });
+            if (videoId && !seen.has(videoId)) {
+              seen.add(videoId);
+              videos.push({
+                id: videoId,
+                title: item.title || `${heading} lesson`,
+                topic: heading,
+                subject: subject,
+              });
+            }
+          } catch (urlErr) {
+            continue;
           }
         }
 
@@ -109,11 +123,11 @@ exports.getYoutubeVideos = onRequest(
         }
 
         const finalVideos = videos.slice(0, REQUIRED_VIDEOS);
+        return res.json({ error: false, videos: finalVideos });
 
-        res.json({ error: false, videos: finalVideos });
       } catch (error) {
-        console.error("SEARCH ERROR:", error);
-        res.status(500).json({ error: true, message: error.message });
+        console.error("CRITICAL YOUTUBE FUNCTION ERROR:", error);
+        return res.status(500).json({ error: true, message: error.message });
       }
   }
 );
