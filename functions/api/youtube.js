@@ -1,8 +1,9 @@
 const { onRequest } = require("firebase-functions/v2/https");
 
 exports.getYoutubeVideos = onRequest(
-  { secrets: ["SEARLO_API_KEY"] },
+  { secrets: ["SEARLO_API_KEY"], timeoutSeconds: 60, memory: "256Mi" },
   async (req, res) => {
+    // CORS Headers
     const allowedOrigins = [
       "https://tutorai-5f97d.web.app",
       "https://tutorai-5f97d.firebaseapp.com",
@@ -16,65 +17,61 @@ exports.getYoutubeVideos = onRequest(
       res.set("Access-Control-Allow-Origin", origin);
     }
     
-    res.set("Access-Control-Allow-Methods", "GET, POST");
+    res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.set("Access-Control-Allow-Headers", "Content-Type");
 
     if (req.method === "OPTIONS") {
       return res.status(204).send("");
     }
 
-    try {
-        const heading = req.query.heading || "Default Topic";
-        const subject = req.query.subject || "";
+    // Default Fallback Videos
+    const fallbackVideos = [
+      { id: "M7lc1UVf-VE", title: "Study Skills & Motivation" },
+      { id: "3JZ_D3ELwOQ", title: "Effective Learning Techniques" },
+      { id: "aqCOfEx_l_U", title: "Time Management for Students" },
+      { id: "vI0QBRU27uE", title: "Consistency in Studying" }
+    ];
 
-        const searchQuery = `${heading} ${subject} Grade 12 lesson site:youtube.com`;
+    try {
+        const heading = req.query.heading || "Education";
+        const subject = req.query.subject || "";
         const apiKey = process.env.SEARLO_API_KEY;
 
         if (!apiKey) {
-            console.error("SEARLO_API_KEY is missing from environment secrets.");
-            return res.status(500).json({ error: true, message: "API_KEY_NOT_CONFIGURED" });
+            console.error("SEARCH FAIL: SEARLO_API_KEY missing.");
+            // Don't crash (500), just return fallbacks
+            return res.json({ error: false, videos: fallbackVideos, message: "API_KEY_MISSING" });
         }
 
+        const searchQuery = `${heading} ${subject} Grade 12 lesson site:youtube.com`;
+        
         const response = await fetch(
           `https://api.searlo.com/search?q=${encodeURIComponent(searchQuery)}&level=8`,
           {
-            headers: {
-              "X-API-KEY": apiKey,
-            },
+            headers: { "X-API-KEY": apiKey },
+            signal: AbortSignal.timeout(8000) // 8 second timeout for the upstream API
           }
         );
 
         if (!response.ok) {
             const errText = await response.text();
-            console.error(`Searlo API Error (${response.status}):`, errText);
-            return res.status(500).json({ error: true, message: `Upstream API failure: ${response.status}` });
+            console.error(`Searlo API Failure (${response.status}):`, errText);
+            return res.json({ error: false, videos: fallbackVideos, message: `UPSTREAM_FAILURE_${response.status}` });
         }
 
         const data = await response.json();
+        const results = data.organic || [];
+        const youtubeResults = results.filter(r => r.link && (r.link.includes("youtube.com/watch") || r.link.includes("youtu.be/")));
 
-        if (!data || data.success === false) {
-          console.error("Searlo API returned success: false", data);
-          return res.status(200).json({
-            error: true,
-            message: "Could not fetch videos from Searlo.",
-            videos: [],
-          });
+        if (youtubeResults.length === 0) {
+            return res.json({ error: false, videos: fallbackVideos, message: "NO_SEARCH_RESULTS" });
         }
 
-        const results = data.organic || [];
-        const REQUIRED_VIDEOS = 4;
         const videos = [];
         const seen = new Set();
 
-        const youtubeResults = results.filter(
-          (r) =>
-            r.link &&
-            (r.link.includes("youtube.com/watch") ||
-              r.link.includes("youtu.be/"))
-        );
-
         for (let item of youtubeResults) {
-          if (videos.length >= REQUIRED_VIDEOS) break;
+          if (videos.length >= 4) break;
 
           try {
             const url = new URL(item.link);
@@ -90,7 +87,7 @@ exports.getYoutubeVideos = onRequest(
               seen.add(videoId);
               videos.push({
                 id: videoId,
-                title: item.title || `${heading} lesson`,
+                title: item.title || `${heading} Lesson`,
                 topic: heading,
                 subject: subject,
               });
@@ -100,34 +97,32 @@ exports.getYoutubeVideos = onRequest(
           }
         }
 
-        const fallbackVideos = [
-          "M7lc1UVf-VE",
-          "3JZ_D3ELwOQ",
-          "aqCOfEx_l_U",
-          "vI0QBRU27uE"
-        ];
-
+        // Fill remaining slots with fallbacks if needed
         let i = 0;
-        while (videos.length < REQUIRED_VIDEOS && i < fallbackVideos.length) {
-          const vId = fallbackVideos[i];
-          if (!seen.has(vId)) {
-            seen.add(vId);
-            videos.push({
-              id: vId,
-              title: `${heading} Educational resource`,
-              topic: heading,
-              subject: subject,
-            });
-          }
-          i++;
+        while (videos.length < 4 && i < fallbackVideos.length) {
+            if (!seen.has(fallbackVideos[i].id)) {
+                videos.push({
+                    id: fallbackVideos[i].id,
+                    title: fallbackVideos[i].title,
+                    topic: heading,
+                    subject: subject
+                });
+                seen.add(fallbackVideos[i].id);
+            }
+            i++;
         }
 
-        const finalVideos = videos.slice(0, REQUIRED_VIDEOS);
-        return res.json({ error: false, videos: finalVideos });
+        return res.json({ error: false, videos: videos.slice(0, 4) });
 
       } catch (error) {
-        console.error("CRITICAL YOUTUBE FUNCTION ERROR:", error);
-        return res.status(500).json({ error: true, message: error.message });
+        console.error("CRITICAL YOUTUBE ERROR:", error);
+        // CRITICAL: Always return fallback instead of 500 to keep the UI clean
+        return res.json({ 
+            error: false, 
+            videos: fallbackVideos, 
+            message: "INTERNAL_ERROR",
+            debug_info: error.message 
+        });
       }
   }
 );

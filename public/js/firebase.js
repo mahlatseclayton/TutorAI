@@ -667,6 +667,19 @@ async function handleResponse() {
                     .replace(/\\n/g, "\n");
             };
 
+            // Configure marked for diagrams
+            if (typeof marked !== 'undefined') {
+                const renderer = new marked.Renderer();
+                const originalCode = renderer.code.bind(renderer);
+                renderer.code = function(code, language, escaped) {
+                    if (language === 'html' && code.includes('<svg')) {
+                        return `<div class="ai-diagram">${code}</div>`;
+                    }
+                    return originalCode(code, language, escaped);
+                };
+                marked.setOptions({ renderer: renderer });
+            }
+
             // marked.parse will convert the Markdown into HTML
             if(typeof marked !== 'undefined' && overView && aiResponse.OVERVIEW){
                 const cleanOverview = sanitize(aiResponse.OVERVIEW);
