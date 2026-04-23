@@ -1,7 +1,7 @@
 const { onRequest } = require("firebase-functions/v2/https");
 
 exports.getYoutubeVideos = onRequest(
-  { secrets: ["SEARLO_API_KEY"], timeoutSeconds: 60, memory: "256Mi" },
+  { secrets: ["YOUTUBE_API_KEY"], timeoutSeconds: 60, memory: "256Mi" },
   async (req, res) => {
     // CORS Headers
     const allowedOrigins = [
@@ -36,7 +36,7 @@ exports.getYoutubeVideos = onRequest(
         const heading = (req.query.heading || "").trim();
         const subject = (req.query.subject || "").trim();
         const grade = (req.query.grade || "").trim();
-        const apiKey = process.env.SEARLO_API_KEY;
+        const apiKey = process.env.YOUTUBE_API_KEY;
 
         if (!apiKey) {
             return res.json({ error: false, videos: fallbackVideos, message: "API_KEY_MISSING" });
@@ -48,57 +48,37 @@ exports.getYoutubeVideos = onRequest(
         // --- DUAL SEARCH STRATEGY ---
         
         // Search 1: Ultra Precise (Quotes around heading) - optimizing for concept explanation and high views
-        const preciseQuery = `"${heading}" ${subject} ${grade} concept explained tutorial youtube`.replace(/\s+/g, ' ').trim();
-        const broadQuery = `${heading} ${subject} ${grade} lesson explained popular youtube`.replace(/\s+/g, ' ').trim();
+        const preciseQuery = `"${heading}" ${subject} ${grade} concept explained tutorial`.replace(/\s+/g, ' ').trim();
+        const broadQuery = `${heading} ${subject} ${grade} lesson explained popular`.replace(/\s+/g, ' ').trim();
 
         async function performSearch(query) {
-            console.log(`POLLING SEARLO FOR: "${query}"`);
-            const response = await fetch(
-                `https://api.searlo.com/search?q=${encodeURIComponent(query)}&level=8`,
-                {
-                    headers: { "X-API-KEY": apiKey },
-                    signal: AbortSignal.timeout(6000)
-                }
-            );
-            if (!response.ok) return [];
+            console.log(`POLLING YOUTUBE API FOR: "${query}"`);
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=4&order=relevance&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${apiKey}`;
+            const response = await fetch(url, {
+                signal: AbortSignal.timeout(6000)
+            });
+            if (!response.ok) {
+                console.error("YOUTUBE API ERROR:", await response.text());
+                return [];
+            }
             const data = await response.json();
-            return data.organic || [];
+            return data.items || [];
         }
 
         // Try Precise Search
         let results = await performSearch(preciseQuery);
         
         // Extract videos
-        const extractVideos = (organicResults) => {
-            const filtered = organicResults.filter(r => {
-                if (!r.link) return false;
-                const l = r.link.toLowerCase();
-                return l.includes("youtube.com/watch") || 
-                       l.includes("youtu.be/") || 
-                       l.includes("youtube.com/shorts/") ||
-                       l.includes("m.youtube.com/watch");
-            });
-
-            for (let item of filtered) {
+        const extractVideos = (items) => {
+            for (let item of items) {
                 if (videos.length >= 4) break;
                 try {
-                    const url = new URL(item.link);
-                    let videoId = "";
-                    if (item.link.includes("youtu.be/")) {
-                      videoId = url.pathname.substring(1);
-                    } else if (item.link.includes("/shorts/")) {
-                      videoId = url.pathname.split("/").pop();
-                    } else {
-                      videoId = url.searchParams.get("v");
-                    }
-                    if (!videoId && item.link.includes("v=")) {
-                         videoId = item.link.split("v=")[1].split("&")[0];
-                    }
+                    const videoId = item.id?.videoId;
                     if (videoId && !seen.has(videoId)) {
                       seen.add(videoId);
                       videos.push({
                         id: videoId,
-                        title: item.title || `${heading} Lesson`,
+                        title: item.snippet?.title || `${heading} Lesson`,
                         topic: heading,
                         subject: subject,
                       });

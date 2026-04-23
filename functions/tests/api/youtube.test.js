@@ -8,6 +8,7 @@ describe('getYoutubeVideos onRequest', () => {
     let mockRes;
 
     beforeEach(() => {
+        process.env.YOUTUBE_API_KEY = 'test_api_key';
         mockReq = {
             method: 'GET',
             headers: {
@@ -27,13 +28,13 @@ describe('getYoutubeVideos onRequest', () => {
         jest.clearAllMocks();
     });
 
-    test('should search Searlo and return youtube videos', async () => {
+    test('should search YouTube Data API and return videos', async () => {
         fetch.mockResolvedValue({
             ok: true,
             json: jest.fn().mockResolvedValue({
-                organic: [
-                    { link: 'https://www.youtube.com/watch?v=video1', title: 'Lesson 1' },
-                    { link: 'https://youtu.be/video2', title: 'Lesson 2' }
+                items: [
+                    { id: { videoId: 'video1' }, snippet: { title: 'Lesson 1' } },
+                    { id: { videoId: 'video2' }, snippet: { title: 'Lesson 2' } }
                 ]
             })
         });
@@ -50,16 +51,16 @@ describe('getYoutubeVideos onRequest', () => {
         
         // Check if query is correct
         expect(fetch).toHaveBeenCalledWith(
-            expect.stringContaining(encodeURIComponent('"Quadratic Equations" Mathematics Grade 10 concept explained tutorial youtube')),
+            expect.stringContaining('https://www.googleapis.com/youtube/v3/search'),
             expect.any(Object)
         );
     });
 
-    test('should return fallback videos if Searlo yields no results', async () => {
+    test('should return fallback videos if YouTube API yields no results', async () => {
         fetch.mockResolvedValue({
             ok: true,
             json: jest.fn().mockResolvedValue({
-                organic: []
+                items: []
             })
         });
 
@@ -95,7 +96,7 @@ describe('getYoutubeVideos onRequest', () => {
         expect(mockRes.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', 'https://mzansied.co.za');
     });
 
-    test('should handle Searlo API return without organic results and fallback', async () => {
+    test('should handle YouTube API return without items and fallback', async () => {
         fetch.mockResolvedValue({
             ok: true,
             json: jest.fn().mockResolvedValue({
