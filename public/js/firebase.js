@@ -1050,12 +1050,13 @@ async function loadVideos() {
 
     const sHeading = (localStorage.getItem("topic") || topicTitle.innerText || "").trim();
     const sSubject = (localStorage.getItem("subject") || subjectTitle?.innerText || "").trim();
+    const sGrade = (localStorage.getItem("grade") || "").trim();
 
-    console.log(`FETCHING VIDEOS FOR: "${sHeading}" in "${sSubject}"`);
+    console.log(`FETCHING VIDEOS FOR: "${sHeading}" in "${sSubject}" for "${sGrade}"`);
 
     try {
         const response = await fetch(
-            `/api/youtube?heading=${encodeURIComponent(sHeading)}&subject=${encodeURIComponent(sSubject)}`
+            `/api/youtube?heading=${encodeURIComponent(sHeading)}&subject=${encodeURIComponent(sSubject)}&grade=${encodeURIComponent(sGrade)}`
         );
 
         if (!response.ok) {

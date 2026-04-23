@@ -15,7 +15,8 @@ describe('getYoutubeVideos onRequest', () => {
             },
             query: {
                 heading: 'Quadratic Equations',
-                subject: 'Mathematics'
+                subject: 'Mathematics',
+                grade: 'Grade 10'
             }
         };
         mockRes = {
@@ -28,6 +29,7 @@ describe('getYoutubeVideos onRequest', () => {
 
     test('should search Searlo and return youtube videos', async () => {
         fetch.mockResolvedValue({
+            ok: true,
             json: jest.fn().mockResolvedValue({
                 organic: [
                     { link: 'https://www.youtube.com/watch?v=video1', title: 'Lesson 1' },
@@ -48,13 +50,14 @@ describe('getYoutubeVideos onRequest', () => {
         
         // Check if query is correct
         expect(fetch).toHaveBeenCalledWith(
-            expect.stringContaining('Quadratic%20Equations%20Mathematics%20Grade%2012%20lesson'),
+            expect.stringContaining(encodeURIComponent('"Quadratic Equations" Mathematics Grade 10 concept explained tutorial youtube')),
             expect.any(Object)
         );
     });
 
     test('should return fallback videos if Searlo yields no results', async () => {
         fetch.mockResolvedValue({
+            ok: true,
             json: jest.fn().mockResolvedValue({
                 organic: []
             })
@@ -70,16 +73,16 @@ describe('getYoutubeVideos onRequest', () => {
         }));
     });
 
-    test('should return 500 if fetch fails', async () => {
+    test('should return fallbacks if fetch fails', async () => {
         fetch.mockRejectedValue(new Error('Connection failed'));
 
         await getYoutubeVideos(mockReq, mockRes);
 
-        expect(mockRes.status).toHaveBeenCalledWith(500);
-        expect(mockRes.json).toHaveBeenCalledWith({
-            error: true,
-            message: 'Connection failed'
-        });
+        expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+            error: false,
+            message: 'INTERNAL_ERROR',
+            videos: expect.any(Array)
+        }));
     });
 
     test('should handle options CORS request', async () => {
@@ -92,8 +95,9 @@ describe('getYoutubeVideos onRequest', () => {
         expect(mockRes.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', 'https://mzansied.co.za');
     });
 
-    test('should handle Searlo API return success: false', async () => {
+    test('should handle Searlo API return without organic results and fallback', async () => {
         fetch.mockResolvedValue({
+            ok: true,
             json: jest.fn().mockResolvedValue({
                 success: false
             })
@@ -102,8 +106,9 @@ describe('getYoutubeVideos onRequest', () => {
         await getYoutubeVideos(mockReq, mockRes);
 
         expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-            error: true,
-            message: 'Could not fetch videos from Searlo.'
+            error: false,
+            message: 'NO_SEARCH_RESULTS',
+            videos: expect.any(Array)
         }));
     });
 });

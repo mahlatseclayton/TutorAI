@@ -35,6 +35,7 @@ exports.getYoutubeVideos = onRequest(
     try {
         const heading = (req.query.heading || "").trim();
         const subject = (req.query.subject || "").trim();
+        const grade = (req.query.grade || "").trim();
         const apiKey = process.env.SEARLO_API_KEY;
 
         if (!apiKey) {
@@ -46,9 +47,9 @@ exports.getYoutubeVideos = onRequest(
 
         // --- DUAL SEARCH STRATEGY ---
         
-        // Search 1: Ultra Precise (Quotes around heading)
-        const preciseQuery = `"${heading}" ${subject} Grade 12 lesson youtube`.trim();
-        const broadQuery = `${heading} ${subject} Grade 12 educational youtube`.trim();
+        // Search 1: Ultra Precise (Quotes around heading) - optimizing for concept explanation and high views
+        const preciseQuery = `"${heading}" ${subject} ${grade} concept explained tutorial youtube`.replace(/\s+/g, ' ').trim();
+        const broadQuery = `${heading} ${subject} ${grade} lesson explained popular youtube`.replace(/\s+/g, ' ').trim();
 
         async function performSearch(query) {
             console.log(`POLLING SEARLO FOR: "${query}"`);
