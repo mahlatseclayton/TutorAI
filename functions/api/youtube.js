@@ -48,12 +48,12 @@ exports.getYoutubeVideos = onRequest(
         // --- DUAL SEARCH STRATEGY ---
         
         // Search 1: Ultra Precise (Quotes around heading) - optimizing for concept explanation and high views
-        const preciseQuery = `"${heading}" ${subject} ${grade} concept explained tutorial`.replace(/\s+/g, ' ').trim();
-        const broadQuery = `${heading} ${subject} ${grade} lesson explained popular`.replace(/\s+/g, ' ').trim();
+        const preciseQuery = `"${heading}" ${subject} ${grade} full lesson crash course`.replace(/\s+/g, ' ').trim();
+        const broadQuery = `${heading} ${subject} ${grade} complete lesson explanation`.replace(/\s+/g, ' ').trim();
 
         async function performSearch(query) {
             console.log(`POLLING YOUTUBE API FOR: "${query}"`);
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=4&order=relevance&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${apiKey}`;
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=4&order=relevance&videoDuration=medium&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&key=${apiKey}`;
             const response = await fetch(url, {
                 signal: AbortSignal.timeout(6000)
             });
