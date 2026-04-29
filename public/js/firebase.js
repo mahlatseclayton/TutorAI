@@ -336,12 +336,12 @@ async function validateTopic(topic, subject) {
 
 async function getTopic() {
     let isNavigating = false;
-   // const gradeElem = document.getElementById("gradeId");
+    const gradeElem = document.getElementById("gradeId");
     const subjectElem = document.getElementById("subjectId");
     const topicElem = document.getElementById("topicId");
     const levelElem = document.getElementById("levelId");
 
-    if (!subjectElem || !topicElem || !levelElem) {
+    if (!gradeElem || !subjectElem || !topicElem || !levelElem) {
         return alert("Error: Form elements not found!");
     }
 
