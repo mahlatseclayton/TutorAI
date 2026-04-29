@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan & Solve - MzansiEd</title>
+    <link rel="icon" type="image/jpeg" href="images/tlogo.jpeg">
+    <script src="js/theme.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          processEscapes: true
+        },
+        options: {
+          ignoreHtmlClass: 'tex2jax_ignore',
+          processHtmlClass: 'tex2jax_process'
+        }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- PDF.js removed as per image-only redesign -->
+</head>
+<body>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    
+    <main id="tutorMain">
+        <header class="appBar">
+            <div class="lCon">
+                <img class="cLogo" src="images/tlogo.jpeg" alt="Logo">
+                <h1 class="appTitle">Mzansi<span style="color: #ef4444;">Ed</span></h1>
+            </div>
+            
+            <nav class="navBar">
+                <a class="navItem" href="pastpapers.html"><i class="fas fa-file-alt"></i> Past Papers</a>
+                <a class="navItem" href="mainPage.html"><i class="fas fa-plus-circle"></i> New Lesson</a>
+                <a class="navItem active" href="scanSolve.html"><i class="fas fa-camera"></i> Scan & Solve</a>
+                <a class="navItem" href="Account.html"><i class="fas fa-user-circle"></i> Account</a>
+            </nav>
+
+            <div class="headerActions">
+                <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <section id="scannerHeader" style="text-align: center; margin-bottom: 40px; margin-top: 20px;">
+            <h1 style="font-size: 2.5rem; color: #1e1b4b; margin-bottom: 10px;">Scan & Solve</h1>
+            <p style="color: #4b5563; font-size: 1.1rem;">Upload a question image to get instant help.</p>
+        </section>
+
+        <div class="mainContent">
+            <div class="contentArea">
+                <!-- Scanner Interface -->
+                <section class="contentCard scannerCard" id="uploadSection">
+                    <div class="upload-zone" id="dropZone">
+                        <i class="fas fa-image" style="font-size: 3.5rem; color: #4338ca;"></i>
+                        <h3>Drag & Drop Question Image</h3>
+                        <p>or click to browse photos (JPG, PNG)</p>
+                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                        <img id="imagePreview" style="display: none; max-width: 100%; margin-top: 20px; border-radius: 12px; border: 2px solid #e5e7eb;">
+                    </div>
+
+                    <div class="scan-options" style="margin-top: 30px; display: flex; flex-direction: column; gap: 20px; align-items: center;">
+                        <div class="mode-selector">
+                            <label style="font-weight: 600; color: #374151; margin-bottom: 10px; display: block; text-align: center;">Choose Response Style:</label>
+                            <div class="toggle-group">
+                                <button class="modeBtn active" data-mode="teaching"><i class="fas fa-chalkboard-teacher"></i> Teaching</button>
+                                <button class="modeBtn" data-mode="memo"><i class="fas fa-file-invoice"></i> Memo / Marks</button>
+                                <button class="modeBtn" data-mode="solving"><i class="fas fa-calculator"></i> Step-by-Step</button>
+                            </div>
+                        </div>
+
+                        <button id="solveBtn" class="primaryBtn" style="width: 200px; padding: 15px; font-size: 1.1rem;" disabled>
+                            <i class="fas fa-magic"></i> Solve Question
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Results Area -->
+                <section class="contentCard" id="scanResultSection" style="display: none; min-height: 300px;">
+                    <h2 class="cExplanation"><i class="fas fa-lightbulb"></i> AI Solution</h2>
+                    <div id="scanResultContent" class="lesson-body text-align-left" style="padding: 10px;">
+                        <!-- AI Scan result inserted here -->
+                        <div class="loading-shimmer" style="height: 200px; display: none;"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Persistent AI Chat Bubble -->
+        <div id="aiChatWrapper" class="chatWrapper">
+            <div id="aiChatBubble" class="chatBubble">
+                <div class="chatHeader">
+                    <span>MzansiEd Assistant</span>
+                    <button id="closeChat">&times;</button>
+                </div>
+                <div id="chatMessages" class="chatMessages">
+                    <p class="botMsg">Hi! I'm your MzansiEd assistant. I can see the question you uploaded. Need help understanding a specific part of the solution?</p>
+                </div>
+                <div class="chatInputCon">
+                    <input type="text" id="chatInput" placeholder="Ask about the scan...">
+                    <button id="sendChat"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+            <button id="chatToggle" class="chatToggleBtn"><i class="fas fa-comment-dots"></i></button>
+        </div>
+    </main>
+
+    <script src="js/script.js" defer></script>
+    <script type="module" src="js/firebase.js"></script>
+</body>
+</html>

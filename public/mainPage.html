@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson Generator - MzansiEd</title>
+    <link rel="icon" type="image/jpeg" href="images/tlogo.jpeg">
+    <script src="js/theme.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .dashboard-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+        .dashboard-header p {
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+        .selection-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            justify-items: center;
+        }
+        .form-card {
+            width: 100%;
+            max-width: 600px;
+        }
+        select.authInput {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234338ca'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            background-size: 20px;
+            cursor: pointer;
+        }
+        body.dark-mode select.authInput {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23818cf8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            background-size: 20px;
+        }
+        #loaderOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(15px);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+        }
+        @media (max-width: 480px) {
+            .dashboard-header h2 { font-size: 1.8rem; }
+            .dashboard-container { padding: 20px 10px; }
+            .form-card { padding: 20px 15px !important; }
+        }
+    </style>
+
+    <script>
+    const cached = localStorage.getItem("userName");
+    if (cached) {
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("welcomeHeading").textContent = `Welcome, ${cached}!`;
+        });
+    }
+</script>
+</head>
+<body style="font-family: 'Outfit', sans-serif !important;">
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    
+    <main id="tutorMain">
+        <header class="appBar">
+            <div class="lCon">
+                <img class="cLogo" src="images/tlogo.jpeg" alt="Logo">
+                <h1 class="appTitle">Mzansi<span style="color: #ef4444;">Ed</span></h1>
+            </div>
+            
+            <nav class="navBar">
+                <a class="navItem" href="pastpapers.html"><i class="fas fa-file-alt"></i> Past Papers</a>
+                <a class="navItem active" href="mainPage.html"><i class="fas fa-plus-circle"></i> New Lesson</a>
+                <a class="navItem" href="scanSolve.html"><i class="fas fa-camera"></i> Scan & Solve</a>
+                <a class="navItem" href="Account.html"><i class="fas fa-user-circle"></i> Account</a>
+            </nav>
+
+            <div class="headerActions">
+                <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h2 id="welcomeHeading"></h2>
+                <p>What are we mastering today?</p>
+            </div>
+
+            <div class="selection-grid">
+                <div class="authCard form-card">
+                    <form id="tutorForm" class="authForm">
+                        <div class="inputGroup">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; opacity: 0.8;">Grade Level</label>
+                            <input type="number" id="gradeId" class="authInput" placeholder="Enter Grade (1-12)" min="1" max="12" required>
+                        </div>
+
+                        <div class="inputGroup">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; opacity: 0.8;">Subject</label>
+                            <select id="subjectId" class="authInput" required>
+                                <option value="">Select Subject</option>
+                                <option>Mathematics</option>
+                                <option>Economics</option>
+                                <option>Accounting</option>
+                                <option>Life Science</option>
+                                <option>Physical Science</option>
+                                <option>Geography</option>
+                                <option>Life Orientation</option>
+                                <option>History</option>
+                                <option>Mathematical Literacy</option>
+                            </select>
+                        </div>
+
+                        <div class="inputGroup">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; opacity: 0.8;">Topic</label>
+                            <input type="text" id="topicId" class="authInput" placeholder="e.g. Trigonometry or Calculus" required>
+                        </div>
+
+                        <div class="inputGroup">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; opacity: 0.8;">Method</label>
+                            <select id="levelId" class="authInput" required>
+                                <option value="">Select AI Response Difficulty</option>
+                                <option>Beginner</option>
+                                <option>Intermediate</option>
+                                <option>Advanced</option>
+                            </select>
+                        </div>
+
+                        <button id="startedBtn" class="authBtn" type="submit" style="margin-top: 20px;">
+                            Start Learning Session <i class="fas fa-magic" style="margin-left: 10px;"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loader Overlay -->
+    <div id="loaderOverlay">
+        <div class="spinner" style="width: 70px; height: 70px; border-width: 6px;"></div>
+        <h3 style="margin-top: 30px; font-size: 1.8rem; font-weight: 700;">Crafting your learning session...</h3>
+        <p style="opacity: 0.8; margin-top: 10px;">MzansiEd is generating personalized insights for you.</p>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script type="module" src="js/firebase.js"></script>
+
+
+    <script type="module">
+    import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDjNyRSkepOLHcYuK4ALI2xWibC-P849f0",
+        authDomain: "tutorai-5f97d.firebaseapp.com",
+        projectId: "tutorai-5f97d",
+        storageBucket: "tutorai-5f97d.firebasestorage.app",
+        messagingSenderId: "447039931727",
+        appId: "1:447039931727:web:e90fa57709aced5bb6713a"
+    };
+
+    // Avoid duplicate app initialization
+    const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        document.getElementById("welcomeHeading").textContent = `Welcome, Scholar!`;
+        return;
+    }
+
+    // Show cached name instantly if available
+    const cached = localStorage.getItem("userName");
+    if (cached) {
+        document.getElementById("welcomeHeading").textContent = `Welcome, ${cached}!`;
+    }
+
+    try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const data = snap.exists() ? snap.data() : {};
+        const name = data.name || user.displayName || user.email?.split("@")[0] || "Scholar";
+        const firstName = name.split(" ")[0];
+
+        // Cache it for next time
+        localStorage.setItem("userName", firstName);
+
+        document.getElementById("welcomeHeading").textContent = `Welcome, ${firstName}!`;
+    } catch (e) {
+        console.error("Could not load name:", e);
+    }
+});
+
+
+</script>
+</body>
+</html>

@@ -20,20 +20,21 @@
     }
   ],
   "hosting": {
-    "public": ".",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**",
-      "functions/**",
-      "package.json",
-      "package-lock.json",
-      "firestore.rules",
-      "firestore.indexes.json",
-      "skills-lock.json",
-      "public/**"
+      "**/node_modules/**"
     ],
     "rewrites": [
+      {
+        "source": "/api/youtube",
+        "function": "getYoutubeVideos"
+      },
+      {
+        "source": "/api/tutor",
+        "function": "topicTutor"
+      },
       {
         "source": "**",
         "destination": "/index.html"

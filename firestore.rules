@@ -13,6 +13,12 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // Helper: check if user is an admin
+    function isAdmin() {
+      return isSignedIn() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
     // --- Users Collection ---
     match /users/{userId} {
       allow read, write: if isOwner(userId);
@@ -25,21 +31,25 @@ service cloud.firestore {
 
     // --- Shared Content ---
     
-    // Topics Cache (Shared by all authenticated users)
+    // Topics Cache (Shared read, restricted write)
     match /topicsCache/{cacheId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      // Only allow creating NEW cache entries, no overwriting or deleting by students
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
     
-    // Public Quizzes pooled from different users
+    // Public Quizzes (Owner edits only)
     match /public_quizzes/{quizId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
     }
     
-    // Past Papers Database
+    // Past Papers Database (Strictly Admin managed)
     match /past_papers/{docId} {
       allow read: if isSignedIn();
-      // Admins are currently generic authenticated users
-      allow write: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     // --- Default Deny ---

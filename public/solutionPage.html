@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MzansiEd</title>
+    <link rel="icon" type="image/jpeg" href="images/tlogo.jpeg">
+    <script src="js/theme.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+        <script>
+          window.MathJax = {
+            tex: {
+              inlineMath: [['$', '$'], ['\\(', '\\)']],
+              displayMath: [['$$', '$$'], ['\\[', '\\]']],
+              processEscapes: true
+            },
+            options: {
+              ignoreHtmlClass: 'tex2jax_ignore',
+              processHtmlClass: 'tex2jax_process'
+            }
+          };
+        </script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <!-- <link rel="stylesheet" href="css/home_styles.css"> -->
+</head>
+<body>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+    <div class="circles"></div>
+  <main id="tutorMain">
+      <header class="appBar">
+        <div class="lCon">
+          <img class="cLogo" src="images/tlogo.jpeg" alt="Logo">
+          <h1 class="appTitle">Mzansi<span style="color: #ef4444;">Ed</span></h1>
+        </div>
+        
+        <nav class="navBar">
+          <a class="navItem" href="pastpapers.html"><i class="fas fa-file-alt"></i> Past Papers</a>
+          <a class="navItem" href="mainPage.html"><i class="fas fa-plus-circle"></i> New Lesson</a>
+          <a class="navItem" href="scanSolve.html"><i class="fas fa-camera"></i> Scan & Solve</a>
+          <a class="navItem" href="Account.html"><i class="fas fa-user-circle"></i> Account</a>
+        </nav>
+
+        <div class="headerActions">
+          <div id="pointsDisplay" class="pointsBadge">
+            <i class="fas fa-star"></i> <span id="userPoints">0</span> pts
+          </div>
+          <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button id="masteredBtn" class="actionBtn masteredBtn" style="margin-left: 10px;">
+            <i class="fas fa-check-double"></i> Mastered
+          </button>
+        </div>
+      </header>
+<!-- main solution page -->
+
+  <section id="solutionHeader">
+
+    <div class="topicInfo">
+      <h1 id="subject">Subject</h1>
+      <h2 id="topicTitle">Topic here</h2>
+      <h3 id="airesponselevel">AI-Response Level</h3>
+      <!-- <p id="metaInfo">
+        Grade <span id="gradeMeta"></span> •
+        <span id="subjectMeta"></span> •
+        <span id="levelMeta"></span>
+      </p> -->
+    </div>
+
+
+  </section>
+
+  <div class="mainContent">
+    <div class="contentArea">
+  <section id="learningContent">
+
+    <!-- ===== Overview ===== -->
+    <section class="contentCard" id="overviewSection">
+      <h2 class="cOverview">Overview</h2>
+      <div id="overviewContent">
+        <!-- AI overview content inserted here -->
+      </div>
+    </section>
+
+    <!-- ===== Quick Summary (New) ===== -->
+    <section class="contentCard" id="summarySection" style="display:none;">
+      <h2 class="cSummary"><i class="fas fa-list-check"></i> Quick Summary</h2>
+      <div id="summaryContent" class="lesson-body">
+        <!-- AI summary inserted here -->
+      </div>
+    </section>
+
+    <!-- Key Concepts / Formulas -->
+    <section class="contentCard" id="formulaSection">
+      <h2 class="sidebarTitle">Key Concepts</h2>
+      <div id="formulaContent">
+        <!-- Formulas inserted here -->
+      </div>
+    </section>
+
+
+    <!-- ===== Explanation ===== -->
+    <section class="contentCard" id="explanationSection">
+      <h2 class="cExplanation">Detailed Explanation</h2>
+      <div id="explanationContent">
+        <!-- AI explanation inserted here -->
+      </div>
+    </section>
+
+    <!-- ===== Deep Dive (New) ===== -->
+    <section class="contentCard" id="deepDiveSection" style="display:none;">
+      <h2 class="sidebarTitle"><i class="fas fa-layer-group"></i> In-Depth Analysis</h2>
+      <div id="deepDiveContent">
+        <!-- AI deep dive inserted here -->
+      </div>
+    </section>
+
+    <!-- ===== Vocabulary (New) ===== -->
+    <section class="contentCard" id="vocabSection" style="display:none;">
+      <h2 class="cVocab"><i class="fas fa-book"></i> Key Terminology</h2>
+      <div id="vocabContent">
+        <!-- AI vocabulary inserted here -->
+      </div>
+    </section>
+
+    <!-- examples -->
+    <section class="contentCard" id="examplesSection">
+      <h2 class="cExamples">Worked Examples</h2>
+      <div id="examplesContent">
+        <!-- AI examples inserted here -->
+      </div>
+    </section>
+
+    <!-- ===== Real-World Applications (New) ===== -->
+    <section class="contentCard" id="applicationsSection" style="display:none;">
+      <h2 class="cApps"><i class="fas fa-globe"></i> Real-World Applications</h2>
+      <div id="applicationsContent">
+        <!-- AI applications inserted here -->
+      </div>
+    </section>
+
+
+   
+
+    <!-- ===== Recommended Videos===== -->
+    <section class="contentCard" id="videosSection">
+     
+      <div id="videosContent">
+    
+      </div>
+    </section>
+
+
+    <!-- ===== Dedicated Quiz Section ===== -->
+    <section class="contentCard" style="text-align: center; padding: 40px 20px;">
+      <h2 class="cTry" style="margin-bottom: 15px;"><i class="fas fa-brain"></i> Ready to test your knowledge?</h2>
+      <p style="color: var(--text-muted); margin-bottom: 25px;">Configure your custom multiple choice quiz below. Correct answers earn points, but incorrect answers cost points!</p>
+      
+      <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 25px; flex-wrap: wrap;">
+          <div style="text-align: left;">
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Difficulty</span>
+              <select id="quizDifficulty" class="authInput" style="width: auto; padding: 10px 15px; border-radius: 8px;">
+                  <option value="Easy">Easy</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="Hard">Hard</option>
+              </select>
+          </div>
+          <div style="text-align: left;">
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Questions</span>
+              <select id="quizCount" class="authInput" style="width: auto; padding: 10px 15px; border-radius: 8px;">
+                  <option value="3">3 Questions</option>
+                  <option value="5" selected>5 Questions</option>
+                  <option value="10">10 Questions</option>
+                  <option value="15">15 Questions</option>
+              </select>
+          </div>
+      </div>
+
+      <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+          <button id="resumeQuizBtn" class="authBtn" style="width: auto; padding: 15px 30px; display: none; background: #10b981; border-color: #10b981;" onclick="window.location.href='quizPage.html'">
+            <i class="fas fa-play-circle"></i> Resume Quiz
+          </button>
+          <button id="takeQuizBtn" class="authBtn" style="width: auto; padding: 15px 30px;" onclick="generateQuiz()">
+            Generate New Quiz <i class="fas fa-arrow-right" style="margin-left: 10px;"></i>
+          </button>
+      </div>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const topic = localStorage.getItem("topic");
+            const quizTopic = localStorage.getItem("quizTopic");
+            const hasQuiz = localStorage.getItem("quizResponse");
+            
+            if (topic && quizTopic === topic && hasQuiz) {
+                document.getElementById("resumeQuizBtn").style.display = "inline-block";
+            }
+        });
+      </script>
+    </section>
+    
+
+
+  </div>
+
+  <!-- Explain This AI Chat Bubble -->
+  <div id="aiChatWrapper" class="chatWrapper">
+    <div id="aiChatBubble" class="chatBubble">
+      <div class="chatHeader">
+        <span>MzansiEd Assistant</span>
+        <button id="closeChat">&times;</button>
+      </div>
+      <div id="chatMessages" class="chatMessages">
+        <p class="botMsg">Hi! I'm your MzansiEd assistant. Feel free to ask me anything about the lesson, or click "Explain" on any section for more details.</p>
+      </div>
+      <div class="chatInputCon">
+        <input type="text" id="chatInput" placeholder="Ask a question...">
+        <button id="sendChat"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+    <button id="chatToggle" class="chatToggleBtn"><i class="fas fa-comment-dots"></i></button>
+  </div>
+
+</main>
+
+<!-- Loader Overlay (High-Impact Glassmorphism) -->
+<div id="loaderOverlay" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease;">
+    <div class="spinner" style="width: 80px; height: 80px; border-width: 6px;"></div>
+    <h3 style="margin-top: 30px; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Finalizing your Lesson...</h3>
+    <p style="opacity: 0.7; margin-top: 10px; color: var(--text-main);">MzansiEd is polishing diagrams and math formulas for you.</p>
+</div>
+
+</body>
+<script src="js/script.js" defer></script>
+<script type="module" src="js/firebase.js"></script>
+</html>
