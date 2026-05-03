@@ -849,6 +849,7 @@
                     el("profileGrade").textContent  = `Grade ${grade}`;
                     el("profileGrade").style.display = "";
                     el("statGrade").textContent = grade;
+                    localStorage.setItem("grade", grade);
                 } else {
                     el("statGrade").textContent = "—";
                 }

@@ -336,16 +336,15 @@ async function validateTopic(topic, subject) {
 
 async function getTopic() {
     let isNavigating = false;
-    const gradeElem = document.getElementById("gradeId");
     const subjectElem = document.getElementById("subjectId");
     const topicElem = document.getElementById("topicId");
     const levelElem = document.getElementById("levelId");
 
-    if (!gradeElem || !subjectElem || !topicElem || !levelElem) {
+    if (!subjectElem || !topicElem || !levelElem) {
         return alert("Error: Form elements not found!");
     }
 
-    const grade = gradeElem.value;
+    const grade = localStorage.getItem("grade") || "12"; // Default to 12 if not found
     const subject = subjectElem.value;
     const topic = topicElem.value.trim();
     const level = levelElem.value;
@@ -597,7 +596,6 @@ STRUCTURE:
             }
         }
 
-        localStorage.setItem("grade", grade);
         localStorage.setItem("subject", subject);
         localStorage.setItem("topic", topic);
         localStorage.setItem("level", level);
@@ -1761,7 +1759,7 @@ document.addEventListener("click", function(e){
 
 // 6. Past Papers Database Search
 window.searchPastPapers = async function() {
-    const grade = document.getElementById("ppGrade").value;
+    const grade = localStorage.getItem("grade") || "12"; // Default to 12 if not found
     const subject = document.getElementById("ppSubject").value;
     const year = document.getElementById("ppYear").value;
     const targetPaperId = document.getElementById("ppTitle") ? document.getElementById("ppTitle").value : "All";

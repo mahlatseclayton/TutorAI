@@ -54,14 +54,6 @@
       
       <!-- Filter Controls -->
       <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px; flex-wrap: wrap; background: rgba(0,0,0,0.02); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
-          <div style="flex: 1; min-width: 120px; text-align: left;">
-              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Grade</span>
-              <select id="ppGrade" class="authInput" style="width: 100%; padding: 12px; border-radius: 8px; cursor: pointer;">
-                  <option value="12" selected>Grade 12</option>
-                  <option value="11">Grade 11</option>
-                  <option value="10">Grade 10</option>
-              </select>
-          </div>
           <div style="flex: 1; min-width: 150px; text-align: left;">
               <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 5px;">Subject</span>
               <select id="ppSubject" class="authInput" style="width: 100%; padding: 12px; border-radius: 8px; cursor: pointer;">
@@ -130,6 +122,37 @@
 
   <!-- Firebase handles everything -->
   <script type="module" src="js/firebase.js"></script>
+
+  <script type="module">
+    import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDjNyRSkepOLHcYuK4ALI2xWibC-P849f0",
+        authDomain: "tutorai-5f97d.firebaseapp.com",
+        projectId: "tutorai-5f97d",
+        storageBucket: "tutorai-5f97d.firebasestorage.app",
+        messagingSenderId: "447039931727",
+        appId: "1:447039931727:web:e90fa57709aced5bb6713a"
+    };
+
+    const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) return;
+        try {
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if (snap.exists()) {
+                localStorage.setItem("grade", snap.data().grade || "");
+            }
+        } catch (e) {
+            console.error("Error fetching grade:", e);
+        }
+    });
+  </script>
 
 </body>
 </html>
