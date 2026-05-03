@@ -1,5 +1,5 @@
 import { auth, db } from './firebase.js';
-import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+import { doc, setDoc, getDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 let currentQuizData = [];
 let userAnswers = {};
@@ -178,6 +178,22 @@ document.getElementById("submitQuizBtn").addEventListener("click", async () => {
             await setDoc(userRef, { points: currentPts }, { merge: true });
             const ptsEl = document.getElementById("userPoints");
             if (ptsEl) ptsEl.innerText = currentPts;
+
+            // Save quiz attempt to history
+            const topic = localStorage.getItem("topic") || "Unknown";
+            const subject = localStorage.getItem("subject") || "";
+            const grade = localStorage.getItem("grade") || "";
+            const correct = currentQuizData.filter((q, i) => userAnswers[i] === q.CORRECT_INDEX).length;
+            
+            await addDoc(collection(db, "users", user.uid, "quizHistory"), {
+                topic: topic,
+                subject: subject,
+                grade: grade,
+                totalQuestions: currentQuizData.length,
+                correctAnswers: correct,
+                scoreChange: totalScoreChange,
+                completedAt: new Date()
+            });
         } catch (err) {
             console.error("Failed to update points:", err);
         }

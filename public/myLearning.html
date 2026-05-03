@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Learning - MzansiEd</title>
+    <link rel="icon" type="image/jpeg" href="images/tlogo.jpeg">
+    <script src="js/theme.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif !important; }
+        .learning-page { max-width: 1000px; margin: 0 auto; padding: 30px 20px 60px; animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .page-header { text-align: center; margin-bottom: 40px; }
+        .page-header h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
+        .page-header p { font-size: 1rem; opacity: 0.7; }
+
+        /* Tab system */
+        .tab-bar { display: flex; gap: 8px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+        .tab-btn {
+            padding: 12px 28px; border-radius: 999px; border: 2px solid rgba(67,56,202,0.15);
+            background: transparent; color: var(--text-main); font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; gap: 8px;
+        }
+        .tab-btn:hover { border-color: #4338ca; background: rgba(67,56,202,0.05); }
+        .tab-btn.active { background: linear-gradient(135deg, #4338ca, #6366f1); color: white; border-color: #4338ca; box-shadow: 0 6px 20px rgba(67,56,202,0.3); }
+        .tab-btn .count-badge {
+            background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;
+        }
+        .tab-btn.active .count-badge { background: rgba(255,255,255,0.3); }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Cards */
+        .section-card {
+            background: rgba(255,255,255,0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.6); border-radius: 24px; padding: 30px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06); margin-bottom: 20px;
+        }
+        body.dark-mode .section-card { background: rgba(15,23,42,0.65); border-color: rgba(99,102,241,0.15); }
+
+        .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+        .history-item {
+            display: flex; align-items: center; gap: 14px; padding: 18px 20px;
+            background: rgba(67,56,202,0.03); border: 1px solid rgba(67,56,202,0.08);
+            border-radius: 16px; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: default;
+        }
+        .history-item:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(67,56,202,0.1); }
+
+        .history-icon {
+            width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; flex-shrink: 0; color: white;
+        }
+        .history-icon.topic { background: linear-gradient(135deg, #4338ca, #6366f1); }
+        .history-icon.quiz-pass { background: linear-gradient(135deg, #059669, #10b981); }
+        .history-icon.quiz-fail { background: linear-gradient(135deg, #dc2626, #ef4444); }
+
+        .history-info { flex: 1; min-width: 0; }
+        .history-info h4 { margin: 0 0 4px; font-size: 0.95rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .history-info .meta { font-size: 0.78rem; color: var(--text-muted, #6b7280); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .history-info .meta .dot { opacity: 0.4; }
+
+        .level-pill {
+            background: rgba(67,56,202,0.08); color: #4338ca; padding: 2px 8px; border-radius: 999px;
+            font-size: 0.7rem; font-weight: 700;
+        }
+        body.dark-mode .level-pill { background: rgba(129,140,248,0.15); color: #818cf8; }
+
+        .score-pill {
+            padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;
+        }
+        .score-pill.positive { background: rgba(16,185,129,0.1); color: #059669; }
+        .score-pill.negative { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+        .open-btn {
+            flex-shrink: 0; padding: 8px 16px; border-radius: 999px; border: 1.5px solid rgba(67,56,202,0.3);
+            background: transparent; color: #4338ca; font-size: 0.78rem; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.25s ease; white-space: nowrap;
+        }
+        .open-btn:hover { background: #4338ca; color: white; border-color: #4338ca; transform: translateY(-1px); box-shadow: 0 5px 15px rgba(67,56,202,0.3); }
+        body.dark-mode .open-btn { border-color: rgba(129,140,248,0.4); color: #818cf8; }
+        body.dark-mode .open-btn:hover { background: #4338ca; color: white; }
+
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--text-muted, #6b7280); }
+        .empty-state i { font-size: 3rem; margin-bottom: 16px; opacity: 0.35; display: block; }
+        .empty-state p { margin: 0; font-size: 1rem; }
+
+        /* Not logged in */
+        .not-logged-in { display: none; text-align: center; padding: 80px 20px; }
+        .not-logged-in i { font-size: 4rem; color: #4338ca; margin-bottom: 20px; display: block; }
+        .not-logged-in h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; }
+        .not-logged-in p { color: var(--text-muted); margin-bottom: 30px; }
+        .goto-signin {
+            padding: 14px 36px; border-radius: 999px; background: linear-gradient(135deg, #4338ca, #6366f1);
+            color: white; border: none; font-size: 1rem; font-weight: 700; cursor: pointer;
+            transition: all 0.3s ease; box-shadow: 0 10px 25px rgba(67,56,202,0.3); text-decoration: none;
+            display: inline-flex; align-items: center; gap: 10px;
+        }
+        .goto-signin:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(67,56,202,0.45); }
+
+        /* Loader */
+        .skeleton { border-radius: 10px; background: linear-gradient(90deg, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.06) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% center; } 100% { background-position: -200% center; } }
+
+        /* Preview loader */
+        #previewLoader { display: none; position: fixed; inset: 0; background: rgba(2,6,23,0.75); backdrop-filter: blur(12px); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; gap: 20px; }
+        #previewLoader h3 { font-size: 1.5rem; font-weight: 700; margin: 0; }
+        #previewLoader p { opacity: 0.7; margin: 0; }
+
+        @media (max-width: 600px) {
+            .page-header h2 { font-size: 1.6rem; }
+            .learning-page { padding: 20px 12px 60px; }
+            .history-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="circles"></div><div class="circles"></div><div class="circles"></div>
+
+    <main>
+        <header class="appBar">
+            <div class="lCon">
+                <img class="cLogo" src="images/tlogo.jpeg" alt="MzansiEd Logo">
+                <h1 class="appTitle">Mzansi<span style="color: #ef4444;">Ed</span></h1>
+            </div>
+            <nav class="navBar">
+                <a class="navItem" href="pastpapers.html"><i class="fas fa-file-alt"></i> Past Papers</a>
+                <a class="navItem" href="mainPage.html"><i class="fas fa-plus-circle"></i> New Lesson</a>
+                <a class="navItem" href="scanSolve.html"><i class="fas fa-camera"></i> Scan & Solve</a>
+                <a class="navItem active" href="myLearning.html"><i class="fas fa-history"></i> My Learning</a>
+                <a class="navItem" href="Account.html"><i class="fas fa-user-circle"></i> Account</a>
+            </nav>
+            <div class="headerActions">
+                <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+            </div>
+        </header>
+
+        <!-- Not signed-in state -->
+        <div class="not-logged-in" id="notLoggedIn">
+            <i class="fas fa-user-lock"></i>
+            <h2>You're not signed in</h2>
+            <p>Sign in to view your learning history, revisit topics and review quiz results.</p>
+            <a href="signIn.html" class="goto-signin"><i class="fas fa-sign-in-alt"></i> Sign In</a>
+        </div>
+
+        <!-- Signed-in state -->
+        <div id="loggedInContent" style="display:none;">
+            <div class="learning-page">
+                <div class="page-header">
+                    <h2><i class="fas fa-graduation-cap" style="color: #4338ca;"></i> My Learning</h2>
+                    <p>Review your study history — revisit topics and track quiz performance.</p>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tab-bar">
+                    <button class="tab-btn active" data-tab="topics" onclick="switchTab('topics')">
+                        <i class="fas fa-book-open"></i> Topics Visited <span class="count-badge" id="topicCount">0</span>
+                    </button>
+                    <button class="tab-btn" data-tab="quizzes" onclick="switchTab('quizzes')">
+                        <i class="fas fa-brain"></i> Quiz History <span class="count-badge" id="quizCount">0</span>
+                    </button>
+                </div>
+
+                <!-- Topics Tab -->
+                <div class="tab-content active" id="tab-topics">
+                    <div class="section-card">
+                        <div id="topicsList">
+                            <!-- Loading skeleton -->
+                            <div style="display:flex; flex-direction:column; gap:12px;">
+                                <div class="skeleton" style="height:72px; border-radius:16px;"></div>
+                                <div class="skeleton" style="height:72px; border-radius:16px;"></div>
+                                <div class="skeleton" style="height:72px; border-radius:16px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quizzes Tab -->
+                <div class="tab-content" id="tab-quizzes">
+                    <div class="section-card">
+                        <div id="quizzesList">
+                            <!-- Loading skeleton -->
+                            <div style="display:flex; flex-direction:column; gap:12px;">
+                                <div class="skeleton" style="height:72px; border-radius:16px;"></div>
+                                <div class="skeleton" style="height:72px; border-radius:16px;"></div>
+                                <div class="skeleton" style="height:72px; border-radius:16px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Preview loading overlay -->
+    <div id="previewLoader">
+        <div class="spinner" style="width:70px;height:70px;border-width:6px;border-top-color:#6366f1;"></div>
+        <h3>Loading Lesson...</h3>
+        <p>Fetching your saved lesson from MzansiEd</p>
+    </div>
+
+    <script src="js/script.js"></script>
+
+    <script type="module">
+        import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, getDocs, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDjNyRSkepOLHcYuK4ALI2xWibC-P849f0",
+            authDomain: "tutorai-5f97d.firebaseapp.com",
+            projectId: "tutorai-5f97d",
+            storageBucket: "tutorai-5f97d.firebasestorage.app",
+            messagingSenderId: "447039931727",
+            appId: "1:447039931727:web:e90fa57709aced5bb6713a"
+        };
+
+        const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db   = getFirestore(app);
+
+        const el = (id) => document.getElementById(id);
+
+        // Tab switching
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        };
+
+        function formatDate(timestamp) {
+            if (!timestamp) return "";
+            const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return d.toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" });
+        }
+
+        function renderTopics(topics) {
+            const list = el("topicsList");
+            el("topicCount").textContent = topics.length;
+
+            if (topics.length === 0) {
+                list.innerHTML = `<div class="empty-state"><i class="fas fa-book-open"></i><p>No topics visited yet — generate a lesson from the <strong>New Lesson</strong> page to start!</p></div>`;
+                return;
+            }
+
+            const grid = document.createElement("div");
+            grid.className = "history-grid";
+
+            topics.forEach(t => {
+                const dateStr = formatDate(t.visitedAt);
+                grid.innerHTML += `
+                    <div class="history-item">
+                        <div class="history-icon topic"><i class="fas fa-book"></i></div>
+                        <div class="history-info">
+                            <h4>${t.topic || t.id}</h4>
+                            <div class="meta">
+                                <span>${t.subject || ""}</span>
+                                ${t.level ? `<span class="dot">·</span><span class="level-pill">${t.level}</span>` : ""}
+                                ${dateStr ? `<span class="dot">·</span><span>${dateStr}</span>` : ""}
+                            </div>
+                        </div>
+                        <button class="open-btn" 
+                            data-topic="${t.topic || t.id}" 
+                            data-subject="${t.subject || ''}" 
+                            data-grade="${t.grade || ''}" 
+                            data-level="${t.level || ''}" 
+                            data-cacheid="${t.cacheId || ''}"
+                            onclick="openTopic(this)">
+                            <i class="fas fa-eye"></i> Open
+                        </button>
+                    </div>`;
+            });
+            list.innerHTML = "";
+            list.appendChild(grid);
+        }
+
+        function renderQuizzes(quizzes) {
+            const list = el("quizzesList");
+            el("quizCount").textContent = quizzes.length;
+
+            if (quizzes.length === 0) {
+                list.innerHTML = `<div class="empty-state"><i class="fas fa-brain"></i><p>No quizzes taken yet — generate a quiz from any lesson page to start!</p></div>`;
+                return;
+            }
+
+            const grid = document.createElement("div");
+            grid.className = "history-grid";
+
+            quizzes.forEach(q => {
+                const dateStr = formatDate(q.completedAt);
+                const isPass = q.scoreChange >= 0;
+                const pct = q.totalQuestions > 0 ? Math.round((q.correctAnswers / q.totalQuestions) * 100) : 0;
+
+                grid.innerHTML += `
+                    <div class="history-item">
+                        <div class="history-icon ${isPass ? 'quiz-pass' : 'quiz-fail'}">
+                            <i class="fas ${isPass ? 'fa-check' : 'fa-times'}"></i>
+                        </div>
+                        <div class="history-info">
+                            <h4>${q.topic}</h4>
+                            <div class="meta">
+                                <span>${q.subject || ""}</span>
+                                <span class="dot">·</span>
+                                <span>${q.correctAnswers}/${q.totalQuestions} (${pct}%)</span>
+                                <span class="dot">·</span>
+                                <span class="score-pill ${isPass ? 'positive' : 'negative'}">${isPass ? '+' : ''}${q.scoreChange} pts</span>
+                                ${dateStr ? `<span class="dot">·</span><span>${dateStr}</span>` : ""}
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            list.innerHTML = "";
+            list.appendChild(grid);
+        }
+
+        // Open a topic from history
+        window.openTopic = async function(btn) {
+            const topic   = btn.dataset.topic;
+            const subject = btn.dataset.subject;
+            const grade   = btn.dataset.grade;
+            const level   = btn.dataset.level;
+            const cacheId = btn.dataset.cacheid;
+
+            const loader = el("previewLoader");
+            if (loader) loader.style.display = "flex";
+            btn.disabled = true;
+
+            try {
+                let cachedData = null;
+
+                // Try stored cacheId first
+                if (cacheId) {
+                    const snap = await getDoc(doc(db, "topicsCache", cacheId));
+                    if (snap.exists()) cachedData = snap.data().response;
+                }
+
+                // Fallback: reconstruct cacheId
+                if (!cachedData && topic && subject && grade && level) {
+                    const rebuiltId = `${grade}_${subject}_${topic}_${level}`
+                        .toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
+                    const snap = await getDoc(doc(db, "topicsCache", rebuiltId));
+                    if (snap.exists()) cachedData = snap.data().response;
+                }
+
+                if (!cachedData) {
+                    alert(`No cached lesson found for "${topic}". Try generating this topic again from the Lesson Generator.`);
+                    return;
+                }
+
+                localStorage.setItem("aiResponse", JSON.stringify(cachedData));
+                localStorage.setItem("topic",   topic);
+                localStorage.setItem("subject", subject);
+                localStorage.setItem("grade",   grade || "");
+                localStorage.setItem("level",   level || "");
+
+                window.location.href = "solutionPage.html";
+            } catch (err) {
+                console.error("Preview failed:", err);
+                alert("Could not load the lesson. Please check your connection and try again.");
+            } finally {
+                btn.disabled = false;
+                if (loader) loader.style.display = "none";
+            }
+        };
+
+        // Auth state
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                el("notLoggedIn").style.display = "block";
+                el("loggedInContent").style.display = "none";
+                return;
+            }
+
+            if (!user.emailVerified) {
+                window.location.href = "signIn.html";
+                return;
+            }
+
+            el("notLoggedIn").style.display = "none";
+            el("loggedInContent").style.display = "block";
+
+            try {
+                // Load topic history
+                const topicSnap = await getDocs(
+                    query(collection(db, "users", user.uid, "topicHistory"), orderBy("visitedAt", "desc"), limit(50))
+                );
+                const topics = topicSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderTopics(topics);
+
+                // Load quiz history
+                const quizSnap = await getDocs(
+                    query(collection(db, "users", user.uid, "quizHistory"), orderBy("completedAt", "desc"), limit(50))
+                );
+                const quizzes = quizSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderQuizzes(quizzes);
+            } catch (err) {
+                console.error("Failed to load learning history:", err);
+                renderTopics([]);
+                renderQuizzes([]);
+            }
+        });
+    </script>
+</body>
+</html>

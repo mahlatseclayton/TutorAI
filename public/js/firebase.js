@@ -7,7 +7,7 @@
 
 import { initializeApp } 
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc } 
+import { getFirestore, doc, setDoc, getDoc, addDoc, collection } 
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, 
      GoogleAuthProvider, 
@@ -600,6 +600,24 @@ STRUCTURE:
         localStorage.setItem("topic", topic);
         localStorage.setItem("level", level);
         
+        // Save topic visit to user history
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                const cacheID = `${grade}_${subject}_${topic}_${level}`.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
+                await setDoc(doc(db, "users", user.uid, "topicHistory", cacheID), {
+                    topic: topic,
+                    subject: subject,
+                    grade: grade,
+                    level: level,
+                    cacheId: cacheID,
+                    visitedAt: new Date()
+                }, { merge: true });
+            } catch (e) {
+                console.warn("Failed to save topic history:", e);
+            }
+        }
+
         isNavigating = true;
         window.location.href = "solutionPage.html";
         
