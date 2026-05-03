@@ -199,6 +199,11 @@
         return;
     }
 
+    if (!user.emailVerified) {
+        window.location.href = "signIn.html";
+        return;
+    }
+
     // Show cached name instantly if available
     const cached = localStorage.getItem("userName");
     if (cached) {

@@ -255,6 +255,10 @@
       // Ensure Admin Auth State
       onAuthStateChanged(auth, (user) => {
           if (user) {
+              if (!user.emailVerified) {
+                  window.location.href = "signIn.html";
+                  return;
+              }
               document.getElementById("authBox").style.display = "none";
               document.getElementById("mainForm").style.display = "block";
               document.getElementById("adminEmailText").innerText = user.email;

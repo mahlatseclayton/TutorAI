@@ -814,6 +814,11 @@
                 return;
             }
 
+            if (!user.emailVerified) {
+                window.location.href = "signIn.html";
+                return;
+            }
+
          const storedUid = localStorage.getItem("currentUid");
          if (storedUid && storedUid !== user.uid) {
             localStorage.removeItem("watchedVideos");

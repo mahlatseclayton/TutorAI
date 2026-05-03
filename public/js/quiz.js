@@ -190,6 +190,10 @@ window.addEventListener("DOMContentLoaded", () => {
     // Initial Auth Load Points
     auth.onAuthStateChanged(async (user) => {
         if (user) {
+            if (!user.emailVerified) {
+                window.location.href = "signIn.html";
+                return;
+            }
             try {
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);

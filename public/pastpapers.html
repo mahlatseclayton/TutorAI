@@ -143,6 +143,10 @@
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) return;
+        if (!user.emailVerified) {
+            window.location.href = "signIn.html";
+            return;
+        }
         try {
             const snap = await getDoc(doc(db, "users", user.uid));
             if (snap.exists()) {
