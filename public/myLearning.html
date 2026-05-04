@@ -374,6 +374,16 @@
                     }
                 }
 
+                // Last Resort: Search by Topic Name only if still not found
+                if (!cachedData && topic) {
+                    console.log("Attempting last resort search for topic:", topic);
+                    const qCache = query(collection(db, "topicsCache"), limit(10));
+                    const qSnap = await getDocs(qCache);
+                    // Search locally for a match in the last 10 cached items (heuristic)
+                    const found = qSnap.docs.find(d => d.data().topic?.toLowerCase() === topic.toLowerCase());
+                    if (found) cachedData = found.data().response;
+                }
+
                 if (!cachedData) {
                     alert(`No cached lesson found for "${topic}". Try generating this topic again from the Lesson Generator.`);
                     return;

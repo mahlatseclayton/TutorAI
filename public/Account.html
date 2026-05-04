@@ -818,7 +818,9 @@
                 const isPass = q.scoreChange >= 0;
 
                 grid.innerHTML += `
-                    <div class="mastered-item" style="border-left: 4px solid ${isPass ? '#10b981' : '#ef4444'};">
+                    <div class="mastered-item" 
+                        style="border-left: 4px solid ${isPass ? '#10b981' : '#ef4444'}; cursor: pointer;"
+                        onclick="previewTopic(this.querySelector('.preview-btn'))">
                         <div class="mastered-icon" style="background: ${isPass ? '#10b981' : '#ef4444'};">
                             <i class="fas ${isPass ? 'fa-check' : 'fa-times'}"></i>
                         </div>
@@ -833,7 +835,7 @@
                             data-level="${q.level || 'Beginner'}" 
                             data-cacheid="${q.cacheId || ''}"
                             data-isquiz="true"
-                            onclick="previewTopic(this)">
+                            onclick="event.stopPropagation(); previewTopic(this)">
                             <i class="fas fa-play"></i> Review
                         </button>
                     </div>`;
@@ -886,6 +888,14 @@
                             break;
                         }
                     }
+                }
+
+                // Last Resort: Search by Topic Name only if still not found
+                if (!cachedData && topic) {
+                    const qCache = query(collection(db, "topicsCache"), limit(10));
+                    const qSnap = await getDocs(qCache);
+                    const found = qSnap.docs.find(d => d.data().topic?.toLowerCase() === topic.toLowerCase());
+                    if (found) cachedData = found.data().response;
                 }
 
                 if (!cachedData) {
