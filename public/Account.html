@@ -669,8 +669,23 @@
             </div>
         </div>
     </div>
-
                 
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-brain"></i> Quiz History
+                        </h2>
+                        <span id="quizHistoryCount" style="font-size:0.85rem; color:var(--text-muted); font-weight:600;"></span>
+                    </div>
+                    <div id="quizHistoryList">
+                        <!-- Loading skeleton -->
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <div class="skeleton skel-line" style="height:62px; border-radius:14px;"></div>
+                            <div class="skeleton skel-line" style="height:62px; border-radius:14px;"></div>
+                            <div class="skeleton skel-line" style="height:62px; border-radius:14px;"></div>
+                        </div>
+                    </div>
+                </div>
 
             </div><!-- /loggedInContent -->
         </div><!-- /account-page -->
@@ -777,6 +792,56 @@
             list.appendChild(grid);
         }
 
+        function renderQuizHistory(quizzes) {
+            const list = el("quizHistoryList");
+            el("quizHistoryCount").textContent = `${quizzes.length} attempts`;
+
+            if (quizzes.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-brain"></i>
+                        <p>No quiz attempts yet — complete a lesson and take a quiz!</p>
+                    </div>`;
+                return;
+            }
+
+            const grid = document.createElement("div");
+            grid.className = "mastered-grid"; // Reuse same layout
+
+            quizzes.forEach(q => {
+                const date = q.completedAt?.toDate?.() || null;
+                const dateStr = date
+                    ? date.toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" })
+                    : "";
+                
+                const pct = q.totalQuestions > 0 ? Math.round((q.correctAnswers / q.totalQuestions) * 100) : 0;
+                const isPass = q.scoreChange >= 0;
+
+                grid.innerHTML += `
+                    <div class="mastered-item" style="border-left: 4px solid ${isPass ? '#10b981' : '#ef4444'};">
+                        <div class="mastered-icon" style="background: ${isPass ? '#10b981' : '#ef4444'};">
+                            <i class="fas ${isPass ? 'fa-check' : 'fa-times'}"></i>
+                        </div>
+                        <div class="mastered-info">
+                            <h4>${q.topic}</h4>
+                            <span style="font-size:0.75rem;">${q.correctAnswers}/${q.totalQuestions} (${pct}%) · ${dateStr}</span>
+                        </div>
+                        <button class="preview-btn" 
+                            data-topic="${q.topic}" 
+                            data-subject="${q.subject || ''}" 
+                            data-grade="${q.grade || ''}" 
+                            data-level="${q.level || 'Beginner'}" 
+                            data-cacheid="${q.cacheId || ''}"
+                            data-isquiz="true"
+                            onclick="previewTopic(this)">
+                            <i class="fas fa-play"></i> Review
+                        </button>
+                    </div>`;
+            });
+            list.innerHTML = "";
+            list.appendChild(grid);
+        }
+
 
 
         /* ── Preview a mastered topic ── */
@@ -809,6 +874,20 @@
                     if (snap.exists()) cachedData = snap.data().response;
                 }
 
+                // Final fallback: Try other levels if specific level failed
+                if (!cachedData && topic && subject && grade) {
+                    const levels = ["Beginner", "Intermediate", "Advanced"];
+                    for (const l of levels) {
+                        const fallId = `${grade}_${subject}_${topic}_${l}`
+                            .toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
+                        const snap = await getDoc(doc(db, "topicsCache", fallId));
+                        if (snap.exists()) {
+                            cachedData = snap.data().response;
+                            break;
+                        }
+                    }
+                }
+
                 if (!cachedData) {
                     alert(`No cached lesson found for "${topic}". Try generating this topic again from the Lesson Generator.`);
                     return;
@@ -820,6 +899,13 @@
                 localStorage.setItem("subject", subject);
                 localStorage.setItem("grade",   grade || "");
                 localStorage.setItem("level",   level || "");
+
+                const isQuiz = btn.dataset.isquiz === "true";
+                if (isQuiz) {
+                    localStorage.setItem("autoStartQuiz", "true");
+                } else {
+                    localStorage.removeItem("autoStartQuiz");
+                }
 
                 window.location.href = "solutionPage.html";
 
@@ -905,6 +991,12 @@
                 const progressSnap = await getDocs(collection(db, "users", user.uid, "progress"));
                 const topics = progressSnap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderMastered(topics);
+
+                /* Quiz history */
+                const quizSnap = await getDocs(query(collection(db, "users", user.uid, "quizHistory"), orderBy("completedAt", "desc"), limit(10)));
+                const quizzes = quizSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderQuizHistory(quizzes);
+
                 updateWatchedSection();
                
 
