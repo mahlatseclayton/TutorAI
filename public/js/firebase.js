@@ -1405,6 +1405,14 @@ onAuthStateChanged(auth, async (user) => {
             window.userPoints = data.points || 0;
             const ptsText = document.getElementById("userPoints");
             if (ptsText) ptsText.innerText = window.userPoints;
+
+            // Enforce grade setting (especially for Google Sign-In users)
+            if (!data.grade && window.location.pathname.indexOf("Account.html") === -1) {
+                alert("Please set your grade level on the Account page to continue.");
+                window.location.href = "Account.html";
+            } else if (data.grade) {
+                localStorage.setItem("grade", data.grade);
+            }
         }
     }
 });

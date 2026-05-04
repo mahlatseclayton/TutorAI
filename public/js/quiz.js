@@ -183,12 +183,14 @@ document.getElementById("submitQuizBtn").addEventListener("click", async () => {
             const topic = localStorage.getItem("topic") || "Unknown";
             const subject = localStorage.getItem("subject") || "";
             const grade = localStorage.getItem("grade") || "";
+            const level = localStorage.getItem("level") || "Beginner";
             const correct = currentQuizData.filter((q, i) => userAnswers[i] === q.CORRECT_INDEX).length;
             
             await addDoc(collection(db, "users", user.uid, "quizHistory"), {
                 topic: topic,
                 subject: subject,
                 grade: grade,
+                level: level,
                 totalQuestions: currentQuizData.length,
                 correctAnswers: correct,
                 scoreChange: totalScoreChange,

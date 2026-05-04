@@ -201,6 +201,17 @@
             if (topic && quizTopic === topic && hasQuiz) {
                 document.getElementById("resumeQuizBtn").style.display = "inline-block";
             }
+
+            // Auto-start quiz if flag is set from My Learning page
+            if (localStorage.getItem("autoStartQuiz") === "true") {
+                localStorage.removeItem("autoStartQuiz");
+                // Wait a bit to ensure firebase.js module is loaded and generateQuiz is attached to window
+                setTimeout(() => {
+                    if (window.generateQuiz) {
+                        window.generateQuiz();
+                    }
+                }, 500);
+            }
         });
       </script>
     </section>

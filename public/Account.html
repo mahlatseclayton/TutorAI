@@ -203,7 +203,32 @@
         .stat-icon.purple { background: rgba(99,102,241,0.12); color: #4338ca; }
         .stat-icon.green  { background: rgba(16,185,129,0.12); color: #059669; }
         .stat-icon.amber  { background: rgba(245,158,11,0.12); color: #d97706; }
-        .stat-icon.blue   { background: rgba(59,130,246,0.12); color: #2563eb; }
+        .stat-icon.blue { background: rgba(59,130,246,0.1); color: #3b82f6; }
+        
+        .edit-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(67,56,202,0.15);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all 0.25s ease;
+        }
+        .edit-btn:hover {
+            background: #4338ca;
+            color: white;
+            border-color: #4338ca;
+            transform: scale(1.1);
+        }
+        body.dark-mode .edit-btn { border-color: rgba(129,140,248,0.25); }
 
         .stat-value {
             font-size: 2.4rem;
@@ -597,8 +622,11 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon amber"><i class="fas fa-graduation-cap"></i></div>
-                        <div class="stat-value" id="statGrade">—</div>
+                        <div class="stat-value" id="statGrade" style="position: relative;">—</div>
                         <div class="stat-label">Grade Level</div>
+                        <button id="editGradeBtn" class="edit-btn" title="Change Grade">
+                            <i class="fas fa-edit"></i>
+                        </button>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon blue"><i class="fas fa-calendar-alt"></i></div>
@@ -896,6 +924,34 @@
             } catch (e) {
                 console.error(e);
                 alert("Sign-out failed. Please try again.");
+            }
+        });
+
+        /* ── Update Grade Logic ── */
+        el("editGradeBtn")?.addEventListener("click", async () => {
+            const currentGrade = el("statGrade").textContent;
+            const newGrade = prompt("Enter your Grade Level (8, 9, 10, 11, or 12):", currentGrade === "—" ? "12" : currentGrade);
+            
+            if (newGrade && ["8", "9", "10", "11", "12"].includes(newGrade)) {
+                try {
+                    const user = auth.currentUser;
+                    if (!user) return;
+                    
+                    await setDoc(doc(db, "users", user.uid), { grade: newGrade }, { merge: true });
+                    
+                    // Update UI
+                    el("statGrade").textContent = newGrade;
+                    el("profileGrade").textContent = `Grade ${newGrade}`;
+                    el("profileGrade").style.display = "";
+                    localStorage.setItem("grade", newGrade);
+                    
+                    alert("Grade updated successfully!");
+                } catch (err) {
+                    console.error("Failed to update grade:", err);
+                    alert("Failed to update grade. Please try again.");
+                }
+            } else if (newGrade) {
+                alert("Please enter a valid grade (8-12).");
             }
         });
 

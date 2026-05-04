@@ -313,6 +313,14 @@
                                 ${dateStr ? `<span class="dot">·</span><span>${dateStr}</span>` : ""}
                             </div>
                         </div>
+                        <button class="open-btn" 
+                            data-topic="${q.topic}" 
+                            data-subject="${q.subject || ''}" 
+                            data-grade="${q.grade || ''}" 
+                            data-level="${q.level || 'Beginner'}" 
+                            onclick="openTopic(this, true)">
+                            <i class="fas fa-play"></i> Open
+                        </button>
                     </div>`;
             });
             list.innerHTML = "";
@@ -358,6 +366,12 @@
                 localStorage.setItem("subject", subject);
                 localStorage.setItem("grade",   grade || "");
                 localStorage.setItem("level",   level || "");
+
+                if (isQuiz) {
+                    localStorage.setItem("autoStartQuiz", "true");
+                } else {
+                    localStorage.removeItem("autoStartQuiz");
+                }
 
                 window.location.href = "solutionPage.html";
             } catch (err) {
