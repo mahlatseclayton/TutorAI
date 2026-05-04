@@ -321,6 +321,7 @@
                             data-subject="${q.subject || ''}" 
                             data-grade="${q.grade || ''}" 
                             data-level="${q.level || 'Beginner'}" 
+                            data-cacheid="${q.cacheId || ''}"
                             onclick="event.stopPropagation(); openTopic(this, true)">
                             <i class="fas fa-play"></i> Open
                         </button>
@@ -357,6 +358,20 @@
                         .toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
                     const snap = await getDoc(doc(db, "topicsCache", rebuiltId));
                     if (snap.exists()) cachedData = snap.data().response;
+                }
+
+                // Final fallback: Try other levels if specific level failed
+                if (!cachedData && topic && subject && grade) {
+                    const levels = ["Beginner", "Intermediate", "Advanced"];
+                    for (const l of levels) {
+                        const fallId = `${grade}_${subject}_${topic}_${l}`
+                            .toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
+                        const snap = await getDoc(doc(db, "topicsCache", fallId));
+                        if (snap.exists()) {
+                            cachedData = snap.data().response;
+                            break;
+                        }
+                    }
                 }
 
                 if (!cachedData) {

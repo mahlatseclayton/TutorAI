@@ -185,12 +185,14 @@ document.getElementById("submitQuizBtn").addEventListener("click", async () => {
             const grade = localStorage.getItem("grade") || "";
             const level = localStorage.getItem("level") || "Beginner";
             const correct = currentQuizData.filter((q, i) => userAnswers[i] === q.CORRECT_INDEX).length;
+            const cacheId = `${grade}_${subject}_${topic}_${level}`.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '');
             
             await addDoc(collection(db, "users", user.uid, "quizHistory"), {
                 topic: topic,
                 subject: subject,
                 grade: grade,
                 level: level,
+                cacheId: cacheId,
                 totalQuestions: currentQuizData.length,
                 correctAnswers: correct,
                 scoreChange: totalScoreChange,
