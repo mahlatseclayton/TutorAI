@@ -28,37 +28,43 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 const scriptPath = path.resolve(__dirname, '../../../public/js/firebase.js');
 let scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
-// 1. Remove top level imports and other problematic lines
-scriptContent = scriptContent.replace(/import\s+[\s\S]+?from\s+["'].+?["'];/g, '');
+// --- Extract individual functions from the source for isolated testing ---
+// This approach is more reliable than trying to eval the entire file,
+// since firebase.js has many side effects (DOM lookups, event listeners, auth state).
+
+function extractFunction(source, funcName) {
+    // Match async function funcName(...) { ... } with balanced braces
+    const regex = new RegExp(`(async\\s+function\\s+${funcName}\\s*\\([^)]*\\)\\s*\\{)`);
+    const match = source.match(regex);
+    if (!match) return null;
+
+    const startIdx = source.indexOf(match[1]);
+    let braceCount = 0;
+    let endIdx = startIdx;
+    let started = false;
+
+    for (let i = startIdx; i < source.length; i++) {
+        if (source[i] === '{') { braceCount++; started = true; }
+        if (source[i] === '}') braceCount--;
+        if (started && braceCount === 0) { endIdx = i + 1; break; }
+    }
+
+    return source.substring(startIdx, endIdx);
+}
 
 describe('firebase.js core logic', () => {
-    let sandbox;
+    let validateTopic;
 
     beforeEach(() => {
-        document.body.innerHTML = '<div id="topicTitle"></div><div id="videosContent"></div>';
         jest.clearAllMocks();
         fetch.mockClear();
-        
-        // Mock global constants
-        window.AI_GATEWAY_URL = 'https://test-gateway.app';
 
-        // Use a more aggressive approach to expose functions
-        sandbox = {};
-        try {
-            // Append explicit assignments to the script content
-            const modifiedScript = `
-                ${scriptContent}
-                // Expose to sandbox
-                _sandbox.validateTopic = typeof validateTopic !== 'undefined' ? validateTopic : null;
-                _sandbox.getTopic = typeof getTopic !== 'undefined' ? getTopic : null;
-                _sandbox.loadVideos = typeof loadVideos !== 'undefined' ? loadVideos : null;
-            `;
-            
-            // Execute in current context with sandbox reference
-            const execute = new Function('_sandbox', modifiedScript);
-            execute(sandbox);
-        } catch (e) {
-            // console.warn("Sandbox init warning:", e.message);
+        // Extract and compile validateTopic in isolation
+        const funcSource = extractFunction(scriptContent, 'validateTopic');
+        if (funcSource) {
+            // Replace the AI_GATEWAY_URL reference with a literal
+            const patched = funcSource.replace(/AI_GATEWAY_URL/g, '"/api/tutor"');
+            validateTopic = new Function('fetch', `return (${patched})`)(fetch);
         }
     });
 
@@ -68,9 +74,8 @@ describe('firebase.js core logic', () => {
             json: async () => ({ aiResponse: 'VALID' })
         });
 
-        if (!sandbox.validateTopic) throw new Error("validateTopic not found");
-        
-        const result = await sandbox.validateTopic('Photosynthesis', 'Biology');
+        expect(validateTopic).toBeDefined();
+        const result = await validateTopic('Photosynthesis', 'Biology');
         expect(result).toBe('VALID');
     });
 
@@ -80,14 +85,64 @@ describe('firebase.js core logic', () => {
             json: async () => ({ aiResponse: 'Life Science' })
         });
 
-        const result = await sandbox.validateTopic('Reproduction', 'Geography');
+        expect(validateTopic).toBeDefined();
+        const result = await validateTopic('Reproduction', 'Geography');
         expect(result).toBe('Life Science');
     });
 
     test('validateTopic should fail safe to "VALID" on fetch error', async () => {
         fetch.mockRejectedValueOnce(new Error('Network error'));
 
-        const result = await sandbox.validateTopic('Anything', 'Subject');
+        expect(validateTopic).toBeDefined();
+        const result = await validateTopic('Anything', 'Subject');
         expect(result).toBe('VALID');
+    });
+
+    test('validateTopic should fail safe to "VALID" on non-ok response', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: false,
+            status: 500,
+            statusText: 'Internal Server Error',
+            json: async () => ({ error: 'Server error' })
+        });
+
+        expect(validateTopic).toBeDefined();
+        const result = await validateTopic('Algebra', 'Mathematics');
+        expect(result).toBe('VALID');
+    });
+});
+
+describe('firebase.js localStorage grade usage', () => {
+    beforeEach(() => {
+        window.localStorage.clear();
+        jest.clearAllMocks();
+    });
+
+    test('getTopic should read grade from localStorage', () => {
+        // Verify the source code reads grade from localStorage (not DOM)
+        expect(scriptContent).toContain('localStorage.getItem("grade")');
+        // Verify the old gradeId DOM element is no longer referenced in getTopic
+        const getTopicSource = extractFunction(scriptContent, 'getTopic');
+        expect(getTopicSource).not.toContain('getElementById("gradeId")');
+    });
+
+    test('searchPastPapers should read grade from localStorage', () => {
+        // Verify searchPastPapers reads grade from localStorage
+        expect(scriptContent).toContain('localStorage.getItem("grade") || "12"');
+    });
+
+    test('topic visit should be saved to user history', () => {
+        // Verify getTopic saves to topicHistory subcollection
+        const getTopicSource = extractFunction(scriptContent, 'getTopic');
+        expect(getTopicSource).toContain('topicHistory');
+        expect(getTopicSource).toContain('setDoc');
+    });
+});
+
+describe('firebase.js email verification', () => {
+    test('onAuthStateChanged should check emailVerified', () => {
+        // Verify the global auth listener checks emailVerified
+        expect(scriptContent).toContain('user.emailVerified');
+        expect(scriptContent).toContain('window.location.href = "signIn.html"');
     });
 });

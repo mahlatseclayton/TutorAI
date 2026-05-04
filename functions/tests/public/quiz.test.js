@@ -57,7 +57,10 @@ describe('quiz.js core logic', () => {
         sandbox = {};
         try {
              // Mock some browser globals that might be used
-             window.auth = { onAuthStateChanged: jest.fn() };
+             window.auth = { 
+                 onAuthStateChanged: jest.fn(),
+                 currentUser: { uid: 'test-uid', emailVerified: true }
+             };
              window.db = {};
 
             const modifiedScript = `
@@ -104,5 +107,42 @@ describe('quiz.js core logic', () => {
             sandbox.selectOption(0, 0);
             expect(document.getElementById('opt-0-0').classList.contains('selected')).toBe(false);
         }
+    });
+});
+
+describe('quiz.js source verification', () => {
+    const rawContent = fs.readFileSync(
+        path.resolve(__dirname, '../../../public/js/quiz.js'), 'utf8'
+    );
+
+    test('should import Firestore SDK version 10.12.0 (not 10.4.0)', () => {
+        // This was the root cause of quiz points not updating
+        expect(rawContent).toContain('10.12.0/firebase-firestore.js');
+        expect(rawContent).not.toContain('10.4.0/firebase-firestore.js');
+    });
+
+    test('should import addDoc and collection for quiz history', () => {
+        expect(rawContent).toContain('addDoc');
+        expect(rawContent).toContain('collection');
+    });
+
+    test('should save quiz history to Firestore on submit', () => {
+        expect(rawContent).toContain('quizHistory');
+        expect(rawContent).toContain('correctAnswers');
+        expect(rawContent).toContain('scoreChange');
+        expect(rawContent).toContain('completedAt');
+    });
+
+    test('should check emailVerified in onAuthStateChanged', () => {
+        expect(rawContent).toContain('emailVerified');
+        expect(rawContent).toContain('signIn.html');
+    });
+
+    test('should update points via setDoc with merge', () => {
+        expect(rawContent).toContain('setDoc(userRef, { points: currentPts }, { merge: true })');
+    });
+
+    test('should prevent negative points floor', () => {
+        expect(rawContent).toContain('if (currentPts < 0) currentPts = 0');
     });
 });

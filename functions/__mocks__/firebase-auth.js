@@ -1,7 +1,7 @@
 // Mock for Firebase Auth
 export const getAuth = jest.fn(() => ({
   currentUser: { uid: 'test-uid', emailVerified: true },
-  onAuthStateChanged: jest.fn((cb) => cb({ uid: 'test-uid' })),
+  onAuthStateChanged: jest.fn((cb) => cb({ uid: 'test-uid', emailVerified: true })),
   signInWithEmailAndPassword: jest.fn(),
   createUserWithEmailAndPassword: jest.fn(),
   signOut: jest.fn(),
@@ -12,3 +12,7 @@ export const signInWithPopup = jest.fn();
 export const sendPasswordResetEmail = jest.fn();
 export const updateProfile = jest.fn();
 export const sendEmailVerification = jest.fn();
+export const onAuthStateChanged = jest.fn((auth, cb) => cb({ uid: 'test-uid', emailVerified: true }));
+export const createUserWithEmailAndPassword = jest.fn();
+export const signInWithEmailAndPassword = jest.fn();
+export const signOut = jest.fn();
