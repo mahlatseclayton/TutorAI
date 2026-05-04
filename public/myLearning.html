@@ -45,10 +45,9 @@
 
         .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 
-        .history-item {
             display: flex; align-items: center; gap: 14px; padding: 18px 20px;
             background: rgba(67,56,202,0.03); border: 1px solid rgba(67,56,202,0.08);
-            border-radius: 16px; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: default;
+            border-radius: 16px; transition: all 0.25s ease; cursor: pointer;
         }
         .history-item:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(67,56,202,0.1); }
 
@@ -255,7 +254,9 @@
             topics.forEach(t => {
                 const dateStr = formatDate(t.visitedAt);
                 grid.innerHTML += `
-                    <div class="history-item">
+                    <div class="history-item" 
+                        onclick="openTopic(this.querySelector('.open-btn'))"
+                        title="Click to open lesson">
                         <div class="history-icon topic"><i class="fas fa-book"></i></div>
                         <div class="history-info">
                             <h4>${t.topic || t.id}</h4>
@@ -271,7 +272,7 @@
                             data-grade="${t.grade || ''}" 
                             data-level="${t.level || ''}" 
                             data-cacheid="${t.cacheId || ''}"
-                            onclick="openTopic(this)">
+                            onclick="event.stopPropagation(); openTopic(this)">
                             <i class="fas fa-eye"></i> Open
                         </button>
                     </div>`;
@@ -298,7 +299,9 @@
                 const pct = q.totalQuestions > 0 ? Math.round((q.correctAnswers / q.totalQuestions) * 100) : 0;
 
                 grid.innerHTML += `
-                    <div class="history-item">
+                    <div class="history-item" 
+                        onclick="openTopic(this.querySelector('.open-btn'), true)"
+                        title="Click to retake quiz">
                         <div class="history-icon ${isPass ? 'quiz-pass' : 'quiz-fail'}">
                             <i class="fas ${isPass ? 'fa-check' : 'fa-times'}"></i>
                         </div>
@@ -318,7 +321,7 @@
                             data-subject="${q.subject || ''}" 
                             data-grade="${q.grade || ''}" 
                             data-level="${q.level || 'Beginner'}" 
-                            onclick="openTopic(this, true)">
+                            onclick="event.stopPropagation(); openTopic(this, true)">
                             <i class="fas fa-play"></i> Open
                         </button>
                     </div>`;
@@ -328,7 +331,7 @@
         }
 
         // Open a topic from history
-        window.openTopic = async function(btn) {
+        window.openTopic = async function(btn, isQuiz = false) {
             const topic   = btn.dataset.topic;
             const subject = btn.dataset.subject;
             const grade   = btn.dataset.grade;
