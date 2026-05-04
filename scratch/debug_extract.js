@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 function extractFunction(source, funcName) {
-    const regex = new RegExp(`(async\\s+function\\s+${funcName}\\s*\\([^)]*\\)\\s*\\{)`);
+    const regex = new RegExp(`((?:async\\s+)?function\\s+${funcName}\\s*\\([^)]*\\)\\s*\\{)`);
     const match = source.match(regex);
     if (!match) return null;
 
@@ -11,11 +11,29 @@ function extractFunction(source, funcName) {
     let braceCount = 0;
     let endIdx = startIdx;
     let started = false;
+    let inString = null;
 
     for (let i = startIdx; i < source.length; i++) {
-        if (source[i] === '{') { braceCount++; started = true; }
-        if (source[i] === '}') braceCount--;
-        if (started && braceCount === 0) { endIdx = i + 1; break; }
+        const char = source[i];
+        if (!inString) {
+            if (char === "'" || char === '"' || char === '`') {
+                inString = char;
+            } else if (char === '{') {
+                braceCount++;
+                started = true;
+            } else if (char === '}') {
+                braceCount--;
+            }
+        } else {
+            if (char === inString && source[i - 1] !== '\\') {
+                inString = null;
+            }
+        }
+
+        if (started && braceCount === 0) {
+            endIdx = i + 1;
+            break;
+        }
     }
 
     return source.substring(startIdx, endIdx);
