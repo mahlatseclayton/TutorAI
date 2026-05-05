@@ -196,25 +196,27 @@
     </style>
 </head>
 <body>
-    <div class="circles" style="width: 600px; height: 600px; opacity: 0.1; top: -100px; left: -100px;"></div>
-    <div class="circles" style="width: 400px; height: 400px; opacity: 0.05; bottom: -50px; right: -50px;"></div>
+    <div class="circles" style="width: 600px; height: 600px; opacity: 0.08; top: -150px; left: -150px; filter: blur(60px); background: #4338ca;"></div>
+    <div class="circles" style="width: 500px; height: 500px; opacity: 0.06; bottom: -100px; right: -100px; filter: blur(50px); background: #ef4444;"></div>
+    <div class="circles" style="width: 300px; height: 300px; opacity: 0.04; top: 40%; left: 80%; filter: blur(40px); background: #6366f1;"></div>
     
     <main>
         <div class="headerActions" style="position: absolute; top: 40px; right: 40px; z-index: 1000;">
-            <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme" style="transform: scale(1.2);">
+            <button id="themeToggle" class="themeToggleBtn" title="Toggle Theme" style="transform: scale(1.2); background: rgba(255,255,255,0.1); backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1);">
                 <i class="fas fa-moon"></i>
             </button>
         </div>
 
-        <section id="mainSection" style="padding: 0;">
+        <section id="mainSection" style="padding: 0; position: relative; overflow: hidden;">
             <div class="hero-container">
                 <div class="hero-content">
                     <div class="welcome-text">
-                        <h4>Your AI CAPS Study Companion</h4>
-                        <h1 style="background: linear-gradient(to bottom right, #4338ca, #6366f1, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">MzansiEd</h1>
+                        <h4>Your Premium AI Study Partner</h4>
+                        <h1 style="background: linear-gradient(135deg, #4338ca, #6366f1, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 10px 20px rgba(67,56,202,0.15));">MzansiEd</h1>
                         <p>
-                          Revolutionizing how South African students learn and excel in every subject according to the CAPS curriculum.
-                           Get clear explanations, step-by-step guidance, and practice opportunities designed to help you master concepts and succeed with confidence.
+                          Master the <strong>CAPS curriculum</strong> with a personalized AI tutor designed for South African excellence. 
+                          From instant concept clarity to exam-ready practice, we provide everything you need to dominate your grades.
+                        </p>
                     </div>
                     
                     <button id="indexGetStarted" onclick="Start()">
@@ -223,51 +225,50 @@
                 </div>
 
                 <div class="hero-logo-side">
-                    <div class="logo-glow"></div>
-                    <img id="mainLogo" src="images/tlogo.jpeg" alt="MzansiEd Logo">
+                    <div class="logo-glow" style="background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0) 70%);"></div>
+                    <img id="mainLogo" src="images/tlogo.jpeg" alt="MzansiEd Logo" style="border: 20px solid rgba(255, 255, 255, 0.1); box-shadow: 0 50px 100px rgba(67,56,202,0.25);">
                 </div>
             </div>
         </section>
 
         <section class="how-it-works">
-    <h1>How MzansiEd Works</h1>
-    <p class="subtitle">
-        From homework confusion to exam confidence — all in one flow.
-    </p>
+            <h1>Services Offered</h1>
+            <p class="subtitle">
+                Comprehensive study tools designed to take you from Grade 8 to Matric success.
+            </p>
 
-    <div class="steps">
+            <div class="steps">
+                <div class="step">
+                    <div class="icon"><i class="fas fa-brain"></i></div>
+                    <h3>AI Learning Hub</h3>
+                    <p>Get deep concept explanations, key formulas, and worked examples for any CAPS topic instantly.</p>
+                </div>
 
-       <div class="step">
-    <div class="icon"><i class="fas fa-comments"></i></div>
-    <h3>Ask & Understand</h3>
-    <p>Chat with AI and get clear explanations, examples, and help instantly.</p>
-</div>
+                <div class="step">
+                    <div class="icon"><i class="fas fa-camera"></i></div>
+                    <h3>Scan & Solve</h3>
+                    <p>Snap a photo of any problem and our AI will guide you through the solution step-by-step.</p>
+                </div>
 
-<div class="step">
-    <div class="icon"><i class="fas fa-pen-to-square"></i></div>
-    <h3>Solve Homework</h3>
-    <p>Upload or type questions and get step-by-step guidance with hints.</p>
-</div>
+                <div class="step">
+                    <div class="icon"><i class="fas fa-file-invoice"></i></div>
+                    <h3>Past Paper Vault</h3>
+                    <p>Access a massive database of IEB and DBE past papers with integrated AI assistance.</p>
+                </div>
 
-<div class="step">
-    <div class="icon"><i class="fas fa-book"></i></div>
-    <h3>Practice Questions</h3>
-    <p>Work through real past papers and understand how marks are awarded.</p>
-</div>
+                <div class="step">
+                    <div class="icon"><i class="fas fa-vial"></i></div>
+                    <h3>Strict Quizzes</h3>
+                    <p>Test your knowledge with rigorous, time-pressured quizzes that give you real-time score tracking.</p>
+                </div>
 
-<div class="step">
-    <div class="icon"><i class="fas fa-bullseye"></i></div>
-    <h3>Test & Improve</h3>
-    <p>Generate quizzes and exams tailored to your level and track progress.</p>
-</div>
-
-<div class="step">
-    <div class="icon"><i class="fas fa-play-circle"></i></div>
-    <h3>Watch YouTube Videos</h3>
-    <p>Explore curated educational videos tailored to your topic and subject to enhance understanding.</p>
-</div>
-    </div>
-</section>
+                <div class="step">
+                    <div class="icon"><i class="fas fa-video"></i></div>
+                    <h3>Curated Lessons</h3>
+                    <p>Watch hand-picked educational videos that align perfectly with the concept you're studying.</p>
+                </div>
+            </div>
+        </section>
 
         <!-- About Us Section -->
         <section class="about-us" style="padding: 100px 20px; text-align: center; max-width: 1200px; margin: 0 auto;">

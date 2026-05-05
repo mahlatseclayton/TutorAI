@@ -45,6 +45,7 @@
 
         .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 
+        .history-item {
             display: flex; align-items: center; gap: 14px; padding: 18px 20px;
             background: rgba(67,56,202,0.03); border: 1px solid rgba(67,56,202,0.08);
             border-radius: 16px; transition: all 0.25s ease; cursor: pointer;
@@ -253,6 +254,7 @@
 
             topics.forEach(t => {
                 const dateStr = formatDate(t.visitedAt);
+                const level = t.level || 'Beginner';
                 grid.innerHTML += `
                     <div class="history-item" 
                         onclick="openTopic(this.querySelector('.open-btn'))"
@@ -262,7 +264,7 @@
                             <h4>${t.topic || t.id}</h4>
                             <div class="meta">
                                 <span>${t.subject || ""}</span>
-                                ${t.level ? `<span class="dot">·</span><span class="level-pill">${t.level}</span>` : ""}
+                                ${level ? `<span class="dot">·</span><span class="level-pill">${level}</span>` : ""}
                                 ${dateStr ? `<span class="dot">·</span><span>${dateStr}</span>` : ""}
                             </div>
                         </div>
@@ -270,7 +272,7 @@
                             data-topic="${t.topic || t.id}" 
                             data-subject="${t.subject || ''}" 
                             data-grade="${t.grade || ''}" 
-                            data-level="${t.level || ''}" 
+                            data-level="${level}" 
                             data-cacheid="${t.cacheId || ''}"
                             onclick="event.stopPropagation(); openTopic(this)">
                             <i class="fas fa-eye"></i> Open
@@ -297,6 +299,7 @@
                 const dateStr = formatDate(q.completedAt);
                 const isPass = q.scoreChange >= 0;
                 const pct = q.totalQuestions > 0 ? Math.round((q.correctAnswers / q.totalQuestions) * 100) : 0;
+                const level = q.level || 'Beginner';
 
                 grid.innerHTML += `
                     <div class="history-item" 
@@ -306,7 +309,7 @@
                             <i class="fas ${isPass ? 'fa-check' : 'fa-times'}"></i>
                         </div>
                         <div class="history-info">
-                            <h4>${q.topic}</h4>
+                            <h4>${q.topic || q.id}</h4>
                             <div class="meta">
                                 <span>${q.subject || ""}</span>
                                 <span class="dot">·</span>
@@ -317,10 +320,10 @@
                             </div>
                         </div>
                         <button class="open-btn" 
-                            data-topic="${q.topic}" 
+                            data-topic="${q.topic || q.id}" 
                             data-subject="${q.subject || ''}" 
                             data-grade="${q.grade || ''}" 
-                            data-level="${q.level || 'Beginner'}" 
+                            data-level="${level}" 
                             data-cacheid="${q.cacheId || ''}"
                             onclick="event.stopPropagation(); openTopic(this, true)">
                             <i class="fas fa-play"></i> Open
@@ -333,9 +336,11 @@
 
         // Open a topic from history
         window.openTopic = async function(btn, isQuiz = false) {
+            if (!btn || btn.disabled) return;
+            
             const topic   = btn.dataset.topic;
             const subject = btn.dataset.subject;
-            const grade   = btn.dataset.grade;
+            const grade   = btn.dataset.grade || localStorage.getItem("grade") || "12";
             const level   = btn.dataset.level;
             const cacheId = btn.dataset.cacheid;
 
