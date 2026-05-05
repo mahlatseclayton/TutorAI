@@ -1416,7 +1416,11 @@ onAuthStateChanged(auth, async (user) => {
 
             if (!data.grade && blockedPages.some(p => currentPage.includes(p))) {
                 alert("Please set your grade level on the Account page to continue.");
+
+                
+               setTimeout(() => {
                 window.location.href = "Account.html";
+               }, 500);
                 return;
             }
 
