@@ -1407,10 +1407,20 @@ onAuthStateChanged(auth, async (user) => {
             if (ptsText) ptsText.innerText = window.userPoints;
 
             // Enforce grade setting (especially for Google Sign-In users)
-            if (!data.grade && window.location.pathname.indexOf("Account.html") === -1) {
+            const currentPage = window.location.pathname;
+
+            const blockedPages = [
+                "mainPage.html",
+                "scanSolve.html"
+            ];
+
+            if (!data.grade && blockedPages.some(p => currentPage.includes(p))) {
                 alert("Please set your grade level on the Account page to continue.");
                 window.location.href = "Account.html";
-            } else if (data.grade) {
+                return;
+            }
+
+            if (data.grade) {
                 localStorage.setItem("grade", data.grade);
             }
         }
