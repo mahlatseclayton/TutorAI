@@ -40,8 +40,19 @@
                     <input id="name" class="authInput" type="text" placeholder="Full Name(s)" required>
                     <input id="email" class="authInput" type="email" placeholder="Email Address" required>
                     <input id="grade" class="authInput" type="number" placeholder="Your Grade" required>
-                    <input id="password" class="authInput" type="password" placeholder="Create Password" required minlength="6">
-                    <input id="cpassword" class="authInput" type="password" placeholder="Confirm Password" required minlength="6">
+                    <div class="password-container">
+                        <input id="password" class="authInput" type="password" placeholder="Create Password" required minlength="6">
+                        <span class="toggle-password" tabindex="0" role="button" aria-label="Toggle password visibility">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                    
+                    <div class="password-container">
+                        <input id="cpassword" class="authInput" type="password" placeholder="Confirm Password" required minlength="6">
+                        <span class="toggle-password" tabindex="0" role="button" aria-label="Toggle password visibility">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
 
                     <div class="authLinks">
                         <a href="signIn.html">Already have an account? Sign In</a>

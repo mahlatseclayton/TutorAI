@@ -20,11 +20,11 @@
 
 | Feature | Description |
 | :--- | :--- |
-| **Ask & Understand** | Instant AI-driven chat for clear, grade-appropriate explanations. |
-| **Solve Homework** | Guidance on tough problems through scanning or typing questions. |
-| **Practice Papers** | Integrated database of real South African past papers. |
-| **Tailored Quizzes** | Dynamic test generation based on your performance level. |
-| **Video Lessons** | Targeted educational content from YouTube, aligned with CAPS. |
+| **AI Learning Hub** | Get deep concept explanations, key formulas, and worked examples for any CAPS topic instantly. |
+| **Intelligent Scan & Solve** | Snap a photo of any problem for step-by-step guidance. Features **built-in ML Computer Vision** for instant blur/lighting detection and optimized image compression. |
+| **Past Paper Vault** | Access a massive database of IEB and DBE past papers with integrated AI assistance. |
+| **Strict Quizzes** | Test your knowledge with rigorous, time-pressured quizzes that give you real-time score tracking. |
+| **Curated Lessons** | Watch hand-picked educational videos that align perfectly with the concept you're studying. |
 
 ## Mission
 
@@ -37,10 +37,11 @@ Our mission is to bridge the educational gap in South Africa. By combining elite
 
 ## Tech Stack
 
-- **Frontend**: HTML5, Vanilla CSS3, JavaScript (ES6+)
+- **Frontend**: HTML5, Vanilla CSS3 (Premium Glassmorphism UI), JavaScript (ES6+)
+- **Client-Side ML**: Custom Computer Vision (Laplacian variance & Luma tracking for real-time image quality detection)
 - **Backend**: Firebase (Hosting, Functions, Firestore, Auth)
 - **AI Engine**: Google Gemini API
-- **Deployment**: GitHub Actions (CI/CD)
+- **Deployment**: Firebase Hosting & GitHub Actions (CI/CD)
 
 ## ⚖️ Strict License
 

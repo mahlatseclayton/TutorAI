@@ -2628,3 +2628,65 @@ body.dark-mode .chatBubble {
     box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4) !important;
 }
 
+/* =========================================================
+   CUSTOM UI TOAST (REPLACES NATIVE ALERT)
+========================================================= */
+.custom-toast {
+    position: fixed;
+    top: -100px; /* Start hidden above */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30, 41, 59, 0.95); /* Dark blue/gray */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    padding: 15px 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    min-width: 300px;
+    max-width: 90%;
+    font-family: 'Outfit', sans-serif;
+}
+
+.custom-toast.show {
+    top: 30px; /* Slide down into view */
+}
+
+.custom-toast.toast-success {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.toast-icon {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast-content {
+    flex: 1;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    transition: color 0.2s ease;
+}
+
+.toast-close:hover {
+    color: #f8fafc;
+}
+
