@@ -1410,8 +1410,8 @@ onAuthStateChanged(auth, async (user) => {
             const currentPage = window.location.pathname;
 
             const blockedPages = [
-                "mainPage.html",
-                "scanSolve.html"
+                 "public/mainPage.html",
+                 "public/scanSolve.html"
             ];
 
             if (!data.grade && blockedPages.some(p => currentPage.includes(p))) {
