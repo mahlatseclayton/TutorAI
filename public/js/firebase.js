@@ -1454,33 +1454,163 @@ if (fileInput) {
     });
 }
 
+function detectImageQuality(canvas) {
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Optimize performance: check a smaller scaled version if image is huge
+    const checkScale = Math.min(1, 800 / Math.max(width, height));
+    const scaledWidth = Math.round(width * checkScale);
+    const scaledHeight = Math.round(height * checkScale);
+    
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = scaledWidth;
+    tempCanvas.height = scaledHeight;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(canvas, 0, 0, scaledWidth, scaledHeight);
+    
+    const imageData = tempCtx.getImageData(0, 0, scaledWidth, scaledHeight);
+    const data = imageData.data;
+
+    let totalBrightness = 0;
+    const grayscale = new Float32Array(scaledWidth * scaledHeight);
+    
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+        totalBrightness += luma;
+        grayscale[i / 4] = luma;
+    }
+    
+    const avgBrightness = totalBrightness / (scaledWidth * scaledHeight);
+    if (avgBrightness < 35) return { pass: false, reason: "Too dark. Please ensure good lighting." };
+    if (avgBrightness > 245) return { pass: false, reason: "Too bright or washed out. Please avoid glare." };
+
+    let laplacianSum = 0;
+    let laplacianSqSum = 0;
+    let validPixels = 0;
+
+    for (let y = 1; y < scaledHeight - 1; y++) {
+        for (let x = 1; x < scaledWidth - 1; x++) {
+            const idx = y * scaledWidth + x;
+            const top = grayscale[idx - scaledWidth];
+            const bottom = grayscale[idx + scaledWidth];
+            const left = grayscale[idx - 1];
+            const right = grayscale[idx + 1];
+            const center = grayscale[idx];
+
+            const laplacian = top + bottom + left + right - 4 * center;
+            
+            laplacianSum += laplacian;
+            laplacianSqSum += laplacian * laplacian;
+            validPixels++;
+        }
+    }
+
+    const mean = laplacianSum / validPixels;
+    const variance = (laplacianSqSum / validPixels) - (mean * mean);
+
+    if (variance < 30) return { pass: false, reason: "Image is too blurry or out of focus. Please hold the camera steady." };
+
+    return { pass: true, variance };
+}
+
 function handleScanFile(file) {
     if (!file) return;
     
-    // Show immediate feedback
     if (solveBtn) {
         solveBtn.disabled = true;
-        solveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+        solveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking Quality...';
     }
 
     const reader = new FileReader();
     reader.onload = (e) => {
-        base64Image = e.target.result;
-        
-        if (imagePreview) {
-            imagePreview.src = base64Image;
-            imagePreview.style.display = "block";
-        }
+        const img = new Image();
+        img.onload = () => {
+            const MAX_DIMENSION = 1500;
+            let width = img.width;
+            let height = img.height;
 
-        if (solveBtn) {
-            solveBtn.disabled = false;
-            solveBtn.innerHTML = '<i class="fas fa-magic"></i> Solve Question';
-        }
-        
-        // Scroll to preview
-        if (imagePreview) {
-            imagePreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+            if (width > height && width > MAX_DIMENSION) {
+                height = Math.round((height * MAX_DIMENSION) / width);
+                width = MAX_DIMENSION;
+            } else if (height > MAX_DIMENSION) {
+                width = Math.round((width * MAX_DIMENSION) / height);
+                height = MAX_DIMENSION;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const quality = detectImageQuality(canvas);
+            
+            if (!quality.pass) {
+                if (solveBtn) {
+                    solveBtn.disabled = true; // Block submission
+                    solveBtn.innerHTML = '<i class="fas fa-magic"></i> Solve Question';
+                }
+                if (imagePreview) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = "block";
+                    imagePreview.style.filter = "grayscale(100%) blur(2px) opacity(60%)";
+                    
+                    // Show error overlay on preview
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = "quality-error-overlay";
+                    errorMsg.innerHTML = `⚠️ Quality Check Failed<br><small>${quality.reason}</small>`;
+                    errorMsg.style.position = "absolute";
+                    errorMsg.style.top = "50%";
+                    errorMsg.style.left = "50%";
+                    errorMsg.style.transform = "translate(-50%, -50%)";
+                    errorMsg.style.background = "rgba(239, 68, 68, 0.9)";
+                    errorMsg.style.color = "white";
+                    errorMsg.style.padding = "10px 20px";
+                    errorMsg.style.borderRadius = "12px";
+                    errorMsg.style.fontWeight = "bold";
+                    errorMsg.style.textAlign = "center";
+                    errorMsg.style.zIndex = "10";
+                    
+                    // Remove old overlay if exists
+                    const oldOverlay = imagePreview.parentNode.querySelector('.quality-error-overlay');
+                    if (oldOverlay) oldOverlay.remove();
+                    
+                    imagePreview.parentNode.style.position = "relative";
+                    imagePreview.parentNode.appendChild(errorMsg);
+                }
+                alert("⚠️ Quality Check Failed: " + quality.reason);
+                return;
+            }
+
+            // Remove overlay if passed
+            if (imagePreview && imagePreview.parentNode) {
+                const oldOverlay = imagePreview.parentNode.querySelector('.quality-error-overlay');
+                if (oldOverlay) oldOverlay.remove();
+            }
+
+            base64Image = canvas.toDataURL("image/jpeg", 0.85);
+            
+            if (imagePreview) {
+                imagePreview.src = base64Image;
+                imagePreview.style.display = "block";
+                imagePreview.style.filter = "none";
+            }
+
+            if (solveBtn) {
+                solveBtn.disabled = false;
+                solveBtn.innerHTML = '<i class="fas fa-magic"></i> Solve Question';
+            }
+            
+            if (imagePreview) {
+                imagePreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        };
+        img.src = e.target.result;
     };
     
     reader.onerror = () => {
