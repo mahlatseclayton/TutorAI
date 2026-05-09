@@ -1395,10 +1395,6 @@ if (chatInput) chatInput.addEventListener("keypress", (e) => {
 // Fetch user points on load
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        if (!user.emailVerified) {
-            window.location.href = "signIn.html";
-            return;
-        }
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
             const data = userDoc.data();
