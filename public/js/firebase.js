@@ -1933,6 +1933,7 @@ window.searchPastPapers = async function() {
     const subject = document.getElementById("ppSubject").value;
     const year = document.getElementById("ppYear").value;
     const targetPaperId = document.getElementById("ppTitle") ? document.getElementById("ppTitle").value : "All";
+    const month = document.getElementById("ppMonth").value;
 
     const btn = document.getElementById("scrapeBtn");
     const resultsContainer = document.getElementById("scraperResults");
@@ -1957,7 +1958,8 @@ window.searchPastPapers = async function() {
             collection(db, "past_papers"),
             where("grade", "==", grade),
             where("subject", "==", subject),
-            where("year", "==", year)
+            where("year", "==", year),
+            where("month", "==", month)
         );
 
         const snapshot = await getDocs(q);
