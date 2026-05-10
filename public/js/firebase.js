@@ -1954,7 +1954,7 @@ window.searchPastPapers = async function() {
         // Dynamically import searching queries so we don't break existing top-level imports
         const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
         
-        console.log("Selected month:", month);
+        
         const q = query(
             collection(db, "past_papers"),
             where("grade", "==", grade),
